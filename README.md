@@ -8,7 +8,4 @@
   <sonar.organization>tqs-project-ols</sonar.organization>
 </properties>
 ```
-```
-```
-```
-```
+
