@@ -1,4 +1,4 @@
-name: Dev pr testing
+name: Dev pr testin
 
 on:
   pull_request:
