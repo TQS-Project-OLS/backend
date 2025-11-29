@@ -1,0 +1,29 @@
+name: "CodeQL Analysis"
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - dev
+      - main
+
+jobs:
+  codeql:
+    name: Analyze
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v3
+      with:
+        languages: java
+
+    - name: Build Maven project
+      run: mvn clean compile
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v3
