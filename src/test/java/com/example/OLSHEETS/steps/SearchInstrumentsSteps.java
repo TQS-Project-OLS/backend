@@ -1,7 +1,7 @@
 package com.example.OLSHEETS.steps;
 
-import com.example.OLSHEETS.entity.InstrumentEntity;
-import com.example.OLSHEETS.model.Instrument;
+import com.example.OLSHEETS.data.Instrument;
+import com.example.OLSHEETS.data.Instrument;
 import com.example.OLSHEETS.repository.InstrumentRepository;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
@@ -39,14 +39,14 @@ public class SearchInstrumentsSteps {
 
         List<Map<String, String>> rows = dataTable.asMaps(String.class, String.class);
         for (Map<String, String> row : rows) {
-            InstrumentEntity instrument = new InstrumentEntity();
+            Instrument instrument = new Instrument();
             instrument.setName(row.get("name"));
             instrument.setType(row.get("type"));
             instrument.setFamily(row.get("family"));
             instrument.setAge(Integer.parseInt(row.get("age")));
             instrument.setPrice(Double.parseDouble(row.get("price")));
             instrument.setDescription(row.get("description"));
-            instrument.setOwner_id(1); // Default owner for test data
+            instrument.setOwnerId(1); // Default owner for test data
 
             instrumentRepository.save(instrument);
         }

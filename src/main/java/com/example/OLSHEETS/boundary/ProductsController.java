@@ -1,6 +1,6 @@
 package com.example.OLSHEETS.boundary;
 
-import com.example.OLSHEETS.model.Instrument;
+import com.example.OLSHEETS.data.Instrument;
 import com.example.OLSHEETS.service.ProductsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

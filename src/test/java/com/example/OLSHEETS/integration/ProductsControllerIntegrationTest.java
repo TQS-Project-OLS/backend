@@ -1,6 +1,6 @@
 package com.example.OLSHEETS.integration;
 
-import com.example.OLSHEETS.entity.InstrumentEntity;
+import com.example.OLSHEETS.data.Instrument;
 import com.example.OLSHEETS.repository.InstrumentRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,30 +28,30 @@ class ProductsControllerIntegrationTest {
     void setUp() {
         instrumentRepository.deleteAll();
 
-        InstrumentEntity yamahaPiano = new InstrumentEntity();
+        Instrument yamahaPiano = new Instrument();
         yamahaPiano.setName("Yamaha P-125");
         yamahaPiano.setDescription("Digital Piano");
-        yamahaPiano.setOwner_id(1);
+        yamahaPiano.setOwnerId(1);
         yamahaPiano.setPrice(599.99);
         yamahaPiano.setAge(2);
         yamahaPiano.setType("Digital Piano");
         yamahaPiano.setFamily("Keyboard");
         instrumentRepository.save(yamahaPiano);
 
-        InstrumentEntity fenderGuitar = new InstrumentEntity();
+        Instrument fenderGuitar = new Instrument();
         fenderGuitar.setName("Fender Stratocaster");
         fenderGuitar.setDescription("Electric Guitar");
-        fenderGuitar.setOwner_id(1);
+        fenderGuitar.setOwnerId(1);
         fenderGuitar.setPrice(899.99);
         fenderGuitar.setAge(5);
         fenderGuitar.setType("Electric");
         fenderGuitar.setFamily("Guitar");
         instrumentRepository.save(fenderGuitar);
 
-        InstrumentEntity yamahaSax = new InstrumentEntity();
+        Instrument yamahaSax = new Instrument();
         yamahaSax.setName("Yamaha YAS-280");
         yamahaSax.setDescription("Alto Saxophone");
-        yamahaSax.setOwner_id(2);
+        yamahaSax.setOwnerId(2);
         yamahaSax.setPrice(1299.99);
         yamahaSax.setAge(1);
         yamahaSax.setType("Alto Sax");

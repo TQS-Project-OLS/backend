@@ -1,4 +1,4 @@
-package com.example.OLSHEETS.entity;
+package com.example.OLSHEETS.data;
 
 import jakarta.persistence.*;
 import lombok.Data;
@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "item")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "item_type")
-public abstract class ItemEntity {
+public abstract class Item {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,9 +22,8 @@ public abstract class ItemEntity {
     @Column(length = 1000)
     private String description;
 
-    private int owner_id;
+    private int ownerId;
 
     @Column(nullable = false)
     private Double price;
-
 }

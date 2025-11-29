@@ -1,7 +1,7 @@
 package com.example.OLSHEETS.unit;
 
 import com.example.OLSHEETS.boundary.ProductsController;
-import com.example.OLSHEETS.model.Instrument;
+import com.example.OLSHEETS.data.Instrument;
 import com.example.OLSHEETS.service.ProductsService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

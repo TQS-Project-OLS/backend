@@ -1,5 +1,7 @@
-package com.example.OLSHEETS.model;
+package com.example.OLSHEETS.data;
 
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -7,6 +9,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
+@Entity
+@DiscriminatorValue("INSTRUMENT")
 public class Instrument extends Item {
 
     private Integer age;

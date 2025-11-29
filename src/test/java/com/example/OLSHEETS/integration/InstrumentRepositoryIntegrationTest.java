@@ -1,6 +1,6 @@
 package com.example.OLSHEETS.integration;
 
-import com.example.OLSHEETS.entity.InstrumentEntity;
+import com.example.OLSHEETS.data.Instrument;
 import com.example.OLSHEETS.repository.InstrumentRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,36 +21,36 @@ class InstrumentRepositoryIntegrationTest {
     @Autowired
     private InstrumentRepository instrumentRepository;
 
-    private InstrumentEntity yamahaPiano;
-    private InstrumentEntity fenderGuitar;
-    private InstrumentEntity yamahaSax;
+    private Instrument yamahaPiano;
+    private Instrument fenderGuitar;
+    private Instrument yamahaSax;
 
     @BeforeEach
     void setUp() {
         instrumentRepository.deleteAll();
 
-        yamahaPiano = new InstrumentEntity();
+        yamahaPiano = new Instrument();
         yamahaPiano.setName("Yamaha P-125");
         yamahaPiano.setDescription("Digital Piano");
-        yamahaPiano.setOwner_id(1);
+        yamahaPiano.setOwnerId(1);
         yamahaPiano.setPrice(599.99);
         yamahaPiano.setAge(2);
         yamahaPiano.setType("Digital Piano");
         yamahaPiano.setFamily("Keyboard");
 
-        fenderGuitar = new InstrumentEntity();
+        fenderGuitar = new Instrument();
         fenderGuitar.setName("Fender Stratocaster");
         fenderGuitar.setDescription("Electric Guitar");
-        fenderGuitar.setOwner_id(1);
+        fenderGuitar.setOwnerId(1);
         fenderGuitar.setPrice(899.99);
         fenderGuitar.setAge(5);
         fenderGuitar.setType("Electric");
         fenderGuitar.setFamily("Guitar");
 
-        yamahaSax = new InstrumentEntity();
+        yamahaSax = new Instrument();
         yamahaSax.setName("Yamaha YAS-280");
         yamahaSax.setDescription("Alto Saxophone");
-        yamahaSax.setOwner_id(2);
+        yamahaSax.setOwnerId(2);
         yamahaSax.setPrice(1299.99);
         yamahaSax.setAge(1);
         yamahaSax.setType("Alto Sax");
@@ -64,7 +64,7 @@ class InstrumentRepositoryIntegrationTest {
         entityManager.persistAndFlush(fenderGuitar);
 
         // Act
-        List<InstrumentEntity> result = instrumentRepository.findByNameContainingIgnoreCase("Yamaha P-125");
+        List<Instrument> result = instrumentRepository.findByNameContainingIgnoreCase("Yamaha P-125");
 
         // Assert
         assertNotNull(result);
@@ -80,7 +80,7 @@ class InstrumentRepositoryIntegrationTest {
         entityManager.persistAndFlush(yamahaSax);
 
         // Act
-        List<InstrumentEntity> result = instrumentRepository.findByNameContainingIgnoreCase("Yamaha");
+        List<Instrument> result = instrumentRepository.findByNameContainingIgnoreCase("Yamaha");
 
         // Assert
         assertNotNull(result);
@@ -95,7 +95,7 @@ class InstrumentRepositoryIntegrationTest {
         entityManager.persistAndFlush(yamahaPiano);
 
         // Act
-        List<InstrumentEntity> result = instrumentRepository.findByNameContainingIgnoreCase("Gibson");
+        List<Instrument> result = instrumentRepository.findByNameContainingIgnoreCase("Gibson");
 
         // Assert
         assertNotNull(result);
@@ -109,9 +109,9 @@ class InstrumentRepositoryIntegrationTest {
         entityManager.persistAndFlush(yamahaSax);
 
         // Act
-        List<InstrumentEntity> resultLowerCase = instrumentRepository.findByNameContainingIgnoreCase("yamaha");
-        List<InstrumentEntity> resultUpperCase = instrumentRepository.findByNameContainingIgnoreCase("YAMAHA");
-        List<InstrumentEntity> resultMixedCase = instrumentRepository.findByNameContainingIgnoreCase("YaMaHa");
+        List<Instrument> resultLowerCase = instrumentRepository.findByNameContainingIgnoreCase("yamaha");
+        List<Instrument> resultUpperCase = instrumentRepository.findByNameContainingIgnoreCase("YAMAHA");
+        List<Instrument> resultMixedCase = instrumentRepository.findByNameContainingIgnoreCase("YaMaHa");
 
         // Assert
         assertEquals(2, resultLowerCase.size());
@@ -125,7 +125,7 @@ class InstrumentRepositoryIntegrationTest {
         entityManager.persistAndFlush(fenderGuitar);
 
         // Act
-        List<InstrumentEntity> result = instrumentRepository.findByNameContainingIgnoreCase("Strat");
+        List<Instrument> result = instrumentRepository.findByNameContainingIgnoreCase("Strat");
 
         // Assert
         assertNotNull(result);
@@ -140,7 +140,7 @@ class InstrumentRepositoryIntegrationTest {
         entityManager.flush();
 
         // Act
-        List<InstrumentEntity> result = instrumentRepository.findByNameContainingIgnoreCase("Yamaha");
+        List<Instrument> result = instrumentRepository.findByNameContainingIgnoreCase("Yamaha");
 
         // Assert
         assertNotNull(result);
@@ -154,11 +154,11 @@ class InstrumentRepositoryIntegrationTest {
     @Test
     void testSaveAndRetrieve_ShouldPersistCorrectly() {
         // Act
-        InstrumentEntity saved = instrumentRepository.save(yamahaPiano);
+        Instrument saved = instrumentRepository.save(yamahaPiano);
         entityManager.flush();
         entityManager.clear();
 
-        List<InstrumentEntity> found = instrumentRepository.findByNameContainingIgnoreCase("Yamaha P-125");
+        List<Instrument> found = instrumentRepository.findByNameContainingIgnoreCase("Yamaha P-125");
 
         // Assert
         assertNotNull(saved.getId());
