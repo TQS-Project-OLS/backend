@@ -2,6 +2,7 @@ package com.example.OLSHEETS.integration;
 
 import com.example.OLSHEETS.data.Instrument;
 import com.example.OLSHEETS.data.InstrumentType;
+import com.example.OLSHEETS.data.InstrumentFamily;
 import com.example.OLSHEETS.repository.InstrumentRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,7 +38,7 @@ class InstrumentRepositoryIntegrationTest {
         yamahaPiano.setPrice(599.99);
         yamahaPiano.setAge(2);
         yamahaPiano.setType(InstrumentType.DIGITAL);
-        yamahaPiano.setFamily("Keyboard");
+        yamahaPiano.setFamily(InstrumentFamily.KEYBOARD);
 
         fenderGuitar = new Instrument();
         fenderGuitar.setName("Fender Stratocaster");
@@ -46,7 +47,7 @@ class InstrumentRepositoryIntegrationTest {
         fenderGuitar.setPrice(899.99);
         fenderGuitar.setAge(5);
         fenderGuitar.setType(InstrumentType.ELECTRIC);
-        fenderGuitar.setFamily("Guitar");
+        fenderGuitar.setFamily(InstrumentFamily.GUITAR);
 
         yamahaSax = new Instrument();
         yamahaSax.setName("Yamaha YAS-280");
@@ -55,7 +56,7 @@ class InstrumentRepositoryIntegrationTest {
         yamahaSax.setPrice(1299.99);
         yamahaSax.setAge(1);
         yamahaSax.setType(InstrumentType.WIND);
-        yamahaSax.setFamily("Woodwind");
+        yamahaSax.setFamily(InstrumentFamily.WOODWIND);
     }
 
     @Test
@@ -168,7 +169,7 @@ class InstrumentRepositoryIntegrationTest {
         assertEquals("Yamaha P-125", found.get(0).getName());
         assertEquals(599.99, found.get(0).getPrice());
         assertEquals(2, found.get(0).getAge());
-        assertEquals("Keyboard", found.get(0).getFamily());
+        assertEquals(InstrumentFamily.KEYBOARD, found.get(0).getFamily());
     }
 
     @Test

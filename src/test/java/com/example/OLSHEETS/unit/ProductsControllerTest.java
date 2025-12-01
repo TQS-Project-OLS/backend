@@ -3,6 +3,7 @@ package com.example.OLSHEETS.unit;
 import com.example.OLSHEETS.boundary.ProductsController;
 import com.example.OLSHEETS.data.Instrument;
 import com.example.OLSHEETS.data.InstrumentType;
+import com.example.OLSHEETS.data.InstrumentFamily;
 import com.example.OLSHEETS.service.ProductsService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,7 +44,7 @@ class ProductsControllerTest {
         instrument1.setOwnerId(1);
         instrument1.setAge(2);
         instrument1.setType(InstrumentType.DIGITAL);
-        instrument1.setFamily("Keyboard");
+        instrument1.setFamily(InstrumentFamily.KEYBOARD);
 
         instrument2 = new Instrument();
         instrument2.setId(2L);
@@ -53,7 +54,7 @@ class ProductsControllerTest {
         instrument2.setOwnerId(1);
         instrument2.setAge(1);
         instrument2.setType(InstrumentType.WIND);
-        instrument2.setFamily("Woodwind");
+        instrument2.setFamily(InstrumentFamily.WOODWIND);
     }
 
     @Test
@@ -102,7 +103,7 @@ class ProductsControllerTest {
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].name", is("Yamaha P-125")))
                 .andExpect(jsonPath("$[0].type", is("DIGITAL")))
-                .andExpect(jsonPath("$[0].family", is("Keyboard")));
+                .andExpect(jsonPath("$[0].family", is("KEYBOARD")));
 
         verify(productsService, times(1)).searchInstrumentsByName("Yamaha P-125");
     }
@@ -135,7 +136,35 @@ class ProductsControllerTest {
                 .andExpect(jsonPath("$[0].ownerId", is(1)))
                 .andExpect(jsonPath("$[0].age", is(2)))
                 .andExpect(jsonPath("$[0].type", is("DIGITAL")))
-                .andExpect(jsonPath("$[0].family", is("Keyboard")));
+                .andExpect(jsonPath("$[0].family", is("KEYBOARD")));
+    }
+
+    @Test
+    void testFilterByFamily_WithMatchingResults_ShouldReturnInstruments() throws Exception {
+        List<Instrument> instruments = Collections.singletonList(instrument1);
+        when(productsService.filterInstrumentsByFamily(InstrumentFamily.KEYBOARD)).thenReturn(instruments);
+
+        mockMvc.perform(get("/api/instruments/filter/family")
+                        .param("family", "KEYBOARD"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].name", is("Yamaha P-125")));
+
+        verify(productsService, times(1)).filterInstrumentsByFamily(InstrumentFamily.KEYBOARD);
+    }
+
+    @Test
+    void testFilterByFamily_WithNoResults_ShouldReturnEmptyList() throws Exception {
+        when(productsService.filterInstrumentsByFamily(InstrumentFamily.BRASS)).thenReturn(Collections.emptyList());
+
+        mockMvc.perform(get("/api/instruments/filter/family")
+                        .param("family", "BRASS"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(jsonPath("$", hasSize(0)));
+
+        verify(productsService, times(1)).filterInstrumentsByFamily(InstrumentFamily.BRASS);
     }
 
     @Test

@@ -2,6 +2,7 @@ package com.example.OLSHEETS.unit;
 
 import com.example.OLSHEETS.data.Instrument;
 import com.example.OLSHEETS.data.InstrumentType;
+import com.example.OLSHEETS.data.InstrumentFamily;
 import com.example.OLSHEETS.repository.InstrumentRepository;
 import com.example.OLSHEETS.service.ProductsService;
 import org.junit.jupiter.api.BeforeEach;
@@ -142,5 +143,33 @@ class ProductsServiceTest {
         assertNotNull(result);
         assertTrue(result.isEmpty());
         verify(instrumentRepository, times(1)).findByType(InstrumentType.SYNTHESIZER);
+    }
+
+    @Test
+    void testFilterInstrumentsByFamily_WithMatchingResults_ShouldReturnInstruments() {
+        InstrumentFamily family = InstrumentFamily.KEYBOARD;
+        List<Instrument> instruments = Collections.singletonList(instrument1);
+
+        when(instrumentRepository.findByFamily(family)).thenReturn(instruments);
+
+        List<Instrument> result = productsService.filterInstrumentsByFamily(family);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(instrumentRepository, times(1)).findByFamily(family);
+    }
+
+    @Test
+    void testFilterInstrumentsByFamily_WithNoResults_ShouldReturnEmptyList() {
+        InstrumentFamily family = InstrumentFamily.BRASS;
+        List<Instrument> emptyList = Collections.emptyList();
+
+        when(instrumentRepository.findByFamily(family)).thenReturn(emptyList);
+
+        List<Instrument> result = productsService.filterInstrumentsByFamily(family);
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(instrumentRepository, times(1)).findByFamily(family);
     }
 }

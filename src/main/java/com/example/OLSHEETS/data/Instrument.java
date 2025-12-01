@@ -20,5 +20,6 @@ public class Instrument extends Item {
     @Enumerated(EnumType.STRING)
     private InstrumentType type;
 
-    private String family;
+    @Enumerated(EnumType.STRING)
+    private InstrumentFamily family;
 }

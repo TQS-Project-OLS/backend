@@ -2,6 +2,7 @@ package com.example.OLSHEETS.steps;
 
 import com.example.OLSHEETS.data.Instrument;
 import com.example.OLSHEETS.data.InstrumentType;
+import com.example.OLSHEETS.data.InstrumentFamily;
 import com.example.OLSHEETS.repository.InstrumentRepository;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
@@ -52,7 +53,7 @@ public class SearchInstrumentsSteps {
                 }
             }
 
-            instrument.setFamily(row.get("family"));
+            instrument.setFamily(InstrumentFamily.valueOf(row.get("family").toUpperCase()));
             instrument.setAge(Integer.parseInt(row.get("age")));
             instrument.setPrice(Double.parseDouble(row.get("price")));
             instrument.setDescription(row.get("description"));
