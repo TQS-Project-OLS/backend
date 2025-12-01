@@ -2,6 +2,7 @@ package com.example.OLSHEETS.integration;
 
 import com.example.OLSHEETS.data.Instrument;
 import com.example.OLSHEETS.repository.InstrumentRepository;
+import com.example.OLSHEETS.data.InstrumentFamily;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,7 +36,7 @@ class ProductsControllerIntegrationTest {
         yamahaPiano.setPrice(599.99);
         yamahaPiano.setAge(2);
         yamahaPiano.setType("Digital Piano");
-        yamahaPiano.setFamily("Keyboard");
+        yamahaPiano.setFamily(InstrumentFamily.KEYBOARD);
         instrumentRepository.save(yamahaPiano);
 
         Instrument fenderGuitar = new Instrument();
@@ -45,7 +46,7 @@ class ProductsControllerIntegrationTest {
         fenderGuitar.setPrice(899.99);
         fenderGuitar.setAge(5);
         fenderGuitar.setType("Electric");
-        fenderGuitar.setFamily("Guitar");
+        fenderGuitar.setFamily(InstrumentFamily.GUITAR);
         instrumentRepository.save(fenderGuitar);
 
         Instrument yamahaSax = new Instrument();
@@ -55,7 +56,7 @@ class ProductsControllerIntegrationTest {
         yamahaSax.setPrice(1299.99);
         yamahaSax.setAge(1);
         yamahaSax.setType("Alto Sax");
-        yamahaSax.setFamily("Woodwind");
+        yamahaSax.setFamily(InstrumentFamily.WOODWIND);
         instrumentRepository.save(yamahaSax);
     }
 
@@ -77,7 +78,7 @@ class ProductsControllerIntegrationTest {
                 .andExpect(jsonPath("$[0].ownerId", is(1)))
                 .andExpect(jsonPath("$[0].age", is(2)))
                 .andExpect(jsonPath("$[0].type", is("Digital Piano")))
-                .andExpect(jsonPath("$[0].family", is("Keyboard")));
+                .andExpect(jsonPath("$[0].family", is("KEYBOARD")));
     }
 
     @Test
@@ -141,7 +142,7 @@ class ProductsControllerIntegrationTest {
                 .andExpect(jsonPath("$[0].price", is(899.99)))
                 .andExpect(jsonPath("$[0].age", is(5)))
                 .andExpect(jsonPath("$[0].type", is("Electric")))
-                .andExpect(jsonPath("$[0].family", is("Guitar")));
+                .andExpect(jsonPath("$[0].family", is("GUITAR")));
     }
 
     @Test
@@ -166,20 +167,20 @@ class ProductsControllerIntegrationTest {
                         .param("name", "P-125"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].family", is("Keyboard")));
+                .andExpect(jsonPath("$[0].family", is("KEYBOARD")));
 
         // Search for guitar
         mockMvc.perform(get("/api/instruments/search")
                         .param("name", "Fender"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].family", is("Guitar")));
+                .andExpect(jsonPath("$[0].family", is("GUITAR")));
 
         // Search for sax
         mockMvc.perform(get("/api/instruments/search")
                         .param("name", "YAS"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].family", is("Woodwind")));
+                .andExpect(jsonPath("$[0].family", is("WOODWIND")));
     }
 }

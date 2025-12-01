@@ -2,6 +2,8 @@ package com.example.OLSHEETS.data;
 
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.EnumType;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -15,5 +17,7 @@ public class Instrument extends Item {
 
     private Integer age;
     private String type;
-    private String family;
+
+    @Enumerated(EnumType.STRING)
+    private InstrumentFamily family;
 }
