@@ -1,6 +1,7 @@
 package com.example.OLSHEETS.integration;
 
 import com.example.OLSHEETS.data.Instrument;
+import com.example.OLSHEETS.data.InstrumentType;
 import com.example.OLSHEETS.repository.InstrumentRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,7 +35,7 @@ class ProductsControllerIntegrationTest {
         yamahaPiano.setOwnerId(1);
         yamahaPiano.setPrice(599.99);
         yamahaPiano.setAge(2);
-        yamahaPiano.setType("Digital Piano");
+        yamahaPiano.setType(InstrumentType.DIGITAL);
         yamahaPiano.setFamily("Keyboard");
         instrumentRepository.save(yamahaPiano);
 
@@ -44,7 +45,7 @@ class ProductsControllerIntegrationTest {
         fenderGuitar.setOwnerId(1);
         fenderGuitar.setPrice(899.99);
         fenderGuitar.setAge(5);
-        fenderGuitar.setType("Electric");
+        fenderGuitar.setType(InstrumentType.ELECTRIC);
         fenderGuitar.setFamily("Guitar");
         instrumentRepository.save(fenderGuitar);
 
@@ -54,7 +55,7 @@ class ProductsControllerIntegrationTest {
         yamahaSax.setOwnerId(2);
         yamahaSax.setPrice(1299.99);
         yamahaSax.setAge(1);
-        yamahaSax.setType("Alto Sax");
+        yamahaSax.setType(InstrumentType.WIND);
         yamahaSax.setFamily("Woodwind");
         instrumentRepository.save(yamahaSax);
     }
@@ -76,7 +77,7 @@ class ProductsControllerIntegrationTest {
                 .andExpect(jsonPath("$[0].price", is(599.99)))
                 .andExpect(jsonPath("$[0].ownerId", is(1)))
                 .andExpect(jsonPath("$[0].age", is(2)))
-                .andExpect(jsonPath("$[0].type", is("Digital Piano")))
+                .andExpect(jsonPath("$[0].type", is("DIGITAL")))
                 .andExpect(jsonPath("$[0].family", is("Keyboard")));
     }
 
@@ -140,7 +141,7 @@ class ProductsControllerIntegrationTest {
                 .andExpect(jsonPath("$[0].ownerId", is(1)))
                 .andExpect(jsonPath("$[0].price", is(899.99)))
                 .andExpect(jsonPath("$[0].age", is(5)))
-                .andExpect(jsonPath("$[0].type", is("Electric")))
+                .andExpect(jsonPath("$[0].type", is("ELECTRIC")))
                 .andExpect(jsonPath("$[0].family", is("Guitar")));
     }
 
