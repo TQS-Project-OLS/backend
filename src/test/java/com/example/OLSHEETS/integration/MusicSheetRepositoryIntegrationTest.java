@@ -137,7 +137,7 @@ class MusicSheetRepositoryIntegrationTest {
         // Assert
         assertNotNull(result);
         assertEquals(2, result.size());
-        assertTrue(result.stream().allMatch(s -> s.getCategory() == "CLASSICAL"));
+        assertTrue(result.stream().allMatch(s -> "CLASSICAL".equals(s.getCategory())));
         assertTrue(result.stream().anyMatch(s -> s.getName().equals("Moonlight Sonata")));
         assertTrue(result.stream().anyMatch(s -> s.getName().equals("Fur Elise")));
     }
