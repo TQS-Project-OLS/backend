@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Book an Instrument</title>
+</head>
+<body>
+<h1>Book an Instrument</h1>
+<form method="post" action="/api/bookings">
+    <label>Instrument ID: <input type="number" name="instrumentId" required></label>
+    <br>
+    <label>Start date: <input type="date" name="startDate" required></label>
+    <br>
+    <label>End date: <input type="date" name="endDate" required></label>
+    <br>
+    <button type="submit">Book</button>
+</form>
+</body>
+</html>
+
