@@ -4,8 +4,10 @@ import com.example.OLSHEETS.data.Instrument;
 import com.example.OLSHEETS.data.InstrumentType;
 import com.example.OLSHEETS.data.InstrumentFamily;
 import com.example.OLSHEETS.data.Item;
+import com.example.OLSHEETS.dto.InstrumentRegistrationRequest;
 import com.example.OLSHEETS.service.ProductsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -117,5 +119,11 @@ public class ProductsController {
 
         public Double getPrice() { return price; }
         public void setPrice(Double price) { this.price = price; }
+    }
+    
+    @PostMapping("/register")
+    public ResponseEntity<Instrument> registerInstrument(@RequestBody InstrumentRegistrationRequest request) {
+        Instrument registeredInstrument = productsService.registerInstrument(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(registeredInstrument);
     }
 }

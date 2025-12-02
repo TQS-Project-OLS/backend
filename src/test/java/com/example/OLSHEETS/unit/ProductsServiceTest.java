@@ -6,6 +6,7 @@ import com.example.OLSHEETS.data.InstrumentFamily;
 import com.example.OLSHEETS.data.MusicSheet;
 import com.example.OLSHEETS.data.SheetCategory;
 import com.example.OLSHEETS.data.Item;
+import com.example.OLSHEETS.dto.InstrumentRegistrationRequest;
 import com.example.OLSHEETS.repository.InstrumentRepository;
 import com.example.OLSHEETS.repository.MusicSheetRepository;
 import com.example.OLSHEETS.service.ProductsService;
@@ -23,6 +24,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
 
 @ExtendWith(MockitoExtension.class)
 class ProductsServiceTest {
@@ -59,7 +61,7 @@ class ProductsServiceTest {
         sheet1.setId(1L);
         sheet1.setName("Moonlight Sonata");
         sheet1.setComposer("Beethoven");
-        sheet1.setCategory(SheetCategory.CLASSICAL);
+        sheet1.setCategory("CLASSICAL");
         sheet1.setPrice(9.99);
         sheet1.setOwnerId(1);
 
@@ -67,7 +69,7 @@ class ProductsServiceTest {
         sheet2.setId(2L);
         sheet2.setName("Bohemian Rhapsody");
         sheet2.setComposer("Freddie Mercury");
-        sheet2.setCategory(SheetCategory.ROCK);
+        sheet2.setCategory("ROCK");
         sheet2.setPrice(12.99);
         sheet2.setOwnerId(1);
     }
@@ -246,7 +248,7 @@ class ProductsServiceTest {
 
     @Test
     void testFilterMusicSheetsByCategory_WithMatchingResults_ShouldReturnSheets() {
-        SheetCategory category = SheetCategory.CLASSICAL;
+        String category = "CLASSICAL";
         List<MusicSheet> sheets = Collections.singletonList(sheet1);
 
         when(musicSheetRepository.findByCategory(category)).thenReturn(sheets);
@@ -255,13 +257,13 @@ class ProductsServiceTest {
 
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals(SheetCategory.CLASSICAL, result.get(0).getCategory());
+        assertEquals("CLASSICAL", result.get(0).getCategory());
         verify(musicSheetRepository, times(1)).findByCategory(category);
     }
 
     @Test
     void testFilterMusicSheetsByCategory_WithNoResults_ShouldReturnEmptyList() {
-        SheetCategory category = SheetCategory.JAZZ;
+        String category = "JAZZ";
         List<MusicSheet> emptyList = Collections.emptyList();
 
         when(musicSheetRepository.findByCategory(category)).thenReturn(emptyList);
@@ -418,5 +420,158 @@ class ProductsServiceTest {
         assertEquals("Item not found with id: " + itemId, exception.getMessage());
         verify(instrumentRepository, times(1)).findById(itemId);
         verify(musicSheetRepository, times(1)).findById(itemId);
+    }
+    
+    @Test
+    void testRegisterInstrument_WithValidData_ShouldReturnSavedInstrument() {
+        InstrumentRegistrationRequest request = new InstrumentRegistrationRequest();
+        request.setName("Gibson Les Paul");
+        request.setDescription("Classic electric guitar in excellent condition");
+        request.setPrice(1499.99);
+        request.setOwnerId(5);
+        request.setAge(3);
+        request.setType(InstrumentType.ELECTRIC);
+        request.setFamily(InstrumentFamily.GUITAR);
+        request.setPhotoPaths(Arrays.asList("/photos/guitar1.jpg", "/photos/guitar2.jpg"));
+
+        Instrument savedInstrument = new Instrument();
+        savedInstrument.setId(10L);
+        savedInstrument.setName(request.getName());
+        savedInstrument.setDescription(request.getDescription());
+        savedInstrument.setPrice(request.getPrice());
+        savedInstrument.setOwnerId(request.getOwnerId());
+        savedInstrument.setAge(request.getAge());
+        savedInstrument.setType(request.getType());
+        savedInstrument.setFamily(request.getFamily());
+
+        when(instrumentRepository.save(any(Instrument.class))).thenReturn(savedInstrument);
+
+        Instrument result = productsService.registerInstrument(request);
+
+        assertNotNull(result);
+        assertEquals(10L, result.getId());
+        assertEquals("Gibson Les Paul", result.getName());
+        assertEquals("Classic electric guitar in excellent condition", result.getDescription());
+        assertEquals(1499.99, result.getPrice());
+        assertEquals(5, result.getOwnerId());
+        assertEquals(3, result.getAge());
+        assertEquals(InstrumentType.ELECTRIC, result.getType());
+        assertEquals(InstrumentFamily.GUITAR, result.getFamily());
+        verify(instrumentRepository, times(1)).save(any(Instrument.class));
+    }
+
+    @Test
+    void testRegisterInstrument_WithPhotos_ShouldCreateFileReferences() {
+        InstrumentRegistrationRequest request = new InstrumentRegistrationRequest();
+        request.setName("Fender Jazz Bass");
+        request.setDescription("Professional bass guitar");
+        request.setPrice(999.99);
+        request.setOwnerId(3);
+        request.setAge(2);
+        request.setType(InstrumentType.BASS);
+        request.setFamily(InstrumentFamily.GUITAR);
+        request.setPhotoPaths(Arrays.asList("/photos/bass1.jpg", "/photos/bass2.jpg", "/photos/bass3.jpg"));
+
+        Instrument savedInstrument = new Instrument();
+        savedInstrument.setId(11L);
+        savedInstrument.setName(request.getName());
+
+        when(instrumentRepository.save(any(Instrument.class))).thenAnswer(invocation -> {
+            Instrument arg = invocation.getArgument(0);
+            arg.setId(11L);
+            return arg;
+        });
+
+        Instrument result = productsService.registerInstrument(request);
+
+        assertNotNull(result);
+        assertNotNull(result.getFileReferences());
+        assertEquals(3, result.getFileReferences().size());
+        verify(instrumentRepository, times(1)).save(any(Instrument.class));
+    }
+
+    @Test
+    void testRegisterInstrument_WithoutPhotos_ShouldSaveInstrument() {
+        InstrumentRegistrationRequest request = new InstrumentRegistrationRequest();
+        request.setName("Roland TD-17");
+        request.setDescription("Electronic drum kit");
+        request.setPrice(1299.99);
+        request.setOwnerId(7);
+        request.setAge(1);
+        request.setType(InstrumentType.DRUMS);
+        request.setFamily(InstrumentFamily.PERCUSSION);
+        request.setPhotoPaths(null);
+
+        Instrument savedInstrument = new Instrument();
+        savedInstrument.setId(12L);
+        savedInstrument.setName(request.getName());
+        savedInstrument.setDescription(request.getDescription());
+        savedInstrument.setPrice(request.getPrice());
+        savedInstrument.setOwnerId(request.getOwnerId());
+        savedInstrument.setAge(request.getAge());
+        savedInstrument.setType(request.getType());
+        savedInstrument.setFamily(request.getFamily());
+
+        when(instrumentRepository.save(any(Instrument.class))).thenReturn(savedInstrument);
+
+        Instrument result = productsService.registerInstrument(request);
+
+        assertNotNull(result);
+        assertEquals("Roland TD-17", result.getName());
+        assertEquals("Electronic drum kit", result.getDescription());
+        verify(instrumentRepository, times(1)).save(any(Instrument.class));
+    }
+
+    @Test
+    void testRegisterInstrument_WithEmptyPhotoList_ShouldSaveInstrument() {
+        InstrumentRegistrationRequest request = new InstrumentRegistrationRequest();
+        request.setName("Korg Minilogue");
+        request.setDescription("Analog synthesizer");
+        request.setPrice(649.99);
+        request.setOwnerId(2);
+        request.setAge(1);
+        request.setType(InstrumentType.SYNTHESIZER);
+        request.setFamily(InstrumentFamily.KEYBOARD);
+        request.setPhotoPaths(Collections.emptyList());
+
+        Instrument savedInstrument = new Instrument();
+        savedInstrument.setId(13L);
+        savedInstrument.setName(request.getName());
+
+        when(instrumentRepository.save(any(Instrument.class))).thenReturn(savedInstrument);
+
+        Instrument result = productsService.registerInstrument(request);
+
+        assertNotNull(result);
+        assertEquals("Korg Minilogue", result.getName());
+        verify(instrumentRepository, times(1)).save(any(Instrument.class));
+    }
+
+    @Test
+    void testRegisterInstrument_WithSinglePhoto_ShouldCreateOneFileReference() {
+        InstrumentRegistrationRequest request = new InstrumentRegistrationRequest();
+        request.setName("Taylor 814ce");
+        request.setDescription("Acoustic guitar");
+        request.setPrice(3299.99);
+        request.setOwnerId(4);
+        request.setAge(0);
+        request.setType(InstrumentType.ACOUSTIC);
+        request.setFamily(InstrumentFamily.GUITAR);
+        request.setPhotoPaths(Collections.singletonList("/photos/taylor.jpg"));
+
+        when(instrumentRepository.save(any(Instrument.class))).thenAnswer(invocation -> {
+            Instrument arg = invocation.getArgument(0);
+            arg.setId(14L);
+            return arg;
+        });
+
+        Instrument result = productsService.registerInstrument(request);
+
+        assertNotNull(result);
+        assertNotNull(result.getFileReferences());
+        assertEquals(1, result.getFileReferences().size());
+        assertEquals("photo", result.getFileReferences().get(0).getType());
+        assertEquals("/photos/taylor.jpg", result.getFileReferences().get(0).getPath());
+        verify(instrumentRepository, times(1)).save(any(Instrument.class));
     }
 }

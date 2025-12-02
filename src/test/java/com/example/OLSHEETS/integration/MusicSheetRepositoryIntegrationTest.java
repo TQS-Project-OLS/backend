@@ -1,7 +1,6 @@
 package com.example.OLSHEETS.integration;
 
 import com.example.OLSHEETS.data.MusicSheet;
-import com.example.OLSHEETS.data.SheetCategory;
 import com.example.OLSHEETS.repository.MusicSheetRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,7 +32,7 @@ class MusicSheetRepositoryIntegrationTest {
         moonlightSonata = new MusicSheet();
         moonlightSonata.setName("Moonlight Sonata");
         moonlightSonata.setComposer("Beethoven");
-        moonlightSonata.setCategory(SheetCategory.CLASSICAL);
+        moonlightSonata.setCategory("CLASSICAL");
         moonlightSonata.setDescription("Piano Sonata No. 14");
         moonlightSonata.setOwnerId(1);
         moonlightSonata.setPrice(9.99);
@@ -41,7 +40,7 @@ class MusicSheetRepositoryIntegrationTest {
         bohemianRhapsody = new MusicSheet();
         bohemianRhapsody.setName("Bohemian Rhapsody");
         bohemianRhapsody.setComposer("Freddie Mercury");
-        bohemianRhapsody.setCategory(SheetCategory.ROCK);
+        bohemianRhapsody.setCategory("ROCK");
         bohemianRhapsody.setDescription("Queen masterpiece");
         bohemianRhapsody.setOwnerId(1);
         bohemianRhapsody.setPrice(12.99);
@@ -49,7 +48,7 @@ class MusicSheetRepositoryIntegrationTest {
         autumnLeaves = new MusicSheet();
         autumnLeaves.setName("Autumn Leaves");
         autumnLeaves.setComposer("Joseph Kosma");
-        autumnLeaves.setCategory(SheetCategory.JAZZ);
+        autumnLeaves.setCategory("JAZZ");
         autumnLeaves.setDescription("Jazz standard");
         autumnLeaves.setOwnerId(2);
         autumnLeaves.setPrice(7.99);
@@ -123,7 +122,7 @@ class MusicSheetRepositoryIntegrationTest {
         MusicSheet furElise = new MusicSheet();
         furElise.setName("Fur Elise");
         furElise.setComposer("Beethoven");
-        furElise.setCategory(SheetCategory.CLASSICAL);
+        furElise.setCategory("CLASSICAL");
         furElise.setOwnerId(1);
         furElise.setPrice(8.99);
 
@@ -132,12 +131,12 @@ class MusicSheetRepositoryIntegrationTest {
         entityManager.persistAndFlush(bohemianRhapsody);
 
         // Act
-        List<MusicSheet> result = musicSheetRepository.findByCategory(SheetCategory.CLASSICAL);
+        List<MusicSheet> result = musicSheetRepository.findByCategory("CLASSICAL");
 
         // Assert
         assertNotNull(result);
         assertEquals(2, result.size());
-        assertTrue(result.stream().allMatch(s -> s.getCategory() == SheetCategory.CLASSICAL));
+        assertTrue(result.stream().allMatch(s -> "CLASSICAL".equals(s.getCategory())));
         assertTrue(result.stream().anyMatch(s -> s.getName().equals("Moonlight Sonata")));
         assertTrue(result.stream().anyMatch(s -> s.getName().equals("Fur Elise")));
     }
@@ -149,7 +148,7 @@ class MusicSheetRepositoryIntegrationTest {
         entityManager.persistAndFlush(bohemianRhapsody);
 
         // Act
-        List<MusicSheet> result = musicSheetRepository.findByCategory(SheetCategory.POP);
+        List<MusicSheet> result = musicSheetRepository.findByCategory("POP");
 
         // Assert
         assertNotNull(result);
@@ -164,13 +163,13 @@ class MusicSheetRepositoryIntegrationTest {
         entityManager.persistAndFlush(autumnLeaves);
 
         // Act
-        List<MusicSheet> result = musicSheetRepository.findByCategory(SheetCategory.JAZZ);
+        List<MusicSheet> result = musicSheetRepository.findByCategory("JAZZ");
 
         // Assert
         assertNotNull(result);
         assertEquals(1, result.size());
         assertEquals("Autumn Leaves", result.get(0).getName());
-        assertEquals(SheetCategory.JAZZ, result.get(0).getCategory());
+        assertEquals("JAZZ", result.get(0).getCategory());
     }
 
     @Test
@@ -181,12 +180,12 @@ class MusicSheetRepositoryIntegrationTest {
         entityManager.clear();
 
         // Act
-        List<MusicSheet> result = musicSheetRepository.findByCategory(SheetCategory.CLASSICAL);
+        List<MusicSheet> result = musicSheetRepository.findByCategory("CLASSICAL");
 
         // Assert
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals(SheetCategory.CLASSICAL, result.get(0).getCategory());
+        assertEquals("CLASSICAL", result.get(0).getCategory());
         assertNotNull(result.get(0).getCategory());
     }
 
@@ -206,6 +205,6 @@ class MusicSheetRepositoryIntegrationTest {
         assertEquals("Moonlight Sonata", found.get(0).getName());
         assertEquals("Beethoven", found.get(0).getComposer());
         assertEquals(9.99, found.get(0).getPrice());
-        assertEquals(SheetCategory.CLASSICAL, found.get(0).getCategory());
+        assertEquals("CLASSICAL", found.get(0).getCategory());
     }
 }

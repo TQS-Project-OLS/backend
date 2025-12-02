@@ -1,7 +1,6 @@
 package com.example.OLSHEETS.boundary;
 
 import com.example.OLSHEETS.data.MusicSheet;
-import com.example.OLSHEETS.data.SheetCategory;
 import com.example.OLSHEETS.data.Item;
 import com.example.OLSHEETS.service.ProductsService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +23,7 @@ public class SheetsController {
     }
 
     @GetMapping("/filter/category")
-    public ResponseEntity<List<MusicSheet>> filterByCategory(@RequestParam SheetCategory category) {
+    public ResponseEntity<List<MusicSheet>> filterByCategory(@RequestParam String category) {
         List<MusicSheet> sheets = productsService.filterMusicSheetsByCategory(category);
         return ResponseEntity.ok(sheets);
     }

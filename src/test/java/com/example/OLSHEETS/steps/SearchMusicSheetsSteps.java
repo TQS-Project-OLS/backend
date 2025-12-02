@@ -1,8 +1,8 @@
 package com.example.OLSHEETS.steps;
 
 import com.example.OLSHEETS.data.MusicSheet;
-import com.example.OLSHEETS.data.SheetCategory;
 import com.example.OLSHEETS.repository.MusicSheetRepository;
+import com.example.OLSHEETS.repository.SheetBookingRepository;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -31,10 +31,14 @@ public class SearchMusicSheetsSteps {
     @Autowired
     private MusicSheetRepository musicSheetRepository;
 
+    @Autowired
+    private SheetBookingRepository sheetBookingRepository;
+
     private List<MusicSheet> searchResults;
 
     @Given("the following music sheets exist:")
     public void theFollowingMusicSheetsExist(DataTable dataTable) {
+        sheetBookingRepository.deleteAll();
         musicSheetRepository.deleteAll();
 
         List<Map<String, String>> rows = dataTable.asMaps(String.class, String.class);
@@ -42,7 +46,7 @@ public class SearchMusicSheetsSteps {
             MusicSheet sheet = new MusicSheet();
             sheet.setName(row.get("name"));
             sheet.setComposer(row.get("composer"));
-            sheet.setCategory(SheetCategory.valueOf(row.get("category")));
+            sheet.setCategory(row.get("category"));
             sheet.setPrice(Double.parseDouble(row.get("price")));
             sheet.setDescription(row.get("description"));
             sheet.setOwnerId(1); // Default owner for test data

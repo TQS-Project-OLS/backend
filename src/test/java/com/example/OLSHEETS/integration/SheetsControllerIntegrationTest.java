@@ -1,8 +1,8 @@
 package com.example.OLSHEETS.integration;
 
 import com.example.OLSHEETS.data.MusicSheet;
-import com.example.OLSHEETS.data.SheetCategory;
 import com.example.OLSHEETS.repository.MusicSheetRepository;
+import com.example.OLSHEETS.repository.SheetBookingRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,14 +29,18 @@ class SheetsControllerIntegrationTest {
     @Autowired
     private MusicSheetRepository musicSheetRepository;
 
+    @Autowired
+    private SheetBookingRepository sheetBookingRepository;
+
     @BeforeEach
     void setUp() {
+        sheetBookingRepository.deleteAll();
         musicSheetRepository.deleteAll();
 
         MusicSheet moonlightSonata = new MusicSheet();
         moonlightSonata.setName("Moonlight Sonata");
         moonlightSonata.setComposer("Beethoven");
-        moonlightSonata.setCategory(SheetCategory.CLASSICAL);
+        moonlightSonata.setCategory("CLASSICAL");
         moonlightSonata.setDescription("Piano Sonata No. 14");
         moonlightSonata.setOwnerId(1);
         moonlightSonata.setPrice(9.99);
@@ -45,7 +49,7 @@ class SheetsControllerIntegrationTest {
         MusicSheet bohemianRhapsody = new MusicSheet();
         bohemianRhapsody.setName("Bohemian Rhapsody");
         bohemianRhapsody.setComposer("Freddie Mercury");
-        bohemianRhapsody.setCategory(SheetCategory.ROCK);
+        bohemianRhapsody.setCategory("ROCK");
         bohemianRhapsody.setDescription("Queen masterpiece");
         bohemianRhapsody.setOwnerId(1);
         bohemianRhapsody.setPrice(12.99);
@@ -54,7 +58,7 @@ class SheetsControllerIntegrationTest {
         MusicSheet autumnLeaves = new MusicSheet();
         autumnLeaves.setName("Autumn Leaves");
         autumnLeaves.setComposer("Joseph Kosma");
-        autumnLeaves.setCategory(SheetCategory.JAZZ);
+        autumnLeaves.setCategory("JAZZ");
         autumnLeaves.setDescription("Jazz standard");
         autumnLeaves.setOwnerId(2);
         autumnLeaves.setPrice(7.99);
@@ -63,6 +67,7 @@ class SheetsControllerIntegrationTest {
 
     @AfterEach
     void tearDown() {
+        sheetBookingRepository.deleteAll();
         musicSheetRepository.deleteAll();
     }
 
