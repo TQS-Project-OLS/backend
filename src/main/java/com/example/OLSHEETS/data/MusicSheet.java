@@ -62,7 +62,7 @@ public class MusicSheet extends Item {
     }
 
     public void setOwnerId(Long ownerId) {
-        setOwnerId(ownerId.intValue());
+        super.setOwnerId(ownerId.intValue());
     }
 
     @Override
