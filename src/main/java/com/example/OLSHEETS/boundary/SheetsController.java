@@ -23,7 +23,7 @@ public class SheetsController {
     }
 
     @GetMapping("/filter/category")
-    public ResponseEntity<List<MusicSheet>> filterByCategory(@RequestParam SheetCategory category) {
+    public ResponseEntity<List<MusicSheet>> filterByCategory(@RequestParam String category) {
         List<MusicSheet> sheets = productsService.filterMusicSheetsByCategory(category);
         return ResponseEntity.ok(sheets);
     }

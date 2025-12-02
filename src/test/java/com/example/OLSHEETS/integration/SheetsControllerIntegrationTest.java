@@ -32,7 +32,7 @@ class SheetsControllerIntegrationTest {
         MusicSheet moonlightSonata = new MusicSheet();
         moonlightSonata.setName("Moonlight Sonata");
         moonlightSonata.setComposer("Beethoven");
-        moonlightSonata.setCategory(SheetCategory.CLASSICAL);
+        moonlightSonata.setCategory("CLASSICAL");
         moonlightSonata.setDescription("Piano Sonata No. 14");
         moonlightSonata.setOwnerId(1);
         moonlightSonata.setPrice(9.99);
@@ -41,7 +41,7 @@ class SheetsControllerIntegrationTest {
         MusicSheet bohemianRhapsody = new MusicSheet();
         bohemianRhapsody.setName("Bohemian Rhapsody");
         bohemianRhapsody.setComposer("Freddie Mercury");
-        bohemianRhapsody.setCategory(SheetCategory.ROCK);
+        bohemianRhapsody.setCategory("ROCK");
         bohemianRhapsody.setDescription("Queen masterpiece");
         bohemianRhapsody.setOwnerId(1);
         bohemianRhapsody.setPrice(12.99);
@@ -50,7 +50,7 @@ class SheetsControllerIntegrationTest {
         MusicSheet autumnLeaves = new MusicSheet();
         autumnLeaves.setName("Autumn Leaves");
         autumnLeaves.setComposer("Joseph Kosma");
-        autumnLeaves.setCategory(SheetCategory.JAZZ);
+        autumnLeaves.setCategory("JAZZ");
         autumnLeaves.setDescription("Jazz standard");
         autumnLeaves.setOwnerId(2);
         autumnLeaves.setPrice(7.99);

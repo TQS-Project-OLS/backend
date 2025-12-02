@@ -42,7 +42,7 @@ public class SearchMusicSheetsSteps {
             MusicSheet sheet = new MusicSheet();
             sheet.setName(row.get("name"));
             sheet.setComposer(row.get("composer"));
-            sheet.setCategory(SheetCategory.valueOf(row.get("category")));
+            sheet.setCategory(row.get("category"));
             sheet.setPrice(Double.parseDouble(row.get("price")));
             sheet.setDescription(row.get("description"));
             sheet.setOwnerId(1); // Default owner for test data
