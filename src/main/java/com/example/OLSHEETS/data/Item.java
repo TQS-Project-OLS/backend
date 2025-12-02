@@ -1,8 +1,10 @@
 package com.example.OLSHEETS.data;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -21,6 +23,10 @@ public abstract class Item {
 
     @Column(length = 1000)
     private String description;
+
+    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<FileReference> fileReferences;
 
     private int ownerId;
 
