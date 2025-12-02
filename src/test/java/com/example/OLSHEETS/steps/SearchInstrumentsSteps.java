@@ -32,10 +32,14 @@ public class SearchInstrumentsSteps {
     @Autowired
     private InstrumentRepository instrumentRepository;
 
+    @Autowired
+    private com.example.OLSHEETS.repository.BookingRepository bookingRepository;
+
     private List<Instrument> searchResults;
 
     @Given("the following instruments exist:")
     public void theFollowingInstrumentsExist(DataTable dataTable) {
+        bookingRepository.deleteAll();
         instrumentRepository.deleteAll();
 
         List<Map<String, String>> rows = dataTable.asMaps(String.class, String.class);

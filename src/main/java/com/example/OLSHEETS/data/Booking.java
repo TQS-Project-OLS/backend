@@ -10,30 +10,51 @@ public class Booking {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long instrumentId;
+    @ManyToOne
+    @JoinColumn(name = "item_id")
+    private Item item;
+
+    private Long renterId;
 
     private LocalDate startDate;
 
     private LocalDate endDate;
 
+    @Enumerated(EnumType.STRING)
+    private BookingStatus status;
+
     public Booking(){}
 
-    public Booking(Long instrumentId, LocalDate startDate, LocalDate endDate) {
-        this.instrumentId = instrumentId;
+    public Booking(Item item, Long renterId, LocalDate startDate, LocalDate endDate) {
+        this.item = item;
+        this.renterId = renterId;
         this.startDate = startDate;
         this.endDate = endDate;
+        this.status = BookingStatus.PENDING;
     }
 
     public Long getId() {
         return id;
     }
 
-    public Long getInstrumentId() {
-        return instrumentId;
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public void setInstrumentId(Long instrumentId) {
-        this.instrumentId = instrumentId;
+    public Item getItem() {
+        return item;
+    }
+
+    public void setItem(Item item) {
+        this.item = item;
+    }
+
+    public Long getRenterId() {
+        return renterId;
+    }
+
+    public void setRenterId(Long renterId) {
+        this.renterId = renterId;
     }
 
     public LocalDate getStartDate() {
@@ -51,5 +72,12 @@ public class Booking {
     public void setEndDate(LocalDate endDate) {
         this.endDate = endDate;
     }
-}
 
+    public BookingStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(BookingStatus status) {
+        this.status = status;
+    }
+}

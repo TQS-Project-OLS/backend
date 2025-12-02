@@ -4,13 +4,7 @@ import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.EnumType;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
 
-@Data
-@NoArgsConstructor
-@EqualsAndHashCode(callSuper = true)
 @Entity
 @DiscriminatorValue("INSTRUMENT")
 public class Instrument extends Item {
@@ -22,4 +16,53 @@ public class Instrument extends Item {
 
     @Enumerated(EnumType.STRING)
     private InstrumentFamily family;
+
+    public Instrument() {
+    }
+
+    public Integer getAge() {
+        return age;
+    }
+
+    public void setAge(Integer age) {
+        this.age = age;
+    }
+
+    public InstrumentType getType() {
+        return type;
+    }
+
+    public void setType(InstrumentType type) {
+        this.type = type;
+    }
+
+    public InstrumentFamily getFamily() {
+        return family;
+    }
+
+    public void setFamily(InstrumentFamily family) {
+        this.family = family;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Instrument)) return false;
+        if (!super.equals(o)) return false;
+
+        Instrument that = (Instrument) o;
+
+        if (age != null ? !age.equals(that.age) : that.age != null) return false;
+        if (type != that.type) return false;
+        return family == that.family;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + (age != null ? age.hashCode() : 0);
+        result = 31 * result + (type != null ? type.hashCode() : 0);
+        result = 31 * result + (family != null ? family.hashCode() : 0);
+        return result;
+    }
 }

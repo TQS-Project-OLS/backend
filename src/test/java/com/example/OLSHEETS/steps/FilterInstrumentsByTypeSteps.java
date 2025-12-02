@@ -32,10 +32,14 @@ public class FilterInstrumentsByTypeSteps {
     @Autowired
     private InstrumentRepository instrumentRepository;
 
+    @Autowired
+    private com.example.OLSHEETS.repository.BookingRepository bookingRepository;
+
     private List<Instrument> filterResults;
 
     @Given("the following instruments exist for type filter:")
     public void theFollowingInstrumentsExistForTypeFilter(DataTable dataTable) {
+        bookingRepository.deleteAll();
         instrumentRepository.deleteAll();
 
         List<Map<String, String>> rows = dataTable.asMaps(String.class, String.class);

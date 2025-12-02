@@ -44,7 +44,6 @@ public class ManageAvailabilitySteps {
     private Availability lastCreatedAvailability;
     private List<Availability> retrievedAvailabilities;
     private Boolean availabilityCheckResult;
-    private Long lastCreatedAvailabilityId;
     
     // Map to store instruments by their feature file ID
     private Map<Long, Instrument> instrumentMap = new HashMap<>();
@@ -85,7 +84,6 @@ public class ManageAvailabilitySteps {
             LocalDate.parse(endDate),
             AvailabilityReason.valueOf(reason)
         );
-        lastCreatedAvailabilityId = availability.getId();
     }
 
     @Given("an unavailability period with id {long} exists for instrument {long} from {string} to {string} with reason {string}")
@@ -97,7 +95,6 @@ public class ManageAvailabilitySteps {
             LocalDate.parse(endDate),
             AvailabilityReason.valueOf(reason)
         );
-        lastCreatedAvailabilityId = availability.getId();
         // Store the mapping from feature file ID to actual database ID
         availabilityIdMap.put(featureFileAvailabilityId, availability.getId());
     }
@@ -117,7 +114,6 @@ public class ManageAvailabilitySteps {
             if (lastAvailabilityResponse.getStatusCode().is2xxSuccessful()) {
                 lastCreatedAvailability = (Availability) lastAvailabilityResponse.getBody();
                 if (lastCreatedAvailability != null) {
-                    lastCreatedAvailabilityId = lastCreatedAvailability.getId();
                 }
             }
         } catch (Exception e) {

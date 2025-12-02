@@ -3,7 +3,6 @@ package com.example.OLSHEETS.integration;
 import com.example.OLSHEETS.data.BookingStatus;
 import com.example.OLSHEETS.data.MusicSheet;
 import com.example.OLSHEETS.data.SheetBooking;
-import com.example.OLSHEETS.data.SheetCategory;
 import com.example.OLSHEETS.repository.MusicSheetRepository;
 import com.example.OLSHEETS.repository.SheetBookingRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,7 +14,6 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
@@ -49,12 +47,11 @@ class SheetBookingIntegrationTest {
     @Test
     void whenCreateValidBooking_thenSuccess() {
         MusicSheet sheet = new MusicSheet();
-        sheet.setName("Fur Elise");
+        sheet.setTitle("Fur Elise");
+        sheet.setCategory("classical");
         sheet.setComposer("Beethoven");
-        sheet.setCategory(SheetCategory.CLASSICAL);
-        sheet.setDescription("Famous piano piece");
+        sheet.setOwnerId(1L);
         sheet.setPrice(3.50);
-        sheet.setOwnerId(1);
         sheet = sheetRepository.save(sheet);
 
         Map<String, Object> request = new HashMap<>();
@@ -74,12 +71,11 @@ class SheetBookingIntegrationTest {
     @Test
     void whenGetBookingsByRenter_thenReturnList() {
         MusicSheet sheet = new MusicSheet();
-        sheet.setName("Canon in D");
+        sheet.setTitle("Canon in D");
+        sheet.setCategory("classical");
         sheet.setComposer("Pachelbel");
-        sheet.setCategory(SheetCategory.CLASSICAL);
-        sheet.setDescription("Wedding music");
+        sheet.setOwnerId(1L);
         sheet.setPrice(4.00);
-        sheet.setOwnerId(1);
         sheet = sheetRepository.save(sheet);
 
         SheetBooking booking = new SheetBooking(sheet, 300L, LocalDate.now().plusDays(1), LocalDate.now().plusDays(2));

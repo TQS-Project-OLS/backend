@@ -3,18 +3,15 @@ package com.example.OLSHEETS.unit;
 import com.example.OLSHEETS.boundary.SheetBookingController;
 import com.example.OLSHEETS.data.MusicSheet;
 import com.example.OLSHEETS.data.SheetBooking;
-import com.example.OLSHEETS.data.BookingStatus;
-import com.example.OLSHEETS.data.SheetCategory;
 import com.example.OLSHEETS.service.SheetBookingService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -30,7 +27,7 @@ class SheetBookingControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private SheetBookingService bookingService;
 
     private MusicSheet sheet;
@@ -39,13 +36,12 @@ class SheetBookingControllerTest {
     @BeforeEach
     void setUp() {
         sheet = new MusicSheet();
-        sheet.setId(1L);
-        sheet.setName("Moonlight Sonata");
-        sheet.setComposer("Beethoven");
-        sheet.setCategory(SheetCategory.CLASSICAL);
-        sheet.setDescription("Beautiful piece");
+        sheet.setTitle("Moonlight Sonata");
+        sheet.setCategory("classical");
+        sheet.setComposer("Beautiful piece");
         sheet.setPrice(5.00);
-        sheet.setOwnerId(1);
+        sheet.setOwnerId(1L);
+        sheet.setId(1L);
 
         booking = new SheetBooking(sheet, 100L, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
         booking.setId(1L);

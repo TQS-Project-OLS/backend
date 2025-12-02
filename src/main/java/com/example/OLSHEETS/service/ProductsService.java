@@ -4,7 +4,6 @@ import com.example.OLSHEETS.data.Instrument;
 import com.example.OLSHEETS.data.InstrumentType;
 import com.example.OLSHEETS.data.InstrumentFamily;
 import com.example.OLSHEETS.data.MusicSheet;
-import com.example.OLSHEETS.data.SheetCategory;
 import com.example.OLSHEETS.repository.InstrumentRepository;
 import com.example.OLSHEETS.repository.MusicSheetRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +35,7 @@ public class ProductsService {
         return musicSheetRepository.findByNameContainingIgnoreCase(name);
     }
 
-    public List<MusicSheet> filterMusicSheetsByCategory(SheetCategory category) {
+    public List<MusicSheet> filterMusicSheetsByCategory(String category) {
         return musicSheetRepository.findByCategory(category);
     }
 }

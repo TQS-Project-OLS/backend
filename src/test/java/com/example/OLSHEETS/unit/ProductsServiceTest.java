@@ -4,7 +4,6 @@ import com.example.OLSHEETS.data.Instrument;
 import com.example.OLSHEETS.data.InstrumentType;
 import com.example.OLSHEETS.data.InstrumentFamily;
 import com.example.OLSHEETS.data.MusicSheet;
-import com.example.OLSHEETS.data.SheetCategory;
 import com.example.OLSHEETS.repository.InstrumentRepository;
 import com.example.OLSHEETS.repository.MusicSheetRepository;
 import com.example.OLSHEETS.service.ProductsService;
@@ -57,7 +56,7 @@ class ProductsServiceTest {
         sheet1.setId(1L);
         sheet1.setName("Moonlight Sonata");
         sheet1.setComposer("Beethoven");
-        sheet1.setCategory(SheetCategory.CLASSICAL);
+        sheet1.setCategory("CLASSICAL");
         sheet1.setPrice(9.99);
         sheet1.setOwnerId(1);
 
@@ -65,7 +64,7 @@ class ProductsServiceTest {
         sheet2.setId(2L);
         sheet2.setName("Bohemian Rhapsody");
         sheet2.setComposer("Freddie Mercury");
-        sheet2.setCategory(SheetCategory.ROCK);
+        sheet2.setCategory("ROCK");
         sheet2.setPrice(12.99);
         sheet2.setOwnerId(1);
     }
@@ -244,7 +243,7 @@ class ProductsServiceTest {
 
     @Test
     void testFilterMusicSheetsByCategory_WithMatchingResults_ShouldReturnSheets() {
-        SheetCategory category = SheetCategory.CLASSICAL;
+        String category = "CLASSICAL";
         List<MusicSheet> sheets = Collections.singletonList(sheet1);
 
         when(musicSheetRepository.findByCategory(category)).thenReturn(sheets);
@@ -253,13 +252,13 @@ class ProductsServiceTest {
 
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals(SheetCategory.CLASSICAL, result.get(0).getCategory());
+        assertEquals("CLASSICAL", result.get(0).getCategory());
         verify(musicSheetRepository, times(1)).findByCategory(category);
     }
 
     @Test
     void testFilterMusicSheetsByCategory_WithNoResults_ShouldReturnEmptyList() {
-        SheetCategory category = SheetCategory.JAZZ;
+        String category = "JAZZ";
         List<MusicSheet> emptyList = Collections.emptyList();
 
         when(musicSheetRepository.findByCategory(category)).thenReturn(emptyList);
