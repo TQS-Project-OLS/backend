@@ -209,7 +209,7 @@ class ProductsControllerIntegrationTest {
         Double newPrice = 749.99;
 
         // Update the price
-        mockMvc.perform(put("/api/instruments/price/" + itemId)
+        mockMvc.perform(put("/api/items/price/" + itemId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"newPrice\": 749.99}"))
                 .andExpect(status().isOk())
@@ -229,14 +229,14 @@ class ProductsControllerIntegrationTest {
         Long itemId = savedInstrument.getId();
 
         // First update
-        mockMvc.perform(put("/api/instruments/price/" + itemId)
+        mockMvc.perform(put("/api/items/price/" + itemId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"newPrice\": 100.0}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.newPrice", is(100.0)));
 
         // Second update
-        mockMvc.perform(put("/api/instruments/price/" + itemId)
+        mockMvc.perform(put("/api/items/price/" + itemId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"newPrice\": 200.0}"))
                 .andExpect(status().isOk())
@@ -252,7 +252,7 @@ class ProductsControllerIntegrationTest {
         Instrument savedInstrument = instrumentRepository.findAll().get(0);
         Long itemId = savedInstrument.getId();
 
-        mockMvc.perform(put("/api/instruments/price/" + itemId)
+        mockMvc.perform(put("/api/items/price/" + itemId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"newPrice\": 0.0}"))
                 .andExpect(status().isOk())
@@ -268,7 +268,7 @@ class ProductsControllerIntegrationTest {
         Long itemId = savedInstrument.getId();
         Double originalPrice = savedInstrument.getPrice();
 
-        mockMvc.perform(put("/api/instruments/price/" + itemId)
+        mockMvc.perform(put("/api/items/price/" + itemId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"newPrice\": -50.0}"))
                 .andExpect(status().isBadRequest());
@@ -282,7 +282,7 @@ class ProductsControllerIntegrationTest {
     void testUpdatePrice_WithNonExistentItem_ShouldReturnBadRequest() throws Exception {
         Long nonExistentId = 99999L;
 
-        mockMvc.perform(put("/api/instruments/price/" + nonExistentId)
+        mockMvc.perform(put("/api/items/price/" + nonExistentId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"newPrice\": 100.0}"))
                 .andExpect(status().isBadRequest());
@@ -294,7 +294,7 @@ class ProductsControllerIntegrationTest {
         Long itemId = savedInstrument.getId();
         Double expectedPrice = savedInstrument.getPrice();
 
-        mockMvc.perform(get("/api/instruments/price/" + itemId))
+        mockMvc.perform(get("/api/items/price/" + itemId))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.itemId", is(itemId.intValue())))
@@ -307,13 +307,13 @@ class ProductsControllerIntegrationTest {
         Long itemId = savedInstrument.getId();
 
         // Update the price
-        mockMvc.perform(put("/api/instruments/price/" + itemId)
+        mockMvc.perform(put("/api/items/price/" + itemId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"newPrice\": 999.99}"))
                 .andExpect(status().isOk());
 
         // Get the price and verify it was updated
-        mockMvc.perform(get("/api/instruments/price/" + itemId))
+        mockMvc.perform(get("/api/items/price/" + itemId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.price", is(999.99)));
     }
@@ -322,7 +322,7 @@ class ProductsControllerIntegrationTest {
     void testGetPrice_WithNonExistentItem_ShouldReturnNotFound() throws Exception {
         Long nonExistentId = 99999L;
 
-        mockMvc.perform(get("/api/instruments/price/" + nonExistentId))
+        mockMvc.perform(get("/api/items/price/" + nonExistentId))
                 .andExpect(status().isNotFound());
     }
     

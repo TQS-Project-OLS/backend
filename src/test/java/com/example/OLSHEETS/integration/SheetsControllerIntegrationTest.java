@@ -201,7 +201,7 @@ class SheetsControllerIntegrationTest {
         Double newPrice = 15.99;
 
         // Update the price
-        mockMvc.perform(put("/api/sheets/price/" + itemId)
+        mockMvc.perform(put("/api/items/price/" + itemId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"newPrice\": 15.99}"))
                 .andExpect(status().isOk())
@@ -221,14 +221,14 @@ class SheetsControllerIntegrationTest {
         MusicSheet sheet2 = musicSheetRepository.findAll().get(1);
 
         // Update first sheet
-        mockMvc.perform(put("/api/sheets/price/" + sheet1.getId())
+        mockMvc.perform(put("/api/items/price/" + sheet1.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"newPrice\": 20.0}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.newPrice", is(20.0)));
 
         // Update second sheet
-        mockMvc.perform(put("/api/sheets/price/" + sheet2.getId())
+        mockMvc.perform(put("/api/items/price/" + sheet2.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"newPrice\": 25.0}"))
                 .andExpect(status().isOk())
@@ -247,7 +247,7 @@ class SheetsControllerIntegrationTest {
         Long itemId = savedSheet.getId();
         Double originalPrice = savedSheet.getPrice();
 
-        mockMvc.perform(put("/api/sheets/price/" + itemId)
+        mockMvc.perform(put("/api/items/price/" + itemId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"newPrice\": -10.0}"))
                 .andExpect(status().isBadRequest());
@@ -262,7 +262,7 @@ class SheetsControllerIntegrationTest {
         MusicSheet savedSheet = musicSheetRepository.findAll().get(0);
         Long itemId = savedSheet.getId();
 
-        mockMvc.perform(put("/api/sheets/price/" + itemId)
+        mockMvc.perform(put("/api/items/price/" + itemId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"newPrice\": 0.0}"))
                 .andExpect(status().isOk())
@@ -278,7 +278,7 @@ class SheetsControllerIntegrationTest {
         Long itemId = savedSheet.getId();
         Double expectedPrice = savedSheet.getPrice();
 
-        mockMvc.perform(get("/api/sheets/price/" + itemId))
+        mockMvc.perform(get("/api/items/price/" + itemId))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.itemId", is(itemId.intValue())))
@@ -291,13 +291,13 @@ class SheetsControllerIntegrationTest {
         Long itemId = savedSheet.getId();
 
         // Update the price
-        mockMvc.perform(put("/api/sheets/price/" + itemId)
+        mockMvc.perform(put("/api/items/price/" + itemId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"newPrice\": 19.99}"))
                 .andExpect(status().isOk());
 
         // Get the price and verify it was updated
-        mockMvc.perform(get("/api/sheets/price/" + itemId))
+        mockMvc.perform(get("/api/items/price/" + itemId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.price", is(19.99)));
     }
@@ -306,7 +306,7 @@ class SheetsControllerIntegrationTest {
     void testGetPrice_WithNonExistentSheet_ShouldReturnNotFound() throws Exception {
         Long nonExistentId = 99999L;
 
-        mockMvc.perform(get("/api/sheets/price/" + nonExistentId))
+        mockMvc.perform(get("/api/items/price/" + nonExistentId))
                 .andExpect(status().isNotFound());
     }
 }
