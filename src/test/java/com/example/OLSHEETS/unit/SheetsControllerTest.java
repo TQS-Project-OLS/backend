@@ -39,7 +39,7 @@ class SheetsControllerTest {
         sheet1.setId(1L);
         sheet1.setName("Moonlight Sonata");
         sheet1.setComposer("Beethoven");
-        sheet1.setCategory(SheetCategory.CLASSICAL);
+        sheet1.setCategory("CLASSICAL");
         sheet1.setDescription("Piano Sonata No. 14");
         sheet1.setPrice(9.99);
         sheet1.setOwnerId(1);
@@ -48,7 +48,7 @@ class SheetsControllerTest {
         sheet2.setId(2L);
         sheet2.setName("Bohemian Rhapsody");
         sheet2.setComposer("Freddie Mercury");
-        sheet2.setCategory(SheetCategory.ROCK);
+        sheet2.setCategory("ROCK");
         sheet2.setDescription("Queen masterpiece");
         sheet2.setPrice(12.99);
         sheet2.setOwnerId(1);
@@ -103,7 +103,7 @@ class SheetsControllerTest {
     @Test
     void testFilterByCategory_WithMatchingResults_ShouldReturnSheetsList() throws Exception {
         List<MusicSheet> sheets = Collections.singletonList(sheet1);
-        when(productsService.filterMusicSheetsByCategory(SheetCategory.CLASSICAL)).thenReturn(sheets);
+        when(productsService.filterMusicSheetsByCategory("CLASSICAL")).thenReturn(sheets);
 
         mockMvc.perform(get("/api/sheets/filter/category")
                         .param("category", "CLASSICAL"))
@@ -114,12 +114,12 @@ class SheetsControllerTest {
                 .andExpect(jsonPath("$[0].name", is("Moonlight Sonata")))
                 .andExpect(jsonPath("$[0].category", is("CLASSICAL")));
 
-        verify(productsService, times(1)).filterMusicSheetsByCategory(SheetCategory.CLASSICAL);
+        verify(productsService, times(1)).filterMusicSheetsByCategory("CLASSICAL");
     }
 
     @Test
     void testFilterByCategory_WithNoResults_ShouldReturnEmptyList() throws Exception {
-        when(productsService.filterMusicSheetsByCategory(SheetCategory.JAZZ)).thenReturn(Collections.emptyList());
+        when(productsService.filterMusicSheetsByCategory("JAZZ")).thenReturn(Collections.emptyList());
 
         mockMvc.perform(get("/api/sheets/filter/category")
                         .param("category", "JAZZ"))
@@ -127,13 +127,13 @@ class SheetsControllerTest {
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$", hasSize(0)));
 
-        verify(productsService, times(1)).filterMusicSheetsByCategory(SheetCategory.JAZZ);
+        verify(productsService, times(1)).filterMusicSheetsByCategory("JAZZ");
     }
 
     @Test
     void testFilterByCategory_WithRockCategory_ShouldReturnRockSheets() throws Exception {
         List<MusicSheet> sheets = Collections.singletonList(sheet2);
-        when(productsService.filterMusicSheetsByCategory(SheetCategory.ROCK)).thenReturn(sheets);
+        when(productsService.filterMusicSheetsByCategory("ROCK")).thenReturn(sheets);
 
         mockMvc.perform(get("/api/sheets/filter/category")
                         .param("category", "ROCK"))
@@ -144,7 +144,7 @@ class SheetsControllerTest {
                 .andExpect(jsonPath("$[0].composer", is("Freddie Mercury")))
                 .andExpect(jsonPath("$[0].category", is("ROCK")));
 
-        verify(productsService, times(1)).filterMusicSheetsByCategory(SheetCategory.ROCK);
+        verify(productsService, times(1)).filterMusicSheetsByCategory("ROCK");
     }
 
     @Test

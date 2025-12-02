@@ -39,7 +39,7 @@ public class ProductsService {
         return musicSheetRepository.findByNameContainingIgnoreCase(name);
     }
 
-    public List<MusicSheet> filterMusicSheetsByCategory(SheetCategory category) {
+    public List<MusicSheet> filterMusicSheetsByCategory(String category) {
         return musicSheetRepository.findByCategory(category);
     }
 

@@ -9,8 +9,7 @@ import java.util.List;
 
 @Repository
 public interface MusicSheetRepository extends JpaRepository<MusicSheet, Long> {
-
+    List<MusicSheet> findByCategory(String category);
     List<MusicSheet> findByNameContainingIgnoreCase(String name);
-
-    List<MusicSheet> findByCategory(SheetCategory category);
 }
+
