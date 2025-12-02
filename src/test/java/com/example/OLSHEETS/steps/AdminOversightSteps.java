@@ -61,7 +61,11 @@ public class AdminOversightSteps {
             instrument.setAge(Integer.parseInt(row.get("age")));
             instrument.setPrice(Double.parseDouble(row.get("price")));
             instrument.setDescription(row.get("description"));
-            instrument.setOwnerId(Integer.parseInt(row.get("ownerId")));
+            try {
+                instrument.setOwnerId(Integer.parseInt(row.get("ownerId")));
+            } catch (NumberFormatException e) {
+                fail("Invalid ownerId value: '" + row.get("ownerId") + "' in instrument row: " + row + ". Error: " + e.getMessage());
+            }
 
             instrument = itemRepository.save(instrument);
             instrumentMap.put(instrument.getId(), instrument);
