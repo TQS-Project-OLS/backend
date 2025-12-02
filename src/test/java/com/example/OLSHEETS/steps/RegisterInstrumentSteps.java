@@ -43,14 +43,8 @@ public class RegisterInstrumentSteps {
         this.instrumentCountBeforeRegistration = (int) instrumentRepository.count();
     }
 
-    @When("I register an instrument with the following details:")
+    @When("I register an/another instrument with the following details:")
     public void iRegisterAnInstrumentWithTheFollowingDetails(DataTable dataTable) {
-        Map<String, String> details = dataTable.asMap(String.class, String.class);
-        registerInstrument(details);
-    }
-
-    @When("I register another instrument with the following details:")
-    public void iRegisterAnotherInstrumentWithTheFollowingDetails(DataTable dataTable) {
         Map<String, String> details = dataTable.asMap(String.class, String.class);
         registerInstrument(details);
     }

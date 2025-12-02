@@ -1,8 +1,6 @@
 package com.example.OLSHEETS.data;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -83,6 +81,14 @@ public abstract class Item {
 
     public void setPrice(Double price) {
         this.price = price;
+    }
+
+    public List<FileReference> getFileReferences() {
+        return fileReferences;
+    }
+
+    public void setFileReferences(List<FileReference> fileReferences) {
+        this.fileReferences = fileReferences;
     }
 
     @Override

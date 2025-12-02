@@ -7,6 +7,7 @@ import com.example.OLSHEETS.data.Instrument;
 import com.example.OLSHEETS.data.InstrumentFamily;
 import com.example.OLSHEETS.data.InstrumentType;
 import com.example.OLSHEETS.repository.ItemRepository;
+import com.example.OLSHEETS.repository.SheetBookingRepository;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -40,6 +41,9 @@ public class AdminOversightSteps {
     @Autowired
     private BookingRepository bookingRepository;
 
+    @Autowired
+    private SheetBookingRepository sheetBookingRepository;
+
     private List<Booking> adminBookingResults;
     private Map<String, Long> statisticsResults;
     private Long activityCount;
@@ -49,6 +53,7 @@ public class AdminOversightSteps {
     @Given("the following instruments exist for admin oversight:")
     public void theFollowingInstrumentsExistForAdminOversight(DataTable dataTable) {
         bookingRepository.deleteAll();
+        sheetBookingRepository.deleteAll();
         itemRepository.deleteAll();
         instrumentMap.clear();
 
