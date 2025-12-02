@@ -12,20 +12,34 @@ public class Booking {
 
     private Long instrumentId;
 
+    private Long ownerId;
+
+    private Long renterId;
+
     private LocalDate startDate;
 
     private LocalDate endDate;
 
+    @Enumerated(EnumType.STRING)
+    private BookingStatus status;
+
     public Booking(){}
 
-    public Booking(Long instrumentId, LocalDate startDate, LocalDate endDate) {
+    public Booking(Long instrumentId, Long ownerId, Long renterId, LocalDate startDate, LocalDate endDate) {
         this.instrumentId = instrumentId;
+        this.ownerId = ownerId;
+        this.renterId = renterId;
         this.startDate = startDate;
         this.endDate = endDate;
+        this.status = BookingStatus.PENDING;
     }
 
     public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public Long getInstrumentId() {
@@ -34,6 +48,22 @@ public class Booking {
 
     public void setInstrumentId(Long instrumentId) {
         this.instrumentId = instrumentId;
+    }
+
+    public Long getOwnerId() {
+        return ownerId;
+    }
+
+    public void setOwnerId(Long ownerId) {
+        this.ownerId = ownerId;
+    }
+
+    public Long getRenterId() {
+        return renterId;
+    }
+
+    public void setRenterId(Long renterId) {
+        this.renterId = renterId;
     }
 
     public LocalDate getStartDate() {
@@ -50,6 +80,14 @@ public class Booking {
 
     public void setEndDate(LocalDate endDate) {
         this.endDate = endDate;
+    }
+
+    public BookingStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(BookingStatus status) {
+        this.status = status;
     }
 }
 
