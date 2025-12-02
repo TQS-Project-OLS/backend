@@ -64,10 +64,10 @@ public class ProductsService {
         item.setPrice(newPrice);
         
         // Save based on item type
-        if (item instanceof Instrument) {
-            return instrumentRepository.save((Instrument) item);
-        } else if (item instanceof MusicSheet) {
-            return musicSheetRepository.save((MusicSheet) item);
+        if (item instanceof Instrument instrument) {
+            return instrumentRepository.save(instrument);
+        } else if (item instanceof MusicSheet musicSheet) {
+            return musicSheetRepository.save(musicSheet);
         }
         
         throw new IllegalStateException("Unknown item type");

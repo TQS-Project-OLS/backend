@@ -5,7 +5,6 @@ import com.example.OLSHEETS.dto.PriceUpdateRequest;
 import com.example.OLSHEETS.dto.PriceUpdateResponse;
 import com.example.OLSHEETS.dto.PriceResponse;
 import com.example.OLSHEETS.service.ProductsService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,8 +12,11 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/items")
 public class PricingController {
 
-    @Autowired
-    private ProductsService productsService;
+    private final ProductsService productsService;
+
+    public PricingController(ProductsService productsService) {
+        this.productsService = productsService;
+    }
 
     /**
      * Update the price of an item (instrument or music sheet)

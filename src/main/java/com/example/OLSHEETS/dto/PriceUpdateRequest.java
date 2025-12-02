@@ -3,7 +3,9 @@ package com.example.OLSHEETS.dto;
 public class PriceUpdateRequest {
     private Double newPrice;
 
-    public PriceUpdateRequest() {}
+    public PriceUpdateRequest() {
+        // Default constructor for JSON deserialization
+    }
 
     public Double getNewPrice() { 
         return newPrice; 
