@@ -1,0 +1,15 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: olsheets-backend
+    ports:
+      - "8080:8080"
+    networks:
+      - ols-network
+    restart: unless-stopped
+
+networks:
+  ols-network:
+    driver: bridge
