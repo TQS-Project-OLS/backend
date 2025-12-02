@@ -3,6 +3,7 @@ package com.example.OLSHEETS.integration;
 import com.example.OLSHEETS.data.MusicSheet;
 import com.example.OLSHEETS.data.SheetCategory;
 import com.example.OLSHEETS.repository.MusicSheetRepository;
+import com.example.OLSHEETS.repository.SheetBookingRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,8 +26,12 @@ class SheetsControllerIntegrationTest {
     @Autowired
     private MusicSheetRepository musicSheetRepository;
 
+    @Autowired
+    private SheetBookingRepository sheetBookingRepository;
+
     @BeforeEach
     void setUp() {
+        sheetBookingRepository.deleteAll();
         musicSheetRepository.deleteAll();
 
         MusicSheet moonlightSonata = new MusicSheet();
@@ -59,6 +64,7 @@ class SheetsControllerIntegrationTest {
 
     @AfterEach
     void tearDown() {
+        sheetBookingRepository.deleteAll();
         musicSheetRepository.deleteAll();
     }
 
