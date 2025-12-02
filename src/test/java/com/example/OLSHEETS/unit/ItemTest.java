@@ -155,8 +155,8 @@ class ItemTest {
 
     @Test
     void testHashCodeConsistency() {
-        assertThat(musicSheet1.hashCode()).isEqualTo(musicSheet2.hashCode());
-        assertThat(instrument1.hashCode()).isEqualTo(instrument2.hashCode());
+        assertThat(musicSheet1).hasSameHashCodeAs(musicSheet2);
+        assertThat(instrument1).hasSameHashCodeAs(instrument2);
     }
 
     @Test
@@ -168,8 +168,8 @@ class ItemTest {
     @Test
     void testHashCodeWithNullFields() {
         MusicSheet sheet = new MusicSheet();
-        int hashCode = sheet.hashCode();
-        assertThat(hashCode).isNotNull();
+        // hashCode should be calculated even with null fields
+        assertThat(sheet).hasSameHashCodeAs(new MusicSheet());
     }
 
     @Test
@@ -300,7 +300,7 @@ class ItemTest {
         instrument.setOwnerId(1);
         instrument.setPrice(10.0);
         
-        assertThat(sheet.equals(instrument)).isFalse();
+        assertThat(sheet).isNotEqualTo(instrument);
     }
 
     @Test
@@ -323,7 +323,7 @@ class ItemTest {
         instr2.setOwnerId(1);
         instr2.setPrice(10.0);
         
-        assertThat(instr1.equals(instr2)).isFalse();
+        assertThat(instr1).isNotEqualTo(instr2);
     }
 
     @Test
@@ -340,7 +340,7 @@ class ItemTest {
         instr2.setOwnerId(1);
         instr2.setDescription(null);
         
-        assertThat(instr1.equals(instr2)).isFalse();
+        assertThat(instr1).isNotEqualTo(instr2);
     }
 
     @Test
@@ -353,7 +353,7 @@ class ItemTest {
         instr2.setId(null);
         instr2.setName("Name");
         
-        assertThat(instr1.equals(instr2)).isFalse();
+        assertThat(instr1).isNotEqualTo(instr2);
     }
 
     @Test
@@ -366,6 +366,6 @@ class ItemTest {
         instr2.setId(1L);
         instr2.setName(null);
         
-        assertThat(instr1.equals(instr2)).isFalse();
+        assertThat(instr1).isNotEqualTo(instr2);
     }
 }

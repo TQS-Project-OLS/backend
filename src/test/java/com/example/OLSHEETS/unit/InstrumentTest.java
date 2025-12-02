@@ -190,7 +190,7 @@ class InstrumentTest {
 
     @Test
     void testHashCodeEqualObjects() {
-        assertThat(instrument1.hashCode()).isEqualTo(instrument2.hashCode());
+        assertThat(instrument1).hasSameHashCodeAs(instrument2);
     }
 
     @Test
@@ -214,8 +214,8 @@ class InstrumentTest {
     @Test
     void testHashCodeWithNullFields() {
         Instrument instrument = new Instrument();
-        int hashCode = instrument.hashCode();
-        assertThat(hashCode).isNotNull();
+        // hashCode should be calculated even with null fields
+        assertThat(instrument).hasSameHashCodeAs(new Instrument());
     }
 
     @Test
@@ -232,7 +232,7 @@ class InstrumentTest {
         instr2.setType(InstrumentType.CLASSICAL);
         instr2.setFamily(InstrumentFamily.STRING);
         
-        assertThat(instr1.hashCode()).isEqualTo(instr2.hashCode());
+        assertThat(instr1).hasSameHashCodeAs(instr2);
     }
 
     @Test
@@ -326,7 +326,7 @@ class InstrumentTest {
     @Test
     void testSetAgeWithZero() {
         instrument1.setAge(0);
-        assertThat(instrument1.getAge()).isEqualTo(0);
+        assertThat(instrument1.getAge()).isZero();
     }
 
     @Test

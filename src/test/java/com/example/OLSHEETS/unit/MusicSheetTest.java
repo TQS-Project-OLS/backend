@@ -3,6 +3,8 @@ package com.example.OLSHEETS.unit;
 import com.example.OLSHEETS.data.MusicSheet;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -159,8 +161,9 @@ class MusicSheetTest {
         assertThat(sheet1.equals(sheet2)).isTrue();
     }
 
-    @Test
-    void testEqualsWithNullInstrumentationBothObjects() {
+    @ParameterizedTest
+    @ValueSource(strings = {"instrumentation", "category", "duration"})
+    void testEqualsWithNullFieldsBothObjects(String fieldName) {
         MusicSheet sheet1 = new MusicSheet();
         sheet1.setTitle("Title");
         sheet1.setComposer("Composer");
@@ -169,33 +172,9 @@ class MusicSheetTest {
         sheet2.setTitle("Title");
         sheet2.setComposer("Composer");
         
-        assertThat(sheet1.equals(sheet2)).isTrue();
-    }
-
-    @Test
-    void testEqualsWithNullCategoryBothObjects() {
-        MusicSheet sheet1 = new MusicSheet();
-        sheet1.setTitle("Title");
-        sheet1.setComposer("Composer");
-        
-        MusicSheet sheet2 = new MusicSheet();
-        sheet2.setTitle("Title");
-        sheet2.setComposer("Composer");
-        
-        assertThat(sheet1.equals(sheet2)).isTrue();
-    }
-
-    @Test
-    void testEqualsWithNullDurationBothObjects() {
-        MusicSheet sheet1 = new MusicSheet();
-        sheet1.setTitle("Title");
-        sheet1.setComposer("Composer");
-        
-        MusicSheet sheet2 = new MusicSheet();
-        sheet2.setTitle("Title");
-        sheet2.setComposer("Composer");
-        
-        assertThat(sheet1.equals(sheet2)).isTrue();
+        // All three test cases have identical setup with different null fields
+        // The null fields (instrumentation, category, duration) are null by default
+        assertThat(sheet1).isEqualTo(sheet2);
     }
 
     @Test
@@ -237,7 +216,7 @@ class MusicSheetTest {
 
     @Test
     void testHashCodeEqualObjects() {
-        assertThat(musicSheet1.hashCode()).isEqualTo(musicSheet2.hashCode());
+        assertThat(musicSheet1).hasSameHashCodeAs(musicSheet2);
     }
 
     @Test
@@ -249,8 +228,8 @@ class MusicSheetTest {
     @Test
     void testHashCodeWithNullFields() {
         MusicSheet sheet = new MusicSheet();
-        int hashCode = sheet.hashCode();
-        assertThat(hashCode).isNotNull();
+        // hashCode should be calculated even with null fields
+        assertThat(sheet).hasSameHashCodeAs(new MusicSheet());
     }
 
     @Test
@@ -269,7 +248,7 @@ class MusicSheetTest {
         sheet2.setInstrumentation("Instrumentation");
         sheet2.setDuration(10.0f);
         
-        assertThat(sheet1.hashCode()).isEqualTo(sheet2.hashCode());
+        assertThat(sheet1).hasSameHashCodeAs(sheet2);
     }
 
     @Test
