@@ -88,7 +88,7 @@ public class RegisterInstrumentSteps {
         assertNotNull(lastRegisteredInstrument.getId());
     }
 
-    @Then("the instrument should have {int} photos attached")
+    @Then("the instrument should have {int} photo/photos attached")
     public void theInstrumentShouldHavePhotosAttached(int expectedPhotoCount) {
         assertNotNull(lastRegisteredInstrument);
         if (expectedPhotoCount == 0) {
