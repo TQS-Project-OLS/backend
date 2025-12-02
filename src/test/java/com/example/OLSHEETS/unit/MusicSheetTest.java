@@ -1,0 +1,308 @@
+package com.example.OLSHEETS.unit;
+
+import com.example.OLSHEETS.data.MusicSheet;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+class MusicSheetTest {
+
+    private MusicSheet musicSheet1;
+    private MusicSheet musicSheet2;
+
+    @BeforeEach
+    void setUp() {
+        musicSheet1 = new MusicSheet();
+        musicSheet1.setId(1L);
+        musicSheet1.setTitle("Moonlight Sonata");
+        musicSheet1.setCategory("Classical");
+        musicSheet1.setComposer("Beethoven");
+        musicSheet1.setOwnerId(100L);
+        musicSheet1.setDescription("Beautiful piece");
+        musicSheet1.setPrice(15.99);
+        musicSheet1.setInstrumentation("Piano");
+        musicSheet1.setDuration(14.5f);
+
+        musicSheet2 = new MusicSheet();
+        musicSheet2.setId(1L);
+        musicSheet2.setTitle("Moonlight Sonata");
+        musicSheet2.setCategory("Classical");
+        musicSheet2.setComposer("Beethoven");
+        musicSheet2.setOwnerId(100L);
+        musicSheet2.setDescription("Beautiful piece");
+        musicSheet2.setPrice(15.99);
+        musicSheet2.setInstrumentation("Piano");
+        musicSheet2.setDuration(14.5f);
+    }
+
+    @Test
+    void testDefaultConstructor() {
+        MusicSheet sheet = new MusicSheet();
+        assertThat(sheet).isNotNull();
+        assertThat(sheet.getComposer()).isNull();
+        assertThat(sheet.getCategory()).isNull();
+        assertThat(sheet.getInstrumentation()).isNull();
+        assertThat(sheet.getDuration()).isNull();
+    }
+
+    @Test
+    void testParameterizedConstructor() {
+        MusicSheet sheet = new MusicSheet("Fur Elise", "Classical", "Beethoven", 200L);
+        
+        assertThat(sheet.getTitle()).isEqualTo("Fur Elise");
+        assertThat(sheet.getName()).isEqualTo("Fur Elise");
+        assertThat(sheet.getCategory()).isEqualTo("Classical");
+        assertThat(sheet.getComposer()).isEqualTo("Beethoven");
+        assertThat(sheet.getOwnerId()).isEqualTo(200);
+    }
+
+    @Test
+    void testComposerGetterAndSetter() {
+        MusicSheet sheet = new MusicSheet();
+        sheet.setComposer("Mozart");
+        assertThat(sheet.getComposer()).isEqualTo("Mozart");
+    }
+
+    @Test
+    void testInstrumentationGetterAndSetter() {
+        MusicSheet sheet = new MusicSheet();
+        sheet.setInstrumentation("Piano and Violin");
+        assertThat(sheet.getInstrumentation()).isEqualTo("Piano and Violin");
+    }
+
+    @Test
+    void testCategoryGetterAndSetter() {
+        MusicSheet sheet = new MusicSheet();
+        sheet.setCategory("Jazz");
+        assertThat(sheet.getCategory()).isEqualTo("Jazz");
+    }
+
+    @Test
+    void testDurationGetterAndSetter() {
+        MusicSheet sheet = new MusicSheet();
+        sheet.setDuration(5.5f);
+        assertThat(sheet.getDuration()).isEqualTo(5.5f);
+    }
+
+    @Test
+    void testTitleGetterAndSetter() {
+        MusicSheet sheet = new MusicSheet();
+        sheet.setTitle("Test Title");
+        assertThat(sheet.getTitle()).isEqualTo("Test Title");
+        assertThat(sheet.getName()).isEqualTo("Test Title");
+    }
+
+    @Test
+    void testOwnerIdSetterWithLong() {
+        MusicSheet sheet = new MusicSheet();
+        sheet.setOwnerId(500L);
+        assertThat(sheet.getOwnerId()).isEqualTo(500);
+    }
+
+    @Test
+    void testEqualsWithSameObject() {
+        assertThat(musicSheet1.equals(musicSheet1)).isTrue();
+    }
+
+    @Test
+    void testEqualsWithEqualObjects() {
+        assertThat(musicSheet1.equals(musicSheet2)).isTrue();
+        assertThat(musicSheet2.equals(musicSheet1)).isTrue();
+    }
+
+    @Test
+    void testEqualsWithNull() {
+        assertThat(musicSheet1.equals(null)).isFalse();
+    }
+
+    @Test
+    void testEqualsWithDifferentClass() {
+        assertThat(musicSheet1.equals("String")).isFalse();
+        assertThat(musicSheet1.equals(new Object())).isFalse();
+    }
+
+    @Test
+    void testEqualsWithDifferentComposer() {
+        musicSheet2.setComposer("Mozart");
+        assertThat(musicSheet1.equals(musicSheet2)).isFalse();
+    }
+
+    @Test
+    void testEqualsWithDifferentInstrumentation() {
+        musicSheet2.setInstrumentation("Orchestra");
+        assertThat(musicSheet1.equals(musicSheet2)).isFalse();
+    }
+
+    @Test
+    void testEqualsWithDifferentCategory() {
+        musicSheet2.setCategory("Jazz");
+        assertThat(musicSheet1.equals(musicSheet2)).isFalse();
+    }
+
+    @Test
+    void testEqualsWithDifferentDuration() {
+        musicSheet2.setDuration(20.0f);
+        assertThat(musicSheet1.equals(musicSheet2)).isFalse();
+    }
+
+    @Test
+    void testEqualsWithNullComposerBothObjects() {
+        MusicSheet sheet1 = new MusicSheet();
+        sheet1.setTitle("Title");
+        sheet1.setCategory("Category");
+        
+        MusicSheet sheet2 = new MusicSheet();
+        sheet2.setTitle("Title");
+        sheet2.setCategory("Category");
+        
+        assertThat(sheet1.equals(sheet2)).isTrue();
+    }
+
+    @Test
+    void testEqualsWithNullInstrumentationBothObjects() {
+        MusicSheet sheet1 = new MusicSheet();
+        sheet1.setTitle("Title");
+        sheet1.setComposer("Composer");
+        
+        MusicSheet sheet2 = new MusicSheet();
+        sheet2.setTitle("Title");
+        sheet2.setComposer("Composer");
+        
+        assertThat(sheet1.equals(sheet2)).isTrue();
+    }
+
+    @Test
+    void testEqualsWithNullCategoryBothObjects() {
+        MusicSheet sheet1 = new MusicSheet();
+        sheet1.setTitle("Title");
+        sheet1.setComposer("Composer");
+        
+        MusicSheet sheet2 = new MusicSheet();
+        sheet2.setTitle("Title");
+        sheet2.setComposer("Composer");
+        
+        assertThat(sheet1.equals(sheet2)).isTrue();
+    }
+
+    @Test
+    void testEqualsWithNullDurationBothObjects() {
+        MusicSheet sheet1 = new MusicSheet();
+        sheet1.setTitle("Title");
+        sheet1.setComposer("Composer");
+        
+        MusicSheet sheet2 = new MusicSheet();
+        sheet2.setTitle("Title");
+        sheet2.setComposer("Composer");
+        
+        assertThat(sheet1.equals(sheet2)).isTrue();
+    }
+
+    @Test
+    void testEqualsWithOneNullComposer() {
+        musicSheet2.setComposer(null);
+        assertThat(musicSheet1.equals(musicSheet2)).isFalse();
+    }
+
+    @Test
+    void testEqualsWithOneNullInstrumentation() {
+        musicSheet1.setInstrumentation(null);
+        assertThat(musicSheet1.equals(musicSheet2)).isFalse();
+    }
+
+    @Test
+    void testEqualsWithOneNullCategory() {
+        musicSheet2.setCategory(null);
+        assertThat(musicSheet1.equals(musicSheet2)).isFalse();
+    }
+
+    @Test
+    void testEqualsWithOneNullDuration() {
+        musicSheet1.setDuration(null);
+        assertThat(musicSheet1.equals(musicSheet2)).isFalse();
+    }
+
+    @Test
+    void testEqualsCallsSuperEquals() {
+        musicSheet2.setTitle("Different Title");
+        assertThat(musicSheet1.equals(musicSheet2)).isFalse();
+    }
+
+    @Test
+    void testHashCodeConsistency() {
+        int hash1 = musicSheet1.hashCode();
+        int hash2 = musicSheet1.hashCode();
+        assertThat(hash1).isEqualTo(hash2);
+    }
+
+    @Test
+    void testHashCodeEqualObjects() {
+        assertThat(musicSheet1.hashCode()).isEqualTo(musicSheet2.hashCode());
+    }
+
+    @Test
+    void testHashCodeWithDifferentComposer() {
+        musicSheet2.setComposer("Different Composer");
+        assertThat(musicSheet1.hashCode()).isNotEqualTo(musicSheet2.hashCode());
+    }
+
+    @Test
+    void testHashCodeWithNullFields() {
+        MusicSheet sheet = new MusicSheet();
+        int hashCode = sheet.hashCode();
+        assertThat(hashCode).isNotNull();
+    }
+
+    @Test
+    void testHashCodeIncludesAllFields() {
+        MusicSheet sheet1 = new MusicSheet();
+        sheet1.setTitle("Title");
+        sheet1.setComposer("Composer");
+        sheet1.setCategory("Category");
+        sheet1.setInstrumentation("Instrumentation");
+        sheet1.setDuration(10.0f);
+        
+        MusicSheet sheet2 = new MusicSheet();
+        sheet2.setTitle("Title");
+        sheet2.setComposer("Composer");
+        sheet2.setCategory("Category");
+        sheet2.setInstrumentation("Instrumentation");
+        sheet2.setDuration(10.0f);
+        
+        assertThat(sheet1.hashCode()).isEqualTo(sheet2.hashCode());
+    }
+
+    @Test
+    void testSetComposerWithNull() {
+        musicSheet1.setComposer(null);
+        assertThat(musicSheet1.getComposer()).isNull();
+    }
+
+    @Test
+    void testSetInstrumentationWithNull() {
+        musicSheet1.setInstrumentation(null);
+        assertThat(musicSheet1.getInstrumentation()).isNull();
+    }
+
+    @Test
+    void testSetCategoryWithNull() {
+        musicSheet1.setCategory(null);
+        assertThat(musicSheet1.getCategory()).isNull();
+    }
+
+    @Test
+    void testSetDurationWithNull() {
+        musicSheet1.setDuration(null);
+        assertThat(musicSheet1.getDuration()).isNull();
+    }
+
+    @Test
+    void testTitleAndNameConsistency() {
+        MusicSheet sheet = new MusicSheet();
+        sheet.setTitle("Test");
+        assertThat(sheet.getName()).isEqualTo("Test");
+        
+        sheet.setName("Another Test");
+        assertThat(sheet.getTitle()).isEqualTo("Another Test");
+    }
+}

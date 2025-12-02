@@ -111,4 +111,66 @@ class SheetBookingServiceTest {
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("Start date must be before end date");
     }
+
+    @Test
+    void whenStartDateEqualsEndDate_thenThrowException() {
+        LocalDate sameDate = LocalDate.now().plusDays(1);
+        assertThatThrownBy(() -> bookingService.createBooking(1L, 100L, sameDate, sameDate))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("Start date must be before end date");
+    }
+
+    @Test
+    void whenGetAllBookings_thenReturnAllBookings() {
+        SheetBooking booking2 = new SheetBooking(sheet, 101L, LocalDate.now().plusDays(5), LocalDate.now().plusDays(7));
+        when(bookingRepository.findAll()).thenReturn(List.of(booking, booking2));
+
+        List<SheetBooking> bookings = bookingService.getAllBookings();
+
+        assertThat(bookings).hasSize(2);
+        assertThat(bookings).containsExactly(booking, booking2);
+        verify(bookingRepository, times(1)).findAll();
+    }
+
+    @Test
+    void whenGetBookingsBySheet_thenReturnBookings() {
+        when(sheetRepository.findById(1L)).thenReturn(Optional.of(sheet));
+        when(bookingRepository.findByMusicSheet(sheet)).thenReturn(List.of(booking));
+
+        List<SheetBooking> bookings = bookingService.getBookingsBySheet(1L);
+
+        assertThat(bookings).hasSize(1);
+        assertThat(bookings.get(0)).isEqualTo(booking);
+        verify(sheetRepository, times(1)).findById(1L);
+        verify(bookingRepository, times(1)).findByMusicSheet(sheet);
+    }
+
+    @Test
+    void whenGetBookingsBySheetForNonExistentSheet_thenThrowException() {
+        when(sheetRepository.findById(999L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> bookingService.getBookingsBySheet(999L))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("Music sheet not found with id: 999");
+    }
+
+    @Test
+    void whenGetBookingByIdNotFound_thenReturnEmpty() {
+        when(bookingRepository.findById(999L)).thenReturn(Optional.empty());
+
+        Optional<SheetBooking> found = bookingService.getBookingById(999L);
+
+        assertThat(found).isEmpty();
+        verify(bookingRepository, times(1)).findById(999L);
+    }
+
+    @Test
+    void whenGetBookingsByRenterWithNoBookings_thenReturnEmptyList() {
+        when(bookingRepository.findByRenterId(999L)).thenReturn(List.of());
+
+        List<SheetBooking> bookings = bookingService.getBookingsByRenter(999L);
+
+        assertThat(bookings).isEmpty();
+        verify(bookingRepository, times(1)).findByRenterId(999L);
+    }
 }
