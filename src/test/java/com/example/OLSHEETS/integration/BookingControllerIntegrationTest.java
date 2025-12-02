@@ -3,6 +3,10 @@ package com.example.OLSHEETS.integration;
 import com.example.OLSHEETS.data.Booking;
 import com.example.OLSHEETS.data.BookingRepository;
 import com.example.OLSHEETS.data.BookingStatus;
+import com.example.OLSHEETS.data.Instrument;
+import com.example.OLSHEETS.data.InstrumentFamily;
+import com.example.OLSHEETS.data.InstrumentType;
+import com.example.OLSHEETS.repository.ItemRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,14 +30,30 @@ class BookingControllerIntegrationTest {
     @Autowired
     private BookingRepository bookingRepository;
 
+    @Autowired
+    private ItemRepository itemRepository;
+
+    private Instrument instrument;
+
     @BeforeEach
     void cleanup() {
         bookingRepository.deleteAll();
+        itemRepository.deleteAll();
+
+        instrument = new Instrument();
+        instrument.setName("Test Guitar");
+        instrument.setDescription("A test guitar");
+        instrument.setOwnerId(10);
+        instrument.setPrice(50.0);
+        instrument.setAge(2);
+        instrument.setType(InstrumentType.ELECTRIC);
+        instrument.setFamily(InstrumentFamily.STRING);
+        instrument = itemRepository.save(instrument);
     }
 
     @Test
     void testApproveBooking_Success() throws Exception {
-        Booking booking = new Booking(1L, 10L, 100L, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
+        Booking booking = new Booking(instrument, 100L, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
         booking = bookingRepository.save(booking);
 
         mockMvc.perform(put("/api/bookings/" + booking.getId() + "/approve")
@@ -42,13 +62,12 @@ class BookingControllerIntegrationTest {
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.id", is(booking.getId().intValue())))
                 .andExpect(jsonPath("$.status", is("APPROVED")))
-                .andExpect(jsonPath("$.ownerId", is(10)))
                 .andExpect(jsonPath("$.renterId", is(100)));
     }
 
     @Test
     void testApproveBooking_UnauthorizedOwner() throws Exception {
-        Booking booking = new Booking(1L, 10L, 100L, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
+        Booking booking = new Booking(instrument, 100L, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
         booking = bookingRepository.save(booking);
 
         mockMvc.perform(put("/api/bookings/" + booking.getId() + "/approve")
@@ -60,7 +79,7 @@ class BookingControllerIntegrationTest {
 
     @Test
     void testApproveBooking_AlreadyApproved() throws Exception {
-        Booking booking = new Booking(1L, 10L, 100L, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
+        Booking booking = new Booking(instrument, 100L, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
         booking.setStatus(BookingStatus.APPROVED);
         booking = bookingRepository.save(booking);
 
@@ -82,7 +101,7 @@ class BookingControllerIntegrationTest {
 
     @Test
     void testRejectBooking_Success() throws Exception {
-        Booking booking = new Booking(1L, 10L, 100L, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
+        Booking booking = new Booking(instrument, 100L, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
         booking = bookingRepository.save(booking);
 
         mockMvc.perform(put("/api/bookings/" + booking.getId() + "/reject")
@@ -91,13 +110,12 @@ class BookingControllerIntegrationTest {
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.id", is(booking.getId().intValue())))
                 .andExpect(jsonPath("$.status", is("REJECTED")))
-                .andExpect(jsonPath("$.ownerId", is(10)))
                 .andExpect(jsonPath("$.renterId", is(100)));
     }
 
     @Test
     void testRejectBooking_UnauthorizedOwner() throws Exception {
-        Booking booking = new Booking(1L, 10L, 100L, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
+        Booking booking = new Booking(instrument, 100L, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
         booking = bookingRepository.save(booking);
 
         mockMvc.perform(put("/api/bookings/" + booking.getId() + "/reject")
@@ -109,7 +127,7 @@ class BookingControllerIntegrationTest {
 
     @Test
     void testRejectBooking_AlreadyRejected() throws Exception {
-        Booking booking = new Booking(1L, 10L, 100L, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
+        Booking booking = new Booking(instrument, 100L, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
         booking.setStatus(BookingStatus.REJECTED);
         booking = bookingRepository.save(booking);
 
@@ -131,7 +149,7 @@ class BookingControllerIntegrationTest {
 
     @Test
     void testCannotRejectApprovedBooking() throws Exception {
-        Booking booking = new Booking(1L, 10L, 100L, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
+        Booking booking = new Booking(instrument, 100L, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
         booking.setStatus(BookingStatus.APPROVED);
         booking = bookingRepository.save(booking);
 
@@ -144,7 +162,7 @@ class BookingControllerIntegrationTest {
 
     @Test
     void testCannotApproveRejectedBooking() throws Exception {
-        Booking booking = new Booking(1L, 10L, 100L, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
+        Booking booking = new Booking(instrument, 100L, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
         booking.setStatus(BookingStatus.REJECTED);
         booking = bookingRepository.save(booking);
 

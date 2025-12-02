@@ -1,47 +1,40 @@
 package com.example.OLSHEETS.data;
 
 import jakarta.persistence.*;
-import java.math.BigDecimal;
 
 @Entity
-public class MusicSheet {
+@DiscriminatorValue("MUSIC_SHEET")
+public class MusicSheet extends Item {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    private String title;
+    private String composer;
+    private String instrumentation;
     private String category;
-    private String description;
-    private BigDecimal pricePerDay;
-    private Long ownerId;
-    private boolean available;
+    private Float duration;
 
-    public MusicSheet() {}
+    public MusicSheet() {
+    }
 
-    public MusicSheet(String title, String category, String description, BigDecimal pricePerDay, Long ownerId) {
-        this.title = title;
+    public MusicSheet(String title, String category, String composer, Long ownerId) {
+        this.setName(title);
         this.category = category;
-        this.description = description;
-        this.pricePerDay = pricePerDay;
-        this.ownerId = ownerId;
-        this.available = true;
+        this.composer = composer;
+        this.setOwnerId(ownerId.intValue());
     }
 
-    public Long getId() {
-        return id;
+    public String getComposer() {
+        return composer;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setComposer(String composer) {
+        this.composer = composer;
     }
 
-    public String getTitle() {
-        return title;
+    public String getInstrumentation() {
+        return instrumentation;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public void setInstrumentation(String instrumentation) {
+        this.instrumentation = instrumentation;
     }
 
     public String getCategory() {
@@ -52,36 +45,48 @@ public class MusicSheet {
         this.category = category;
     }
 
-    public String getDescription() {
-        return description;
+    public Float getDuration() {
+        return duration;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setDuration(Float duration) {
+        this.duration = duration;
     }
 
-    public BigDecimal getPricePerDay() {
-        return pricePerDay;
+    public String getTitle() {
+        return getName();
     }
 
-    public void setPricePerDay(BigDecimal pricePerDay) {
-        this.pricePerDay = pricePerDay;
-    }
-
-    public Long getOwnerId() {
-        return ownerId;
+    public void setTitle(String title) {
+        setName(title);
     }
 
     public void setOwnerId(Long ownerId) {
-        this.ownerId = ownerId;
+        setOwnerId(ownerId.intValue());
     }
 
-    public boolean isAvailable() {
-        return available;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof MusicSheet)) return false;
+        if (!super.equals(o)) return false;
+
+        MusicSheet that = (MusicSheet) o;
+
+        if (composer != null ? !composer.equals(that.composer) : that.composer != null) return false;
+        if (instrumentation != null ? !instrumentation.equals(that.instrumentation) : that.instrumentation != null)
+            return false;
+        if (category != null ? !category.equals(that.category) : that.category != null) return false;
+        return duration != null ? duration.equals(that.duration) : that.duration == null;
     }
 
-    public void setAvailable(boolean available) {
-        this.available = available;
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + (composer != null ? composer.hashCode() : 0);
+        result = 31 * result + (instrumentation != null ? instrumentation.hashCode() : 0);
+        result = 31 * result + (category != null ? category.hashCode() : 0);
+        result = 31 * result + (duration != null ? duration.hashCode() : 0);
+        return result;
     }
 }
-

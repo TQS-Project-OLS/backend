@@ -1,6 +1,7 @@
 package com.example.OLSHEETS.integration;
 
 import com.example.OLSHEETS.data.Instrument;
+import com.example.OLSHEETS.data.InstrumentType;
 import com.example.OLSHEETS.data.InstrumentFamily;
 import com.example.OLSHEETS.repository.InstrumentRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,7 +37,7 @@ class InstrumentRepositoryIntegrationTest {
         yamahaPiano.setOwnerId(1);
         yamahaPiano.setPrice(599.99);
         yamahaPiano.setAge(2);
-        yamahaPiano.setType("Digital Piano");
+        yamahaPiano.setType(InstrumentType.DIGITAL);
         yamahaPiano.setFamily(InstrumentFamily.KEYBOARD);
 
         fenderGuitar = new Instrument();
@@ -45,7 +46,7 @@ class InstrumentRepositoryIntegrationTest {
         fenderGuitar.setOwnerId(1);
         fenderGuitar.setPrice(899.99);
         fenderGuitar.setAge(5);
-        fenderGuitar.setType("Electric");
+        fenderGuitar.setType(InstrumentType.ELECTRIC);
         fenderGuitar.setFamily(InstrumentFamily.GUITAR);
 
         yamahaSax = new Instrument();
@@ -54,7 +55,7 @@ class InstrumentRepositoryIntegrationTest {
         yamahaSax.setOwnerId(2);
         yamahaSax.setPrice(1299.99);
         yamahaSax.setAge(1);
-        yamahaSax.setType("Alto Sax");
+        yamahaSax.setType(InstrumentType.WIND);
         yamahaSax.setFamily(InstrumentFamily.WOODWIND);
     }
 
@@ -169,5 +170,84 @@ class InstrumentRepositoryIntegrationTest {
         assertEquals(599.99, found.get(0).getPrice());
         assertEquals(2, found.get(0).getAge());
         assertEquals(InstrumentFamily.KEYBOARD, found.get(0).getFamily());
+    }
+
+    @Test
+    void testFindByType_WithMatchingResults_ShouldReturnInstruments() {
+        // Arrange
+        Instrument acousticGuitar1 = new Instrument();
+        acousticGuitar1.setName("Martin D-28");
+        acousticGuitar1.setType(InstrumentType.ACOUSTIC);
+        acousticGuitar1.setOwnerId(1);
+        acousticGuitar1.setPrice(2899.99);
+
+        Instrument acousticGuitar2 = new Instrument();
+        acousticGuitar2.setName("Taylor 214ce");
+        acousticGuitar2.setType(InstrumentType.ACOUSTIC);
+        acousticGuitar2.setOwnerId(2);
+        acousticGuitar2.setPrice(1099.99);
+
+        entityManager.persistAndFlush(acousticGuitar1);
+        entityManager.persistAndFlush(acousticGuitar2);
+        entityManager.persistAndFlush(fenderGuitar); // Electric type
+
+        // Act
+        List<Instrument> result = instrumentRepository.findByType(InstrumentType.ACOUSTIC);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertTrue(result.stream().allMatch(i -> i.getType() == InstrumentType.ACOUSTIC));
+        assertTrue(result.stream().anyMatch(i -> i.getName().equals("Martin D-28")));
+        assertTrue(result.stream().anyMatch(i -> i.getName().equals("Taylor 214ce")));
+    }
+
+    @Test
+    void testFindByType_WithNoMatch_ShouldReturnEmptyList() {
+        // Arrange
+        entityManager.persistAndFlush(yamahaPiano);
+        entityManager.persistAndFlush(fenderGuitar);
+
+        // Act
+        List<Instrument> result = instrumentRepository.findByType(InstrumentType.SYNTHESIZER);
+
+        // Assert
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void testFindByType_WithSingleResult_ShouldReturnOneInstrument() {
+        // Arrange
+        entityManager.persistAndFlush(yamahaPiano);
+        entityManager.persistAndFlush(fenderGuitar);
+        entityManager.persistAndFlush(yamahaSax);
+
+        // Act
+        List<Instrument> result = instrumentRepository.findByType(InstrumentType.DIGITAL);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("Yamaha P-125", result.get(0).getName());
+        assertEquals(InstrumentType.DIGITAL, result.get(0).getType());
+    }
+
+    @Test
+    void testFindByType_VerifyEnumPersistence() {
+        // Arrange
+        entityManager.persistAndFlush(yamahaPiano);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        List<Instrument> result = instrumentRepository.findByType(InstrumentType.DIGITAL);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(InstrumentType.DIGITAL, result.get(0).getType());
+        // Verify that the enum is stored and retrieved correctly
+        assertNotNull(result.get(0).getType());
     }
 }

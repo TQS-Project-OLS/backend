@@ -10,7 +10,9 @@ import jakarta.persistence.EnumType;
 public class Instrument extends Item {
 
     private Integer age;
-    private String type;
+
+    @Enumerated(EnumType.STRING)
+    private InstrumentType type;
 
     @Enumerated(EnumType.STRING)
     private InstrumentFamily family;
@@ -26,11 +28,11 @@ public class Instrument extends Item {
         this.age = age;
     }
 
-    public String getType() {
+    public InstrumentType getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(InstrumentType type) {
         this.type = type;
     }
 
@@ -51,7 +53,7 @@ public class Instrument extends Item {
         Instrument that = (Instrument) o;
 
         if (age != null ? !age.equals(that.age) : that.age != null) return false;
-        if (type != null ? !type.equals(that.type) : that.type != null) return false;
+        if (type != that.type) return false;
         return family == that.family;
     }
 

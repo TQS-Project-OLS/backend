@@ -22,12 +22,11 @@ public class BookingController {
     }
 
     @PostMapping
-    public Booking createBooking(@RequestParam Long instrumentId,
-                                 @RequestParam Long ownerId,
+    public Booking createBooking(@RequestParam Long itemId,
                                  @RequestParam Long renterId,
                                  @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
                                  @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        return bookingService.createBooking(instrumentId, ownerId, renterId, startDate, endDate);
+        return bookingService.createBooking(itemId, renterId, startDate, endDate);
     }
 
     @GetMapping
@@ -36,7 +35,7 @@ public class BookingController {
     }
 
     @PutMapping("/{bookingId}/approve")
-    public ResponseEntity<?> approveBooking(@PathVariable Long bookingId, @RequestParam Long ownerId) {
+    public ResponseEntity<?> approveBooking(@PathVariable Long bookingId, @RequestParam int ownerId) {
         try {
             Booking approved = bookingService.approveBooking(bookingId, ownerId);
             return ResponseEntity.ok(approved);
@@ -48,7 +47,7 @@ public class BookingController {
     }
 
     @PutMapping("/{bookingId}/reject")
-    public ResponseEntity<?> rejectBooking(@PathVariable Long bookingId, @RequestParam Long ownerId) {
+    public ResponseEntity<?> rejectBooking(@PathVariable Long bookingId, @RequestParam int ownerId) {
         try {
             Booking rejected = bookingService.rejectBooking(bookingId, ownerId);
             return ResponseEntity.ok(rejected);

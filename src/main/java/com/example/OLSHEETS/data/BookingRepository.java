@@ -9,8 +9,8 @@ import java.util.List;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
-    @Query("select b from Booking b where b.instrumentId = :instrumentId and b.startDate <= :endDate and b.endDate >= :startDate")
-    List<Booking> findOverlapping(@Param("instrumentId") Long instrumentId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+    @Query("select b from Booking b where b.item.id = :itemId and b.startDate <= :endDate and b.endDate >= :startDate")
+    List<Booking> findOverlapping(@Param("itemId") Long itemId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 
 }
 

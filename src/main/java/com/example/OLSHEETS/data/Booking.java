@@ -10,9 +10,9 @@ public class Booking {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long instrumentId;
-
-    private Long ownerId;
+    @ManyToOne
+    @JoinColumn(name = "item_id")
+    private Item item;
 
     private Long renterId;
 
@@ -25,9 +25,8 @@ public class Booking {
 
     public Booking(){}
 
-    public Booking(Long instrumentId, Long ownerId, Long renterId, LocalDate startDate, LocalDate endDate) {
-        this.instrumentId = instrumentId;
-        this.ownerId = ownerId;
+    public Booking(Item item, Long renterId, LocalDate startDate, LocalDate endDate) {
+        this.item = item;
         this.renterId = renterId;
         this.startDate = startDate;
         this.endDate = endDate;
@@ -42,20 +41,12 @@ public class Booking {
         this.id = id;
     }
 
-    public Long getInstrumentId() {
-        return instrumentId;
+    public Item getItem() {
+        return item;
     }
 
-    public void setInstrumentId(Long instrumentId) {
-        this.instrumentId = instrumentId;
-    }
-
-    public Long getOwnerId() {
-        return ownerId;
-    }
-
-    public void setOwnerId(Long ownerId) {
-        this.ownerId = ownerId;
+    public void setItem(Item item) {
+        this.item = item;
     }
 
     public Long getRenterId() {
@@ -90,4 +81,3 @@ public class Booking {
         this.status = status;
     }
 }
-

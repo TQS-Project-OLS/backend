@@ -3,43 +3,49 @@ package com.example.OLSHEETS.service;
 import com.example.OLSHEETS.data.Booking;
 import com.example.OLSHEETS.data.BookingRepository;
 import com.example.OLSHEETS.data.BookingStatus;
+import com.example.OLSHEETS.data.Item;
+import com.example.OLSHEETS.repository.ItemRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class BookingService {
 
     private final BookingRepository bookingRepository;
+    private final ItemRepository itemRepository;
 
-    public BookingService(BookingRepository bookingRepository) {
+    public BookingService(BookingRepository bookingRepository, ItemRepository itemRepository) {
         this.bookingRepository = bookingRepository;
+        this.itemRepository = itemRepository;
     }
 
     @Transactional
-    public Booking createBooking(Long instrumentId, Long ownerId, Long renterId, LocalDate startDate, LocalDate endDate){
+    public Booking createBooking(Long itemId, Long renterId, LocalDate startDate, LocalDate endDate){
         if(startDate == null || endDate == null || !startDate.isBefore(endDate) && !startDate.isEqual(endDate)){
             throw new IllegalArgumentException("Invalid dates");
         }
 
-        List<Booking> overlapping = bookingRepository.findOverlapping(instrumentId, startDate, endDate);
+        Item item = itemRepository.findById(itemId)
+            .orElseThrow(() -> new IllegalArgumentException("Item not found with id: " + itemId));
+
+        List<Booking> overlapping = bookingRepository.findOverlapping(itemId, startDate, endDate);
         if(!overlapping.isEmpty()){
-            throw new IllegalStateException("Instrument already booked for requested period");
+            throw new IllegalStateException("Item already booked for requested period");
         }
 
-        Booking b = new Booking(instrumentId, ownerId, renterId, startDate, endDate);
+        Booking b = new Booking(item, renterId, startDate, endDate);
         return bookingRepository.save(b);
     }
 
     @Transactional
-    public Booking approveBooking(Long bookingId, Long ownerId) {
+    public Booking approveBooking(Long bookingId, int ownerId) {
         Booking booking = bookingRepository.findById(bookingId)
             .orElseThrow(() -> new IllegalArgumentException("Booking not found with id: " + bookingId));
 
-        if (!booking.getOwnerId().equals(ownerId)) {
+        if (booking.getItem().getOwnerId() != ownerId) {
             throw new IllegalArgumentException("You are not authorized to approve this booking");
         }
 
@@ -56,11 +62,11 @@ public class BookingService {
     }
 
     @Transactional
-    public Booking rejectBooking(Long bookingId, Long ownerId) {
+    public Booking rejectBooking(Long bookingId, int ownerId) {
         Booking booking = bookingRepository.findById(bookingId)
             .orElseThrow(() -> new IllegalArgumentException("Booking not found with id: " + bookingId));
 
-        if (!booking.getOwnerId().equals(ownerId)) {
+        if (booking.getItem().getOwnerId() != ownerId) {
             throw new IllegalArgumentException("You are not authorized to reject this booking");
         }
 
@@ -80,4 +86,3 @@ public class BookingService {
         return bookingRepository.findAll();
     }
 }
-

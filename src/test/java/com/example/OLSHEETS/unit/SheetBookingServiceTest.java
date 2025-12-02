@@ -40,7 +40,12 @@ class SheetBookingServiceTest {
 
     @BeforeEach
     void setUp() {
-        sheet = new MusicSheet("Moonlight Sonata", "classical", "Beautiful piece", new BigDecimal("5.00"), 1L);
+        sheet = new MusicSheet();
+        sheet.setTitle("Moonlight Sonata");
+        sheet.setCategory("classical");
+        sheet.setComposer("Beautiful piece");
+        sheet.setPrice(5.00);
+        sheet.setOwnerId(1L);
         sheet.setId(1L);
 
         booking = new SheetBooking(sheet, 100L, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));

@@ -47,7 +47,12 @@ class SheetBookingIntegrationTest {
 
     @Test
     void whenCreateValidBooking_thenSuccess() {
-        MusicSheet sheet = new MusicSheet("Fur Elise", "classical", "Famous piano piece", new BigDecimal("3.50"), 1L);
+        MusicSheet sheet = new MusicSheet();
+        sheet.setTitle("Fur Elise");
+        sheet.setCategory("classical");
+        sheet.setComposer("Beethoven");
+        sheet.setOwnerId(1L);
+        sheet.setPrice(3.50);
         sheet = sheetRepository.save(sheet);
 
         Map<String, Object> request = new HashMap<>();
@@ -66,7 +71,12 @@ class SheetBookingIntegrationTest {
 
     @Test
     void whenGetBookingsByRenter_thenReturnList() {
-        MusicSheet sheet = new MusicSheet("Canon in D", "classical", "Wedding music", new BigDecimal("4.00"), 1L);
+        MusicSheet sheet = new MusicSheet();
+        sheet.setTitle("Canon in D");
+        sheet.setCategory("classical");
+        sheet.setComposer("Pachelbel");
+        sheet.setOwnerId(1L);
+        sheet.setPrice(4.00);
         sheet = sheetRepository.save(sheet);
 
         SheetBooking booking = new SheetBooking(sheet, 300L, LocalDate.now().plusDays(1), LocalDate.now().plusDays(2));

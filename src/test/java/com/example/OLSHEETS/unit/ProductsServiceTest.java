@@ -1,8 +1,12 @@
 package com.example.OLSHEETS.unit;
 
 import com.example.OLSHEETS.data.Instrument;
+import com.example.OLSHEETS.data.InstrumentType;
 import com.example.OLSHEETS.data.InstrumentFamily;
+import com.example.OLSHEETS.data.MusicSheet;
+import com.example.OLSHEETS.data.SheetCategory;
 import com.example.OLSHEETS.repository.InstrumentRepository;
+import com.example.OLSHEETS.repository.MusicSheetRepository;
 import com.example.OLSHEETS.service.ProductsService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,11 +28,16 @@ class ProductsServiceTest {
     @Mock
     private InstrumentRepository instrumentRepository;
 
+    @Mock
+    private MusicSheetRepository musicSheetRepository;
+
     @InjectMocks
     private ProductsService productsService;
 
     private Instrument instrument1;
     private Instrument instrument2;
+    private MusicSheet sheet1;
+    private MusicSheet sheet2;
 
     @BeforeEach
     void setUp() {
@@ -43,6 +52,22 @@ class ProductsServiceTest {
         instrument2.setName("Yamaha YAS-280");
         instrument2.setPrice(1299.99);
         instrument2.setOwnerId(1);
+
+        sheet1 = new MusicSheet();
+        sheet1.setId(1L);
+        sheet1.setName("Moonlight Sonata");
+        sheet1.setComposer("Beethoven");
+        sheet1.setCategory("CLASSICAL");
+        sheet1.setPrice(9.99);
+        sheet1.setOwnerId(1);
+
+        sheet2 = new MusicSheet();
+        sheet2.setId(2L);
+        sheet2.setName("Bohemian Rhapsody");
+        sheet2.setComposer("Freddie Mercury");
+        sheet2.setCategory("ROCK");
+        sheet2.setPrice(12.99);
+        sheet2.setOwnerId(1);
     }
 
     @Test
@@ -105,6 +130,46 @@ class ProductsServiceTest {
     }
 
     @Test
+    void testFilterInstrumentsByType_WithMatchingResults_ShouldReturnInstruments() {
+        Instrument electricGuitar = new Instrument();
+        electricGuitar.setId(3L);
+        electricGuitar.setName("Fender Stratocaster");
+        electricGuitar.setType(InstrumentType.ELECTRIC);
+        electricGuitar.setPrice(899.99);
+
+        Instrument electricBass = new Instrument();
+        electricBass.setId(4L);
+        electricBass.setName("Fender Precision Bass");
+        electricBass.setType(InstrumentType.ELECTRIC);
+        electricBass.setPrice(799.99);
+
+        List<Instrument> electricInstruments = Arrays.asList(electricGuitar, electricBass);
+
+        when(instrumentRepository.findByType(InstrumentType.ELECTRIC)).thenReturn(electricInstruments);
+
+        List<Instrument> result = productsService.filterInstrumentsByType(InstrumentType.ELECTRIC);
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals(InstrumentType.ELECTRIC, result.get(0).getType());
+        assertEquals(InstrumentType.ELECTRIC, result.get(1).getType());
+        verify(instrumentRepository, times(1)).findByType(InstrumentType.ELECTRIC);
+    }
+
+    @Test
+    void testFilterInstrumentsByType_WithNoResults_ShouldReturnEmptyList() {
+        List<Instrument> emptyList = Collections.emptyList();
+
+        when(instrumentRepository.findByType(InstrumentType.SYNTHESIZER)).thenReturn(emptyList);
+
+        List<Instrument> result = productsService.filterInstrumentsByType(InstrumentType.SYNTHESIZER);
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(instrumentRepository, times(1)).findByType(InstrumentType.SYNTHESIZER);
+    }
+
+    @Test
     void testFilterInstrumentsByFamily_WithMatchingResults_ShouldReturnInstruments() {
         InstrumentFamily family = InstrumentFamily.KEYBOARD;
         List<Instrument> instruments = Collections.singletonList(instrument1);
@@ -130,5 +195,79 @@ class ProductsServiceTest {
         assertNotNull(result);
         assertTrue(result.isEmpty());
         verify(instrumentRepository, times(1)).findByFamily(family);
+    }
+
+    @Test
+    void testSearchMusicSheetsByName_WithMatchingResults_ShouldReturnSheets() {
+        String searchName = "Sonata";
+        List<MusicSheet> sheets = Collections.singletonList(sheet1);
+
+        when(musicSheetRepository.findByNameContainingIgnoreCase(searchName)).thenReturn(sheets);
+
+        List<MusicSheet> result = productsService.searchMusicSheetsByName(searchName);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("Moonlight Sonata", result.get(0).getName());
+        assertEquals("Beethoven", result.get(0).getComposer());
+        verify(musicSheetRepository, times(1)).findByNameContainingIgnoreCase(searchName);
+    }
+
+    @Test
+    void testSearchMusicSheetsByName_WithNoResults_ShouldReturnEmptyList() {
+        String searchName = "Symphony";
+        List<MusicSheet> emptyList = Collections.emptyList();
+
+        when(musicSheetRepository.findByNameContainingIgnoreCase(searchName)).thenReturn(emptyList);
+
+        List<MusicSheet> result = productsService.searchMusicSheetsByName(searchName);
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(musicSheetRepository, times(1)).findByNameContainingIgnoreCase(searchName);
+    }
+
+    @Test
+    void testSearchMusicSheetsByName_WithMultipleResults_ShouldReturnAllSheets() {
+        String searchName = "Rhapsody";
+        List<MusicSheet> sheets = Arrays.asList(sheet2);
+
+        when(musicSheetRepository.findByNameContainingIgnoreCase(searchName)).thenReturn(sheets);
+
+        List<MusicSheet> result = productsService.searchMusicSheetsByName(searchName);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("Bohemian Rhapsody", result.get(0).getName());
+        verify(musicSheetRepository, times(1)).findByNameContainingIgnoreCase(searchName);
+    }
+
+    @Test
+    void testFilterMusicSheetsByCategory_WithMatchingResults_ShouldReturnSheets() {
+        String category = "CLASSICAL";
+        List<MusicSheet> sheets = Collections.singletonList(sheet1);
+
+        when(musicSheetRepository.findByCategory(category)).thenReturn(sheets);
+
+        List<MusicSheet> result = productsService.filterMusicSheetsByCategory(category);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("CLASSICAL", result.get(0).getCategory());
+        verify(musicSheetRepository, times(1)).findByCategory(category);
+    }
+
+    @Test
+    void testFilterMusicSheetsByCategory_WithNoResults_ShouldReturnEmptyList() {
+        String category = "JAZZ";
+        List<MusicSheet> emptyList = Collections.emptyList();
+
+        when(musicSheetRepository.findByCategory(category)).thenReturn(emptyList);
+
+        List<MusicSheet> result = productsService.filterMusicSheetsByCategory(category);
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(musicSheetRepository, times(1)).findByCategory(category);
     }
 }

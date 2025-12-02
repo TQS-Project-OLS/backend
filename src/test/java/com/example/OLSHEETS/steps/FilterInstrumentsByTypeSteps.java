@@ -21,7 +21,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class SearchInstrumentsSteps {
+public class FilterInstrumentsByTypeSteps {
 
     @LocalServerPort
     private int port;
@@ -35,10 +35,10 @@ public class SearchInstrumentsSteps {
     @Autowired
     private com.example.OLSHEETS.data.BookingRepository bookingRepository;
 
-    private List<Instrument> searchResults;
+    private List<Instrument> filterResults;
 
-    @Given("the following instruments exist:")
-    public void theFollowingInstrumentsExist(DataTable dataTable) {
+    @Given("the following instruments exist for type filter:")
+    public void theFollowingInstrumentsExistForTypeFilter(DataTable dataTable) {
         bookingRepository.deleteAll();
         instrumentRepository.deleteAll();
 
@@ -46,17 +46,7 @@ public class SearchInstrumentsSteps {
         for (Map<String, String> row : rows) {
             Instrument instrument = new Instrument();
             instrument.setName(row.get("name"));
-
-            // Parse type string to InstrumentType enum
-            String typeStr = row.get("type");
-            if (typeStr != null && !typeStr.isEmpty()) {
-                try {
-                    instrument.setType(InstrumentType.valueOf(typeStr.toUpperCase().replace(" ", "_")));
-                } catch (IllegalArgumentException e) {
-                    instrument.setType(mapLegacyTypeToEnum(typeStr));
-                }
-            }
-
+            instrument.setType(InstrumentType.valueOf(row.get("type")));
             instrument.setFamily(InstrumentFamily.valueOf(row.get("family").toUpperCase()));
             instrument.setAge(Integer.parseInt(row.get("age")));
             instrument.setPrice(Double.parseDouble(row.get("price")));
@@ -67,23 +57,9 @@ public class SearchInstrumentsSteps {
         }
     }
 
-    private InstrumentType mapLegacyTypeToEnum(String legacyType) {
-        // Map legacy string values to enum values
-        return switch (legacyType.toLowerCase()) {
-            case "digital piano", "digital" -> InstrumentType.DIGITAL;
-            case "electric guitar", "electric" -> InstrumentType.ELECTRIC;
-            case "acoustic guitar", "acoustic" -> InstrumentType.ACOUSTIC;
-            case "alto sax", "saxophone" -> InstrumentType.WIND;
-            case "bass guitar", "bass" -> InstrumentType.BASS;
-            case "drums" -> InstrumentType.DRUMS;
-            case "synthesizer", "synth" -> InstrumentType.SYNTHESIZER;
-            default -> InstrumentType.ACOUSTIC; // Default fallback
-        };
-    }
-
-    @When("I search for instruments with name {string}")
-    public void iSearchForInstrumentsWithName(String name) {
-        String url = "http://localhost:" + port + "/api/instruments/search?name=" + name;
+    @When("I filter instruments by type {string}")
+    public void iFilterInstrumentsByType(String type) {
+        String url = "http://localhost:" + port + "/api/instruments/filter/type?type=" + type;
 
         ResponseEntity<List<Instrument>> response = restTemplate.exchange(
             url,
@@ -92,18 +68,27 @@ public class SearchInstrumentsSteps {
             new ParameterizedTypeReference<List<Instrument>>() {}
         );
 
-        searchResults = response.getBody();
+        filterResults = response.getBody();
     }
 
-    @Then("I should receive {int} instrument(s)")
-    public void iShouldReceiveInstruments(int count) {
-        assertNotNull(searchResults);
-        assertEquals(count, searchResults.size());
+    @Then("the filter should return {int} instrument(s)")
+    public void theFilterShouldReturnInstruments(int count) {
+        assertNotNull(filterResults);
+        assertEquals(count, filterResults.size());
     }
 
-    @Then("the first instrument should have name {string}")
-    public void theFirstInstrumentShouldHaveName(String expectedName) {
-        assertNotNull(searchResults);
-        assertEquals(expectedName, searchResults.get(0).getName());
+    @Then("the first filtered instrument should have name {string}")
+    public void theFirstFilteredInstrumentShouldHaveName(String expectedName) {
+        assertNotNull(filterResults);
+        assertEquals(expectedName, filterResults.get(0).getName());
+    }
+
+    @Then("all filtered instruments should have type {string}")
+    public void allFilteredInstrumentsShouldHaveType(String expectedType) {
+        assertNotNull(filterResults);
+        InstrumentType expectedEnum = InstrumentType.valueOf(expectedType);
+        for (Instrument instrument : filterResults) {
+            assertEquals(expectedEnum, instrument.getType());
+        }
     }
 }
