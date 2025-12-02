@@ -1,6 +1,7 @@
 package com.example.OLSHEETS.boundary;
 
 import com.example.OLSHEETS.data.Instrument;
+import com.example.OLSHEETS.data.InstrumentType;
 import com.example.OLSHEETS.data.InstrumentFamily;
 import com.example.OLSHEETS.service.ProductsService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,12 @@ public class ProductsController {
         return ResponseEntity.ok(instruments);
     }
 
+    @GetMapping("/filter/type")
+    public ResponseEntity<List<Instrument>> filterByType(@RequestParam InstrumentType type) {
+        List<Instrument> instruments = productsService.filterInstrumentsByType(type);
+        return ResponseEntity.ok(instruments);
+
+    }
     @GetMapping("/filter/family")
     public ResponseEntity<List<Instrument>> filterByFamily(@RequestParam InstrumentFamily family) {
         List<Instrument> instruments = productsService.filterInstrumentsByFamily(family);

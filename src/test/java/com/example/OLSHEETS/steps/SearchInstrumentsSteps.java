@@ -1,6 +1,7 @@
 package com.example.OLSHEETS.steps;
 
 import com.example.OLSHEETS.data.Instrument;
+import com.example.OLSHEETS.data.InstrumentType;
 import com.example.OLSHEETS.data.InstrumentFamily;
 import com.example.OLSHEETS.repository.InstrumentRepository;
 import io.cucumber.datatable.DataTable;
@@ -41,7 +42,17 @@ public class SearchInstrumentsSteps {
         for (Map<String, String> row : rows) {
             Instrument instrument = new Instrument();
             instrument.setName(row.get("name"));
-            instrument.setType(row.get("type"));
+
+            // Parse type string to InstrumentType enum
+            String typeStr = row.get("type");
+            if (typeStr != null && !typeStr.isEmpty()) {
+                try {
+                    instrument.setType(InstrumentType.valueOf(typeStr.toUpperCase().replace(" ", "_")));
+                } catch (IllegalArgumentException e) {
+                    instrument.setType(mapLegacyTypeToEnum(typeStr));
+                }
+            }
+
             instrument.setFamily(InstrumentFamily.valueOf(row.get("family").toUpperCase()));
             instrument.setAge(Integer.parseInt(row.get("age")));
             instrument.setPrice(Double.parseDouble(row.get("price")));
@@ -50,6 +61,20 @@ public class SearchInstrumentsSteps {
 
             instrumentRepository.save(instrument);
         }
+    }
+
+    private InstrumentType mapLegacyTypeToEnum(String legacyType) {
+        // Map legacy string values to enum values
+        return switch (legacyType.toLowerCase()) {
+            case "digital piano", "digital" -> InstrumentType.DIGITAL;
+            case "electric guitar", "electric" -> InstrumentType.ELECTRIC;
+            case "acoustic guitar", "acoustic" -> InstrumentType.ACOUSTIC;
+            case "alto sax", "saxophone" -> InstrumentType.WIND;
+            case "bass guitar", "bass" -> InstrumentType.BASS;
+            case "drums" -> InstrumentType.DRUMS;
+            case "synthesizer", "synth" -> InstrumentType.SYNTHESIZER;
+            default -> InstrumentType.ACOUSTIC; // Default fallback
+        };
     }
 
     @When("I search for instruments with name {string}")

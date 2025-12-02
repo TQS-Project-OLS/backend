@@ -16,7 +16,9 @@ import lombok.NoArgsConstructor;
 public class Instrument extends Item {
 
     private Integer age;
-    private String type;
+
+    @Enumerated(EnumType.STRING)
+    private InstrumentType type;
 
     @Enumerated(EnumType.STRING)
     private InstrumentFamily family;

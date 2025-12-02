@@ -1,6 +1,7 @@
 package com.example.OLSHEETS.service;
 
 import com.example.OLSHEETS.data.Instrument;
+import com.example.OLSHEETS.data.InstrumentType;
 import com.example.OLSHEETS.data.InstrumentFamily;
 import com.example.OLSHEETS.data.MusicSheet;
 import com.example.OLSHEETS.data.SheetCategory;
@@ -24,6 +25,9 @@ public class ProductsService {
         return instrumentRepository.findByNameContainingIgnoreCase(name);
     }
 
+    public List<Instrument> filterInstrumentsByType(InstrumentType type) {
+        return instrumentRepository.findByType(type);
+    }
     public List<Instrument> filterInstrumentsByFamily(InstrumentFamily family) {
         return instrumentRepository.findByFamily(family);
     }

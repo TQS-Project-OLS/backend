@@ -1,6 +1,7 @@
 package com.example.OLSHEETS.unit;
 
 import com.example.OLSHEETS.data.Instrument;
+import com.example.OLSHEETS.data.InstrumentType;
 import com.example.OLSHEETS.data.InstrumentFamily;
 import com.example.OLSHEETS.data.MusicSheet;
 import com.example.OLSHEETS.data.SheetCategory;
@@ -126,6 +127,46 @@ class ProductsServiceTest {
         assertNotNull(result);
         assertEquals(2, result.size());
         verify(instrumentRepository, times(1)).findByNameContainingIgnoreCase("yamaha");
+    }
+
+    @Test
+    void testFilterInstrumentsByType_WithMatchingResults_ShouldReturnInstruments() {
+        Instrument electricGuitar = new Instrument();
+        electricGuitar.setId(3L);
+        electricGuitar.setName("Fender Stratocaster");
+        electricGuitar.setType(InstrumentType.ELECTRIC);
+        electricGuitar.setPrice(899.99);
+
+        Instrument electricBass = new Instrument();
+        electricBass.setId(4L);
+        electricBass.setName("Fender Precision Bass");
+        electricBass.setType(InstrumentType.ELECTRIC);
+        electricBass.setPrice(799.99);
+
+        List<Instrument> electricInstruments = Arrays.asList(electricGuitar, electricBass);
+
+        when(instrumentRepository.findByType(InstrumentType.ELECTRIC)).thenReturn(electricInstruments);
+
+        List<Instrument> result = productsService.filterInstrumentsByType(InstrumentType.ELECTRIC);
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals(InstrumentType.ELECTRIC, result.get(0).getType());
+        assertEquals(InstrumentType.ELECTRIC, result.get(1).getType());
+        verify(instrumentRepository, times(1)).findByType(InstrumentType.ELECTRIC);
+    }
+
+    @Test
+    void testFilterInstrumentsByType_WithNoResults_ShouldReturnEmptyList() {
+        List<Instrument> emptyList = Collections.emptyList();
+
+        when(instrumentRepository.findByType(InstrumentType.SYNTHESIZER)).thenReturn(emptyList);
+
+        List<Instrument> result = productsService.filterInstrumentsByType(InstrumentType.SYNTHESIZER);
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(instrumentRepository, times(1)).findByType(InstrumentType.SYNTHESIZER);
     }
 
     @Test
