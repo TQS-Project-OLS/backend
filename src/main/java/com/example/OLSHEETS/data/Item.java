@@ -1,5 +1,7 @@
 package com.example.OLSHEETS.data;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import java.util.List;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import jakarta.persistence.*;
@@ -28,6 +30,10 @@ public abstract class Item {
 
     @Column(length = 1000)
     private String description;
+
+    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<FileReference> fileReferences;
 
     private int ownerId;
 
@@ -75,6 +81,14 @@ public abstract class Item {
 
     public void setPrice(Double price) {
         this.price = price;
+    }
+
+    public List<FileReference> getFileReferences() {
+        return fileReferences;
+    }
+
+    public void setFileReferences(List<FileReference> fileReferences) {
+        this.fileReferences = fileReferences;
     }
 
     @Override

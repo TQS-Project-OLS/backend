@@ -2,6 +2,7 @@ package com.example.OLSHEETS.steps;
 
 import com.example.OLSHEETS.data.MusicSheet;
 import com.example.OLSHEETS.repository.MusicSheetRepository;
+import com.example.OLSHEETS.repository.SheetBookingRepository;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -30,10 +31,14 @@ public class FilterSheetsByCategorySteps {
     @Autowired
     private MusicSheetRepository musicSheetRepository;
 
+    @Autowired
+    private SheetBookingRepository sheetBookingRepository;
+
     private List<MusicSheet> filterResults;
 
     @Given("the following music sheets exist for category filter:")
     public void theFollowingMusicSheetsExistForCategoryFilter(DataTable dataTable) {
+        sheetBookingRepository.deleteAll();
         musicSheetRepository.deleteAll();
 
         List<Map<String, String>> rows = dataTable.asMaps(String.class, String.class);
