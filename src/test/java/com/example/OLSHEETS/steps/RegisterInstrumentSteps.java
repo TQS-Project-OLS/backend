@@ -164,7 +164,6 @@ public class RegisterInstrumentSteps {
         assertNotNull(lastRegisteredInstrument.getName());
         assertNotNull(lastRegisteredInstrument.getDescription());
         assertNotNull(lastRegisteredInstrument.getPrice());
-        assertNotNull(lastRegisteredInstrument.getOwnerId());
         assertEquals(currentOwnerId, lastRegisteredInstrument.getOwnerId());
         assertNotNull(lastRegisteredInstrument.getAge());
         assertNotNull(lastRegisteredInstrument.getType());
