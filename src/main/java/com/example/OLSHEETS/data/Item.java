@@ -1,11 +1,22 @@
 package com.example.OLSHEETS.data;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import jakarta.persistence.*;
 
 @Entity
 @Table(name = "item")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "item_type")
+@JsonTypeInfo(
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.PROPERTY,
+    property = "itemType"
+)
+@JsonSubTypes({
+    @JsonSubTypes.Type(value = Instrument.class, name = "INSTRUMENT"),
+    @JsonSubTypes.Type(value = MusicSheet.class, name = "MUSICSHEET")
+})
 public abstract class Item {
 
     @Id
