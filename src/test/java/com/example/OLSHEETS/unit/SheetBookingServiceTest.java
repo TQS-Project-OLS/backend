@@ -3,6 +3,7 @@ package com.example.OLSHEETS.unit;
 import com.example.OLSHEETS.data.MusicSheet;
 import com.example.OLSHEETS.data.SheetBooking;
 import com.example.OLSHEETS.data.BookingStatus;
+import com.example.OLSHEETS.data.SheetCategory;
 import com.example.OLSHEETS.repository.MusicSheetRepository;
 import com.example.OLSHEETS.repository.SheetBookingRepository;
 import com.example.OLSHEETS.service.SheetBookingService;
@@ -40,8 +41,14 @@ class SheetBookingServiceTest {
 
     @BeforeEach
     void setUp() {
-        sheet = new MusicSheet("Moonlight Sonata", "classical", "Beautiful piece", new BigDecimal("5.00"), 1L);
+        sheet = new MusicSheet();
         sheet.setId(1L);
+        sheet.setName("Moonlight Sonata");
+        sheet.setComposer("Beethoven");
+        sheet.setCategory(SheetCategory.CLASSICAL);
+        sheet.setDescription("Beautiful piece");
+        sheet.setPrice(5.00);
+        sheet.setOwnerId(1);
 
         booking = new SheetBooking(sheet, 100L, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
         booking.setId(1L);

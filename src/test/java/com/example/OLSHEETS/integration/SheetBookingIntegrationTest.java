@@ -3,6 +3,7 @@ package com.example.OLSHEETS.integration;
 import com.example.OLSHEETS.data.BookingStatus;
 import com.example.OLSHEETS.data.MusicSheet;
 import com.example.OLSHEETS.data.SheetBooking;
+import com.example.OLSHEETS.data.SheetCategory;
 import com.example.OLSHEETS.repository.MusicSheetRepository;
 import com.example.OLSHEETS.repository.SheetBookingRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,7 +48,13 @@ class SheetBookingIntegrationTest {
 
     @Test
     void whenCreateValidBooking_thenSuccess() {
-        MusicSheet sheet = new MusicSheet("Fur Elise", "classical", "Famous piano piece", new BigDecimal("3.50"), 1L);
+        MusicSheet sheet = new MusicSheet();
+        sheet.setName("Fur Elise");
+        sheet.setComposer("Beethoven");
+        sheet.setCategory(SheetCategory.CLASSICAL);
+        sheet.setDescription("Famous piano piece");
+        sheet.setPrice(3.50);
+        sheet.setOwnerId(1);
         sheet = sheetRepository.save(sheet);
 
         Map<String, Object> request = new HashMap<>();
@@ -66,7 +73,13 @@ class SheetBookingIntegrationTest {
 
     @Test
     void whenGetBookingsByRenter_thenReturnList() {
-        MusicSheet sheet = new MusicSheet("Canon in D", "classical", "Wedding music", new BigDecimal("4.00"), 1L);
+        MusicSheet sheet = new MusicSheet();
+        sheet.setName("Canon in D");
+        sheet.setComposer("Pachelbel");
+        sheet.setCategory(SheetCategory.CLASSICAL);
+        sheet.setDescription("Wedding music");
+        sheet.setPrice(4.00);
+        sheet.setOwnerId(1);
         sheet = sheetRepository.save(sheet);
 
         SheetBooking booking = new SheetBooking(sheet, 300L, LocalDate.now().plusDays(1), LocalDate.now().plusDays(2));
