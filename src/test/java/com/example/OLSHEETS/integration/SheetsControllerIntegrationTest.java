@@ -9,10 +9,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -184,5 +188,125 @@ class SheetsControllerIntegrationTest {
                 .andExpect(jsonPath("$[0].description", is("Piano Sonata No. 14")))
                 .andExpect(jsonPath("$[0].ownerId", is(1)))
                 .andExpect(jsonPath("$[0].price", is(9.99)));
+    }
+
+    // Pricing Management Integration Tests
+
+    @Test
+    void testUpdatePrice_WithValidPrice_ShouldUpdateAndPersist() throws Exception {
+        // Get the saved sheet
+        MusicSheet savedSheet = musicSheetRepository.findAll().get(0);
+        Long itemId = savedSheet.getId();
+        Double originalPrice = savedSheet.getPrice();
+        Double newPrice = 15.99;
+
+        // Update the price
+        mockMvc.perform(put("/api/items/price/" + itemId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"newPrice\": 15.99}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.itemId", is(itemId.intValue())))
+                .andExpect(jsonPath("$.itemName", is(savedSheet.getName())))
+                .andExpect(jsonPath("$.newPrice", is(15.99)));
+
+        // Verify the price was actually updated in the database
+        MusicSheet updatedSheet = musicSheetRepository.findById(itemId).orElseThrow();
+        assertEquals(newPrice, updatedSheet.getPrice());
+        assertNotEquals(originalPrice, updatedSheet.getPrice());
+    }
+
+    @Test
+    void testUpdatePrice_ForDifferentSheets_ShouldUpdateIndependently() throws Exception {
+        MusicSheet sheet1 = musicSheetRepository.findAll().get(0);
+        MusicSheet sheet2 = musicSheetRepository.findAll().get(1);
+
+        // Update first sheet
+        mockMvc.perform(put("/api/items/price/" + sheet1.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"newPrice\": 20.0}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.newPrice", is(20.0)));
+
+        // Update second sheet
+        mockMvc.perform(put("/api/items/price/" + sheet2.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"newPrice\": 25.0}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.newPrice", is(25.0)));
+
+        // Verify both updates persisted independently
+        MusicSheet updatedSheet1 = musicSheetRepository.findById(sheet1.getId()).orElseThrow();
+        MusicSheet updatedSheet2 = musicSheetRepository.findById(sheet2.getId()).orElseThrow();
+        assertEquals(20.0, updatedSheet1.getPrice());
+        assertEquals(25.0, updatedSheet2.getPrice());
+    }
+
+    @Test
+    void testUpdatePrice_WithNegativePrice_ShouldReturnBadRequest() throws Exception {
+        MusicSheet savedSheet = musicSheetRepository.findAll().get(0);
+        Long itemId = savedSheet.getId();
+        Double originalPrice = savedSheet.getPrice();
+
+        mockMvc.perform(put("/api/items/price/" + itemId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"newPrice\": -10.0}"))
+                .andExpect(status().isBadRequest());
+
+        // Verify the price was NOT updated
+        MusicSheet unchangedSheet = musicSheetRepository.findById(itemId).orElseThrow();
+        assertEquals(originalPrice, unchangedSheet.getPrice());
+    }
+
+    @Test
+    void testUpdatePrice_WithZeroPrice_ShouldSucceed() throws Exception {
+        MusicSheet savedSheet = musicSheetRepository.findAll().get(0);
+        Long itemId = savedSheet.getId();
+
+        mockMvc.perform(put("/api/items/price/" + itemId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"newPrice\": 0.0}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.newPrice", is(0.0)));
+
+        MusicSheet updatedSheet = musicSheetRepository.findById(itemId).orElseThrow();
+        assertEquals(0.0, updatedSheet.getPrice());
+    }
+
+    @Test
+    void testGetPrice_WithExistingSheet_ShouldReturnCurrentPrice() throws Exception {
+        MusicSheet savedSheet = musicSheetRepository.findAll().get(0);
+        Long itemId = savedSheet.getId();
+        Double expectedPrice = savedSheet.getPrice();
+
+        mockMvc.perform(get("/api/items/price/" + itemId))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(jsonPath("$.itemId", is(itemId.intValue())))
+                .andExpect(jsonPath("$.price", is(expectedPrice)));
+    }
+
+    @Test
+    void testGetPrice_AfterUpdate_ShouldReturnNewPrice() throws Exception {
+        MusicSheet savedSheet = musicSheetRepository.findAll().get(0);
+        Long itemId = savedSheet.getId();
+
+        // Update the price
+        mockMvc.perform(put("/api/items/price/" + itemId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"newPrice\": 19.99}"))
+                .andExpect(status().isOk());
+
+        // Get the price and verify it was updated
+        mockMvc.perform(get("/api/items/price/" + itemId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.price", is(19.99)));
+    }
+
+    @Test
+    void testGetPrice_WithNonExistentSheet_ShouldReturnNotFound() throws Exception {
+        Long nonExistentId = 99999L;
+
+        mockMvc.perform(get("/api/items/price/" + nonExistentId))
+                .andExpect(status().isNotFound());
     }
 }

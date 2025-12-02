@@ -236,7 +236,7 @@ class ProductsControllerTest {
 
         verify(productsService, times(1)).filterInstrumentsByType(InstrumentType.ACOUSTIC);
     }
-
+    
     @Test
     void testRegisterInstrument_WithValidData_ShouldReturnCreatedInstrument() throws Exception {
         InstrumentRegistrationRequest request = new InstrumentRegistrationRequest();

@@ -4,6 +4,7 @@ import com.example.OLSHEETS.data.Instrument;
 import com.example.OLSHEETS.data.InstrumentType;
 import com.example.OLSHEETS.data.InstrumentFamily;
 import com.example.OLSHEETS.data.MusicSheet;
+import com.example.OLSHEETS.data.Item;
 import com.example.OLSHEETS.dto.InstrumentRegistrationRequest;
 import com.example.OLSHEETS.repository.InstrumentRepository;
 import com.example.OLSHEETS.repository.MusicSheetRepository;
@@ -18,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -272,6 +274,153 @@ class ProductsServiceTest {
         verify(musicSheetRepository, times(1)).findByCategory(category);
     }
 
+    // Pricing Management Tests
+
+    @Test
+    void testUpdateItemPrice_ForInstrument_ShouldUpdateAndReturnItem() {
+        Long itemId = 1L;
+        Double newPrice = 799.99;
+        
+        when(instrumentRepository.findById(itemId)).thenReturn(Optional.of(instrument1));
+        when(instrumentRepository.save(any(Instrument.class))).thenReturn(instrument1);
+
+        Item result = productsService.updateItemPrice(itemId, newPrice);
+
+        assertNotNull(result);
+        assertEquals(newPrice, result.getPrice());
+        verify(instrumentRepository, times(1)).findById(itemId);
+        verify(instrumentRepository, times(1)).save(instrument1);
+        // musicSheetRepository is only checked if instrumentRepository returns empty
+        verify(musicSheetRepository, never()).findById(any());
+    }
+
+    @Test
+    void testUpdateItemPrice_ForMusicSheet_ShouldUpdateAndReturnItem() {
+        Long itemId = 1L;
+        Double newPrice = 15.99;
+        
+        when(instrumentRepository.findById(itemId)).thenReturn(Optional.empty());
+        when(musicSheetRepository.findById(itemId)).thenReturn(Optional.of(sheet1));
+        when(musicSheetRepository.save(any(MusicSheet.class))).thenReturn(sheet1);
+
+        Item result = productsService.updateItemPrice(itemId, newPrice);
+
+        assertNotNull(result);
+        assertEquals(newPrice, result.getPrice());
+        verify(instrumentRepository, times(1)).findById(itemId);
+        verify(musicSheetRepository, times(1)).findById(itemId);
+        verify(musicSheetRepository, times(1)).save(sheet1);
+    }
+
+    @Test
+    void testUpdateItemPrice_WithNullPrice_ShouldThrowException() {
+        Long itemId = 1L;
+        
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> productsService.updateItemPrice(itemId, null)
+        );
+
+        assertEquals("Price must be a positive number", exception.getMessage());
+        verify(instrumentRepository, never()).findById(any());
+        verify(musicSheetRepository, never()).findById(any());
+    }
+
+    @Test
+    void testUpdateItemPrice_WithNegativePrice_ShouldThrowException() {
+        Long itemId = 1L;
+        Double negativePrice = -10.0;
+        
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> productsService.updateItemPrice(itemId, negativePrice)
+        );
+
+        assertEquals("Price must be a positive number", exception.getMessage());
+        verify(instrumentRepository, never()).findById(any());
+        verify(musicSheetRepository, never()).findById(any());
+    }
+
+    @Test
+    void testUpdateItemPrice_WithZeroPrice_ShouldSucceed() {
+        Long itemId = 1L;
+        Double zeroPrice = 0.0;
+        
+        when(instrumentRepository.findById(itemId)).thenReturn(Optional.of(instrument1));
+        when(instrumentRepository.save(any(Instrument.class))).thenReturn(instrument1);
+
+        Item result = productsService.updateItemPrice(itemId, zeroPrice);
+
+        assertNotNull(result);
+        assertEquals(zeroPrice, result.getPrice());
+        verify(instrumentRepository, times(1)).save(instrument1);
+    }
+
+    @Test
+    void testUpdateItemPrice_WithNonExistentItem_ShouldThrowException() {
+        Long itemId = 999L;
+        Double newPrice = 100.0;
+        
+        when(instrumentRepository.findById(itemId)).thenReturn(Optional.empty());
+        when(musicSheetRepository.findById(itemId)).thenReturn(Optional.empty());
+
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> productsService.updateItemPrice(itemId, newPrice)
+        );
+
+        assertEquals("Item not found with id: " + itemId, exception.getMessage());
+        verify(instrumentRepository, times(1)).findById(itemId);
+        verify(musicSheetRepository, times(1)).findById(itemId);
+        verify(instrumentRepository, never()).save(any());
+        verify(musicSheetRepository, never()).save(any());
+    }
+
+    @Test
+    void testGetItemPrice_ForInstrument_ShouldReturnPrice() {
+        Long itemId = 1L;
+        
+        when(instrumentRepository.findById(itemId)).thenReturn(Optional.of(instrument1));
+
+        Double result = productsService.getItemPrice(itemId);
+
+        assertNotNull(result);
+        assertEquals(599.99, result);
+        verify(instrumentRepository, times(1)).findById(itemId);
+    }
+
+    @Test
+    void testGetItemPrice_ForMusicSheet_ShouldReturnPrice() {
+        Long itemId = 1L;
+        
+        when(instrumentRepository.findById(itemId)).thenReturn(Optional.empty());
+        when(musicSheetRepository.findById(itemId)).thenReturn(Optional.of(sheet1));
+
+        Double result = productsService.getItemPrice(itemId);
+
+        assertNotNull(result);
+        assertEquals(9.99, result);
+        verify(instrumentRepository, times(1)).findById(itemId);
+        verify(musicSheetRepository, times(1)).findById(itemId);
+    }
+
+    @Test
+    void testGetItemPrice_WithNonExistentItem_ShouldThrowException() {
+        Long itemId = 999L;
+        
+        when(instrumentRepository.findById(itemId)).thenReturn(Optional.empty());
+        when(musicSheetRepository.findById(itemId)).thenReturn(Optional.empty());
+
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> productsService.getItemPrice(itemId)
+        );
+
+        assertEquals("Item not found with id: " + itemId, exception.getMessage());
+        verify(instrumentRepository, times(1)).findById(itemId);
+        verify(musicSheetRepository, times(1)).findById(itemId);
+    }
+    
     @Test
     void testRegisterInstrument_WithValidData_ShouldReturnSavedInstrument() {
         InstrumentRegistrationRequest request = new InstrumentRegistrationRequest();

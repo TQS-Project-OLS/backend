@@ -36,7 +36,7 @@ public class ProductsController {
         List<Instrument> instruments = productsService.filterInstrumentsByFamily(family);
         return ResponseEntity.ok(instruments);
     }
-
+    
     @PostMapping("/register")
     public ResponseEntity<Instrument> registerInstrument(@RequestBody InstrumentRegistrationRequest request) {
         Instrument registeredInstrument = productsService.registerInstrument(request);
