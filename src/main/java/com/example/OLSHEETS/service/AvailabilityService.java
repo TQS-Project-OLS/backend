@@ -1,7 +1,7 @@
 package com.example.OLSHEETS.service;
 
 import com.example.OLSHEETS.data.Availability;
-import com.example.OLSHEETS.data.AvailabilityRepository;
+import com.example.OLSHEETS.repository.AvailabilityRepository;
 import com.example.OLSHEETS.data.AvailabilityReason;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

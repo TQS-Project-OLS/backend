@@ -1,7 +1,7 @@
 package com.example.OLSHEETS.service;
 
 import com.example.OLSHEETS.data.Booking;
-import com.example.OLSHEETS.data.BookingRepository;
+import com.example.OLSHEETS.repository.BookingRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

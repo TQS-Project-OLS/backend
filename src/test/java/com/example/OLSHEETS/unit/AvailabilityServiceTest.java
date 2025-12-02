@@ -2,7 +2,7 @@ package com.example.OLSHEETS.unit;
 
 import com.example.OLSHEETS.data.Availability;
 import com.example.OLSHEETS.data.AvailabilityReason;
-import com.example.OLSHEETS.data.AvailabilityRepository;
+import com.example.OLSHEETS.repository.AvailabilityRepository;
 import com.example.OLSHEETS.service.AvailabilityService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

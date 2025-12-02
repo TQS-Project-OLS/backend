@@ -21,12 +21,13 @@ public class AvailabilityController {
     }
 
     @PostMapping
-    public Availability createUnavailability(
+    public ResponseEntity<Availability> createUnavailability(
             @RequestParam Long instrumentId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             @RequestParam AvailabilityReason reason) {
-        return availabilityService.createUnavailability(instrumentId, startDate, endDate, reason);
+        Availability availability = availabilityService.createUnavailability(instrumentId, startDate, endDate, reason);
+        return ResponseEntity.status(201).body(availability);
     }
 
     @GetMapping
