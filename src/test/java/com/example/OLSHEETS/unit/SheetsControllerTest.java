@@ -3,12 +3,14 @@ package com.example.OLSHEETS.unit;
 import com.example.OLSHEETS.boundary.SheetsController;
 import com.example.OLSHEETS.data.MusicSheet;
 import com.example.OLSHEETS.data.SheetCategory;
+import com.example.OLSHEETS.data.Item;
 import com.example.OLSHEETS.service.ProductsService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Arrays;
@@ -19,6 +21,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(SheetsController.class)
@@ -162,5 +165,88 @@ class SheetsControllerTest {
                 .andExpect(jsonPath("$[0].description", is("Piano Sonata No. 14")))
                 .andExpect(jsonPath("$[0].price", is(9.99)))
                 .andExpect(jsonPath("$[0].ownerId", is(1)));
+    }
+
+    // Pricing Management Tests
+
+    @Test
+    void testUpdatePrice_WithValidPrice_ShouldReturnUpdatedSheet() throws Exception {
+        Long itemId = 1L;
+        Double newPrice = 14.99;
+        sheet1.setPrice(newPrice);
+        
+        when(productsService.updateItemPrice(itemId, newPrice)).thenReturn(sheet1);
+
+        mockMvc.perform(put("/api/sheets/price/" + itemId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"newPrice\": 14.99}"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(jsonPath("$.itemId", is(1)))
+                .andExpect(jsonPath("$.itemName", is("Moonlight Sonata")))
+                .andExpect(jsonPath("$.newPrice", is(14.99)));
+
+        verify(productsService, times(1)).updateItemPrice(itemId, newPrice);
+    }
+
+    @Test
+    void testUpdatePrice_WithNegativePrice_ShouldReturnBadRequest() throws Exception {
+        Long itemId = 1L;
+        Double negativePrice = -5.0;
+        
+        when(productsService.updateItemPrice(itemId, negativePrice))
+            .thenThrow(new IllegalArgumentException("Price must be a positive number"));
+
+        mockMvc.perform(put("/api/sheets/price/" + itemId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"newPrice\": -5.0}"))
+                .andExpect(status().isBadRequest());
+
+        verify(productsService, times(1)).updateItemPrice(itemId, negativePrice);
+    }
+
+    @Test
+    void testUpdatePrice_WithNonExistentSheet_ShouldReturnBadRequest() throws Exception {
+        Long itemId = 999L;
+        Double newPrice = 10.0;
+        
+        when(productsService.updateItemPrice(itemId, newPrice))
+            .thenThrow(new IllegalArgumentException("Item not found with id: " + itemId));
+
+        mockMvc.perform(put("/api/sheets/price/" + itemId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"newPrice\": 10.0}"))
+                .andExpect(status().isBadRequest());
+
+        verify(productsService, times(1)).updateItemPrice(itemId, newPrice);
+    }
+
+    @Test
+    void testGetPrice_WithExistingSheet_ShouldReturnPrice() throws Exception {
+        Long itemId = 1L;
+        Double price = 9.99;
+        
+        when(productsService.getItemPrice(itemId)).thenReturn(price);
+
+        mockMvc.perform(get("/api/sheets/price/" + itemId))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(jsonPath("$.itemId", is(1)))
+                .andExpect(jsonPath("$.price", is(9.99)));
+
+        verify(productsService, times(1)).getItemPrice(itemId);
+    }
+
+    @Test
+    void testGetPrice_WithNonExistentSheet_ShouldReturnNotFound() throws Exception {
+        Long itemId = 999L;
+        
+        when(productsService.getItemPrice(itemId))
+            .thenThrow(new IllegalArgumentException("Item not found with id: " + itemId));
+
+        mockMvc.perform(get("/api/sheets/price/" + itemId))
+                .andExpect(status().isNotFound());
+
+        verify(productsService, times(1)).getItemPrice(itemId);
     }
 }
