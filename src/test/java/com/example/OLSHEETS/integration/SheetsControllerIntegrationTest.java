@@ -1,7 +1,6 @@
 package com.example.OLSHEETS.integration;
 
 import com.example.OLSHEETS.data.MusicSheet;
-import com.example.OLSHEETS.data.SheetCategory;
 import com.example.OLSHEETS.repository.MusicSheetRepository;
 import com.example.OLSHEETS.repository.SheetBookingRepository;
 import org.junit.jupiter.api.AfterEach;

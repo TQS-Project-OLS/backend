@@ -1,7 +1,7 @@
 package com.example.OLSHEETS.steps;
 
 import com.example.OLSHEETS.data.Booking;
-import com.example.OLSHEETS.data.BookingRepository;
+import com.example.OLSHEETS.repository.BookingRepository;
 import com.example.OLSHEETS.data.BookingStatus;
 import com.example.OLSHEETS.data.Instrument;
 import com.example.OLSHEETS.data.InstrumentFamily;
@@ -23,7 +23,6 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 

@@ -1,7 +1,6 @@
 package com.example.OLSHEETS.data;
 
 import jakarta.persistence.*;
-
 @Entity
 @DiscriminatorValue("MUSIC_SHEET")
 public class MusicSheet extends Item {

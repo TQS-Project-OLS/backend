@@ -33,7 +33,7 @@ public class SearchInstrumentsSteps {
     private InstrumentRepository instrumentRepository;
 
     @Autowired
-    private com.example.OLSHEETS.data.BookingRepository bookingRepository;
+    private com.example.OLSHEETS.repository.BookingRepository bookingRepository;
 
     private List<Instrument> searchResults;
 

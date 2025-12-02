@@ -1,7 +1,7 @@
 package com.example.OLSHEETS.unit;
 
 import com.example.OLSHEETS.data.Booking;
-import com.example.OLSHEETS.data.BookingRepository;
+import com.example.OLSHEETS.repository.BookingRepository;
 import com.example.OLSHEETS.data.BookingStatus;
 import com.example.OLSHEETS.data.Item;
 import com.example.OLSHEETS.data.Instrument;
