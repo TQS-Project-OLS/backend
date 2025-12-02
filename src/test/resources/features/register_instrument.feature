@@ -40,7 +40,7 @@ Feature: Register instruments with photos and descriptions
       | family      | GUITAR                        |
       | photos      | /photos/taylor.jpg            |
     Then the instrument should be successfully registered
-    And the instrument should have 1 photos attached
+    And the instrument should have 1 photo attached
     And the registered instrument should have name "Taylor 814ce"
     And the registered instrument should have description "Premium acoustic guitar"
     And the registered instrument should have price 3299.99
