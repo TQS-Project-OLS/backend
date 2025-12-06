@@ -30,11 +30,15 @@ class BookingServiceIntegrationTest {
     @Autowired
     ItemRepository itemRepository;
 
+    @Autowired
+    com.example.OLSHEETS.repository.SheetBookingRepository sheetBookingRepository;
+
     private Instrument instrument1;
     private Instrument instrument2;
 
     @BeforeEach
-    void cleanup(){
+    void cleanup() {
+        sheetBookingRepository.deleteAll();
         bookingRepository.deleteAll();
         itemRepository.deleteAll();
 
@@ -60,8 +64,9 @@ class BookingServiceIntegrationTest {
     }
 
     @Test
-    void shouldCreateBookingWhenNoOverlap(){
-        Booking b = bookingService.createBooking(instrument1.getId(), 100L, LocalDate.of(2025,12,1), LocalDate.of(2025,12,5));
+    void shouldCreateBookingWhenNoOverlap() {
+        Booking b = bookingService.createBooking(instrument1.getId(), 100L, LocalDate.of(2025, 12, 1),
+                LocalDate.of(2025, 12, 5));
         assertThat(b.getId()).isNotNull();
         assertThat(b.getItem().getId()).isEqualTo(instrument1.getId());
         assertThat(b.getItem().getOwnerId()).isEqualTo(10);
@@ -69,17 +74,17 @@ class BookingServiceIntegrationTest {
     }
 
     @Test
-    void shouldRejectOverlappingBooking(){
-        bookingService.createBooking(instrument2.getId(), 100L, LocalDate.of(2025,12,10), LocalDate.of(2025,12,15));
+    void shouldRejectOverlappingBooking() {
+        bookingService.createBooking(instrument2.getId(), 100L, LocalDate.of(2025, 12, 10), LocalDate.of(2025, 12, 15));
 
-        assertThatThrownBy(() ->
-                bookingService.createBooking(instrument2.getId(), 200L, LocalDate.of(2025,12,14), LocalDate.of(2025,12,20))
-        ).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> bookingService.createBooking(instrument2.getId(), 200L, LocalDate.of(2025, 12, 14),
+                LocalDate.of(2025, 12, 20))).isInstanceOf(IllegalStateException.class);
     }
 
     @Test
     void shouldApproveBookingWhenOwnerIsAuthorized() {
-        Booking booking = bookingService.createBooking(instrument1.getId(), 100L, LocalDate.of(2025,12,1), LocalDate.of(2025,12,5));
+        Booking booking = bookingService.createBooking(instrument1.getId(), 100L, LocalDate.of(2025, 12, 1),
+                LocalDate.of(2025, 12, 5));
         assertThat(booking.getStatus()).isEqualTo(BookingStatus.PENDING);
 
         Booking approved = bookingService.approveBooking(booking.getId(), 10);
@@ -90,7 +95,8 @@ class BookingServiceIntegrationTest {
 
     @Test
     void shouldRejectBookingWhenOwnerIsAuthorized() {
-        Booking booking = bookingService.createBooking(instrument1.getId(), 100L, LocalDate.of(2025,12,1), LocalDate.of(2025,12,5));
+        Booking booking = bookingService.createBooking(instrument1.getId(), 100L, LocalDate.of(2025, 12, 1),
+                LocalDate.of(2025, 12, 5));
         assertThat(booking.getStatus()).isEqualTo(BookingStatus.PENDING);
 
         Booking rejected = bookingService.rejectBooking(booking.getId(), 10);
@@ -101,11 +107,12 @@ class BookingServiceIntegrationTest {
 
     @Test
     void shouldThrowExceptionWhenNonOwnerTriesToApprove() {
-        Booking booking = bookingService.createBooking(instrument1.getId(), 100L, LocalDate.of(2025,12,1), LocalDate.of(2025,12,5));
+        Booking booking = bookingService.createBooking(instrument1.getId(), 100L, LocalDate.of(2025, 12, 1),
+                LocalDate.of(2025, 12, 5));
 
         assertThatThrownBy(() -> bookingService.approveBooking(booking.getId(), 999))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("not authorized");
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("not authorized");
 
         Booking found = bookingRepository.findById(booking.getId()).orElseThrow();
         assertThat(found.getStatus()).isEqualTo(BookingStatus.PENDING);
@@ -113,11 +120,12 @@ class BookingServiceIntegrationTest {
 
     @Test
     void shouldThrowExceptionWhenNonOwnerTriesToReject() {
-        Booking booking = bookingService.createBooking(instrument1.getId(), 100L, LocalDate.of(2025,12,1), LocalDate.of(2025,12,5));
+        Booking booking = bookingService.createBooking(instrument1.getId(), 100L, LocalDate.of(2025, 12, 1),
+                LocalDate.of(2025, 12, 5));
 
         assertThatThrownBy(() -> bookingService.rejectBooking(booking.getId(), 999))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("not authorized");
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("not authorized");
 
         Booking found = bookingRepository.findById(booking.getId()).orElseThrow();
         assertThat(found.getStatus()).isEqualTo(BookingStatus.PENDING);
@@ -126,34 +134,36 @@ class BookingServiceIntegrationTest {
     @Test
     void shouldThrowExceptionWhenApprovingNonExistentBooking() {
         assertThatThrownBy(() -> bookingService.approveBooking(999L, 10))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("Booking not found");
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Booking not found");
     }
 
     @Test
     void shouldThrowExceptionWhenRejectingNonExistentBooking() {
         assertThatThrownBy(() -> bookingService.rejectBooking(999L, 10))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("Booking not found");
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Booking not found");
     }
 
     @Test
     void shouldThrowExceptionWhenApprovingAlreadyApprovedBooking() {
-        Booking booking = bookingService.createBooking(instrument1.getId(), 100L, LocalDate.of(2025,12,1), LocalDate.of(2025,12,5));
+        Booking booking = bookingService.createBooking(instrument1.getId(), 100L, LocalDate.of(2025, 12, 1),
+                LocalDate.of(2025, 12, 5));
         bookingService.approveBooking(booking.getId(), 10);
 
         assertThatThrownBy(() -> bookingService.approveBooking(booking.getId(), 10))
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessageContaining("already been approved");
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("already been approved");
     }
 
     @Test
     void shouldThrowExceptionWhenRejectingAlreadyRejectedBooking() {
-        Booking booking = bookingService.createBooking(instrument1.getId(), 100L, LocalDate.of(2025,12,1), LocalDate.of(2025,12,5));
+        Booking booking = bookingService.createBooking(instrument1.getId(), 100L, LocalDate.of(2025, 12, 1),
+                LocalDate.of(2025, 12, 5));
         bookingService.rejectBooking(booking.getId(), 10);
 
         assertThatThrownBy(() -> bookingService.rejectBooking(booking.getId(), 10))
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessageContaining("already been rejected");
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("already been rejected");
     }
 }

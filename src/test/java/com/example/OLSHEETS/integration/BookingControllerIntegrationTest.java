@@ -33,10 +33,14 @@ class BookingControllerIntegrationTest {
     @Autowired
     private ItemRepository itemRepository;
 
+    @Autowired
+    private com.example.OLSHEETS.repository.SheetBookingRepository sheetBookingRepository;
+
     private Instrument instrument;
 
     @BeforeEach
     void cleanup() {
+        sheetBookingRepository.deleteAll();
         bookingRepository.deleteAll();
         itemRepository.deleteAll();
 
@@ -57,7 +61,7 @@ class BookingControllerIntegrationTest {
         booking = bookingRepository.save(booking);
 
         mockMvc.perform(put("/api/bookings/" + booking.getId() + "/approve")
-                        .param("ownerId", "10"))
+                .param("ownerId", "10"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.id", is(booking.getId().intValue())))
@@ -71,7 +75,7 @@ class BookingControllerIntegrationTest {
         booking = bookingRepository.save(booking);
 
         mockMvc.perform(put("/api/bookings/" + booking.getId() + "/approve")
-                        .param("ownerId", "999"))
+                .param("ownerId", "999"))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.error").value(org.hamcrest.Matchers.containsString("not authorized")));
@@ -84,7 +88,7 @@ class BookingControllerIntegrationTest {
         booking = bookingRepository.save(booking);
 
         mockMvc.perform(put("/api/bookings/" + booking.getId() + "/approve")
-                        .param("ownerId", "10"))
+                .param("ownerId", "10"))
                 .andExpect(status().isConflict())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.error").value(org.hamcrest.Matchers.containsString("already been approved")));
@@ -93,7 +97,7 @@ class BookingControllerIntegrationTest {
     @Test
     void testApproveBooking_NotFound() throws Exception {
         mockMvc.perform(put("/api/bookings/999/approve")
-                        .param("ownerId", "10"))
+                .param("ownerId", "10"))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.error").value(org.hamcrest.Matchers.containsString("Booking not found")));
@@ -105,7 +109,7 @@ class BookingControllerIntegrationTest {
         booking = bookingRepository.save(booking);
 
         mockMvc.perform(put("/api/bookings/" + booking.getId() + "/reject")
-                        .param("ownerId", "10"))
+                .param("ownerId", "10"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.id", is(booking.getId().intValue())))
@@ -119,7 +123,7 @@ class BookingControllerIntegrationTest {
         booking = bookingRepository.save(booking);
 
         mockMvc.perform(put("/api/bookings/" + booking.getId() + "/reject")
-                        .param("ownerId", "999"))
+                .param("ownerId", "999"))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.error").value(org.hamcrest.Matchers.containsString("not authorized")));
@@ -132,7 +136,7 @@ class BookingControllerIntegrationTest {
         booking = bookingRepository.save(booking);
 
         mockMvc.perform(put("/api/bookings/" + booking.getId() + "/reject")
-                        .param("ownerId", "10"))
+                .param("ownerId", "10"))
                 .andExpect(status().isConflict())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.error").value(org.hamcrest.Matchers.containsString("already been rejected")));
@@ -141,7 +145,7 @@ class BookingControllerIntegrationTest {
     @Test
     void testRejectBooking_NotFound() throws Exception {
         mockMvc.perform(put("/api/bookings/999/reject")
-                        .param("ownerId", "10"))
+                .param("ownerId", "10"))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.error").value(org.hamcrest.Matchers.containsString("Booking not found")));
@@ -154,10 +158,11 @@ class BookingControllerIntegrationTest {
         booking = bookingRepository.save(booking);
 
         mockMvc.perform(put("/api/bookings/" + booking.getId() + "/reject")
-                        .param("ownerId", "10"))
+                .param("ownerId", "10"))
                 .andExpect(status().isConflict())
                 .andExpect(content().contentType("application/json"))
-                .andExpect(jsonPath("$.error").value(org.hamcrest.Matchers.containsString("Cannot reject an approved booking")));
+                .andExpect(jsonPath("$.error")
+                        .value(org.hamcrest.Matchers.containsString("Cannot reject an approved booking")));
     }
 
     @Test
@@ -167,9 +172,10 @@ class BookingControllerIntegrationTest {
         booking = bookingRepository.save(booking);
 
         mockMvc.perform(put("/api/bookings/" + booking.getId() + "/approve")
-                        .param("ownerId", "10"))
+                .param("ownerId", "10"))
                 .andExpect(status().isConflict())
                 .andExpect(content().contentType("application/json"))
-                .andExpect(jsonPath("$.error").value(org.hamcrest.Matchers.containsString("Cannot approve a rejected booking")));
+                .andExpect(jsonPath("$.error")
+                        .value(org.hamcrest.Matchers.containsString("Cannot approve a rejected booking")));
     }
 }
