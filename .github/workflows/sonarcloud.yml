@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - dev
   pull_request:
     types: [opened, synchronize, reopened]
 
@@ -37,3 +36,28 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: mvn -B clean verify jacoco:report org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=TQS-Project-OLS_olsheets
+
+      - run: echo "Running tests"
+      - id: set_test_output
+        run: echo "::set-output name=should_deploy::yes"
+
+    outputs:
+      should_deploy: ${{ steps.set_test_output.outputs.should_deploy }}
+
+  deploy:
+    name: Deploy System
+    runs-on: self-hosted
+    needs: [sonarcloud]
+    if: github.event_name == 'push'
+        && needs.sonarcloud.outputs.should_deploy == 'yes'
+        && needs.sonarcloud.result == 'success'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Deploy containers
+        run: |
+          docker compose down --remove-orphans
+          docker compose up --build -d
