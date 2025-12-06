@@ -3,17 +3,15 @@ package com.example.OLSHEETS.unit;
 import com.example.OLSHEETS.boundary.SheetBookingController;
 import com.example.OLSHEETS.data.MusicSheet;
 import com.example.OLSHEETS.data.SheetBooking;
-import com.example.OLSHEETS.data.BookingStatus;
 import com.example.OLSHEETS.service.SheetBookingService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -29,7 +27,7 @@ class SheetBookingControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private SheetBookingService bookingService;
 
     private MusicSheet sheet;

@@ -1,7 +1,6 @@
 package com.example.OLSHEETS.boundary;
 
 import com.example.OLSHEETS.data.MusicSheet;
-import com.example.OLSHEETS.data.SheetCategory;
 import com.example.OLSHEETS.service.ProductsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

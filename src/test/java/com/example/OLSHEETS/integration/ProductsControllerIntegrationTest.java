@@ -20,7 +20,9 @@ import java.util.Collections;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -196,6 +198,134 @@ class ProductsControllerIntegrationTest {
                 .andExpect(jsonPath("$[0].family", is("WOODWIND")));
     }
 
+    // Pricing Management Integration Tests
+
+    @Test
+    void testUpdatePrice_WithValidPrice_ShouldUpdateAndPersist() throws Exception {
+        // Get the saved instrument
+        Instrument savedInstrument = instrumentRepository.findAll().get(0);
+        Long itemId = savedInstrument.getId();
+        Double originalPrice = savedInstrument.getPrice();
+        Double newPrice = 749.99;
+
+        // Update the price
+        mockMvc.perform(put("/api/items/price/" + itemId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"newPrice\": 749.99}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.itemId", is(itemId.intValue())))
+                .andExpect(jsonPath("$.itemName", is(savedInstrument.getName())))
+                .andExpect(jsonPath("$.newPrice", is(749.99)));
+
+        // Verify the price was actually updated in the database
+        Instrument updatedInstrument = instrumentRepository.findById(itemId).orElseThrow();
+        assertEquals(newPrice, updatedInstrument.getPrice());
+        assertNotEquals(originalPrice, updatedInstrument.getPrice());
+    }
+
+    @Test
+    void testUpdatePrice_MultipleUpdates_ShouldPersistLastValue() throws Exception {
+        Instrument savedInstrument = instrumentRepository.findAll().get(0);
+        Long itemId = savedInstrument.getId();
+
+        // First update
+        mockMvc.perform(put("/api/items/price/" + itemId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"newPrice\": 100.0}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.newPrice", is(100.0)));
+
+        // Second update
+        mockMvc.perform(put("/api/items/price/" + itemId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"newPrice\": 200.0}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.newPrice", is(200.0)));
+
+        // Verify the final price
+        Instrument updatedInstrument = instrumentRepository.findById(itemId).orElseThrow();
+        assertEquals(200.0, updatedInstrument.getPrice());
+    }
+
+    @Test
+    void testUpdatePrice_WithZeroPrice_ShouldSucceed() throws Exception {
+        Instrument savedInstrument = instrumentRepository.findAll().get(0);
+        Long itemId = savedInstrument.getId();
+
+        mockMvc.perform(put("/api/items/price/" + itemId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"newPrice\": 0.0}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.newPrice", is(0.0)));
+
+        Instrument updatedInstrument = instrumentRepository.findById(itemId).orElseThrow();
+        assertEquals(0.0, updatedInstrument.getPrice());
+    }
+
+    @Test
+    void testUpdatePrice_WithNegativePrice_ShouldReturnBadRequest() throws Exception {
+        Instrument savedInstrument = instrumentRepository.findAll().get(0);
+        Long itemId = savedInstrument.getId();
+        Double originalPrice = savedInstrument.getPrice();
+
+        mockMvc.perform(put("/api/items/price/" + itemId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"newPrice\": -50.0}"))
+                .andExpect(status().isBadRequest());
+
+        // Verify the price was NOT updated
+        Instrument unchangedInstrument = instrumentRepository.findById(itemId).orElseThrow();
+        assertEquals(originalPrice, unchangedInstrument.getPrice());
+    }
+
+    @Test
+    void testUpdatePrice_WithNonExistentItem_ShouldReturnBadRequest() throws Exception {
+        Long nonExistentId = 99999L;
+
+        mockMvc.perform(put("/api/items/price/" + nonExistentId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"newPrice\": 100.0}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testGetPrice_WithExistingItem_ShouldReturnCurrentPrice() throws Exception {
+        Instrument savedInstrument = instrumentRepository.findAll().get(0);
+        Long itemId = savedInstrument.getId();
+        Double expectedPrice = savedInstrument.getPrice();
+
+        mockMvc.perform(get("/api/items/price/" + itemId))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(jsonPath("$.itemId", is(itemId.intValue())))
+                .andExpect(jsonPath("$.price", is(expectedPrice)));
+    }
+
+    @Test
+    void testGetPrice_AfterUpdate_ShouldReturnNewPrice() throws Exception {
+        Instrument savedInstrument = instrumentRepository.findAll().get(0);
+        Long itemId = savedInstrument.getId();
+
+        // Update the price
+        mockMvc.perform(put("/api/items/price/" + itemId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"newPrice\": 999.99}"))
+                .andExpect(status().isOk());
+
+        // Get the price and verify it was updated
+        mockMvc.perform(get("/api/items/price/" + itemId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.price", is(999.99)));
+    }
+
+    @Test
+    void testGetPrice_WithNonExistentItem_ShouldReturnNotFound() throws Exception {
+        Long nonExistentId = 99999L;
+
+        mockMvc.perform(get("/api/items/price/" + nonExistentId))
+                .andExpect(status().isNotFound());
+    }
+    
     @Test
     void testRegisterInstrument_WithValidData_ShouldCreateInstrument() throws Exception {
         InstrumentRegistrationRequest request = new InstrumentRegistrationRequest();

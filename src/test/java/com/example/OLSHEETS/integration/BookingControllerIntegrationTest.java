@@ -1,12 +1,16 @@
 package com.example.OLSHEETS.integration;
 
 import com.example.OLSHEETS.data.Booking;
-import com.example.OLSHEETS.data.BookingRepository;
+import com.example.OLSHEETS.repository.AvailabilityRepository;
+import com.example.OLSHEETS.repository.BookingRepository;
+import com.example.OLSHEETS.repository.SheetBookingRepository;
 import com.example.OLSHEETS.data.BookingStatus;
 import com.example.OLSHEETS.data.Instrument;
 import com.example.OLSHEETS.data.InstrumentFamily;
 import com.example.OLSHEETS.data.InstrumentType;
 import com.example.OLSHEETS.repository.ItemRepository;
+import com.example.OLSHEETS.repository.MusicSheetRepository;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +35,15 @@ class BookingControllerIntegrationTest {
     private BookingRepository bookingRepository;
 
     @Autowired
+    private SheetBookingRepository sheetBookingRepository;
+
+    @Autowired
+    private AvailabilityRepository availabilityRepository;
+
+    @Autowired
+    private MusicSheetRepository musicSheetRepository;
+
+    @Autowired
     private ItemRepository itemRepository;
 
     @Autowired
@@ -42,8 +55,10 @@ class BookingControllerIntegrationTest {
     void cleanup() {
         sheetBookingRepository.deleteAll();
         bookingRepository.deleteAll();
+        availabilityRepository.deleteAll();
+        musicSheetRepository.deleteAll();
         itemRepository.deleteAll();
-
+        
         instrument = new Instrument();
         instrument.setName("Test Guitar");
         instrument.setDescription("A test guitar");
