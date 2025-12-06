@@ -46,9 +46,6 @@ class BookingControllerIntegrationTest {
     @Autowired
     private ItemRepository itemRepository;
 
-    @Autowired
-    private com.example.OLSHEETS.repository.SheetBookingRepository sheetBookingRepository;
-
     private Instrument instrument;
 
     @BeforeEach
@@ -58,7 +55,7 @@ class BookingControllerIntegrationTest {
         availabilityRepository.deleteAll();
         musicSheetRepository.deleteAll();
         itemRepository.deleteAll();
-        
+
         instrument = new Instrument();
         instrument.setName("Test Guitar");
         instrument.setDescription("A test guitar");
