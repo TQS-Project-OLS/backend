@@ -42,7 +42,7 @@ public class FilterInstrumentsByTypeSteps {
 
     private WebDriver driver;
     private WebDriverWait wait;
-    private static final String FRONTEND_URL = "http://localhost:5000";
+    private static final String FRONTEND_URL = "http://localhost:8080";
 
     @Before
     public void setUp() {

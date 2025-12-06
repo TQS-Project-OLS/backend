@@ -49,7 +49,7 @@ public class AdminOversightSteps {
 
     private WebDriver driver;
     private WebDriverWait wait;
-    private static final String FRONTEND_URL = "http://localhost:5000";
+    private static final String FRONTEND_URL = "http://localhost:8080";
 
     private Map<Long, Instrument> instrumentMap = new HashMap<>();
     private int visibleBookingCount = 0;
@@ -124,7 +124,7 @@ public class AdminOversightSteps {
 
     @When("the admin requests all bookings")
     public void theAdminRequestsAllBookings() {
-        driver.get(FRONTEND_URL + "/my-bookings");
+        driver.get(FRONTEND_URL + "/my-bookings.html");
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("bookings-grid")));
 
         // Click load bookings button
@@ -173,7 +173,7 @@ public class AdminOversightSteps {
 
     @When("the admin requests booking statistics")
     public void theAdminRequestsBookingStatistics() {
-        driver.get(FRONTEND_URL + "/my-bookings");
+        driver.get(FRONTEND_URL + "/my-bookings.html");
 
         // Click refresh statistics button
         wait.until(

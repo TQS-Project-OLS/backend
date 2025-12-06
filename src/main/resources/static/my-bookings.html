@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Bookings - OLSHEETS</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <nav>
+        <div class="nav-brand">🎸 OLSHEETS</div>
+        <div class="nav-links">
+            <a href="index.html">Discover</a>
+            <a href="rent-up.html">Rent Up</a>
+            <a href="my-bookings.html" class="active">My Bookings</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>My Bookings</h1>
+            <p>Manage your rentals and view booking history</p>
+        </div>
+
+        <!-- Admin Statistics -->
+        <div class="search-section">
+            <h2>Booking Statistics</h2>
+            <div id="statistics-container" class="results-grid">
+                <div class="result-card">
+                    <h3>Total Bookings</h3>
+                    <div class="price" id="stat-total">-</div>
+                </div>
+                <div class="result-card">
+                    <h3>Pending</h3>
+                    <div class="price" id="stat-pending">-</div>
+                </div>
+                <div class="result-card">
+                    <h3>Approved</h3>
+                    <div class="price" id="stat-approved">-</div>
+                </div>
+                <div class="result-card">
+                    <h3>Rejected</h3>
+                    <div class="price" id="stat-rejected">-</div>
+                </div>
+                <div class="result-card">
+                    <h3>Cancelled</h3>
+                    <div class="price" id="stat-cancelled">-</div>
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="loadStatistics()">Refresh Statistics</button>
+        </div>
+
+        <!-- All Bookings -->
+        <div class="results-container">
+            <h2>All Bookings</h2>
+            <button class="btn btn-secondary" onclick="loadBookings()">Load Bookings</button>
+            <div class="results-grid" id="bookings-grid">
+                <div class="empty-state">
+                    <h3>No bookings yet</h3>
+                    <p>Click "Load Bookings" to view all bookings</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadBookings() {
+            try {
+                const response = await fetch('/api/admin/bookings');
+                const bookings = await response.json();
+                displayBookings(bookings);
+            } catch (error) {
+                console.error('Error loading bookings:', error);
+            }
+        }
+
+        function displayBookings(bookings) {
+            const grid = document.getElementById('bookings-grid');
+
+            if (bookings.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No bookings found</h3>
+                        <p>No bookings are currently in the system</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = bookings.map(booking => `
+                <div class="result-card booking-item" data-id="${booking.id}">
+                    <h3>${booking.item ? booking.item.name : 'Unknown Item'}</h3>
+                    <p><strong>Renter ID:</strong> ${booking.renterId}</p>
+                    <p><strong>Start Date:</strong> ${booking.startDate}</p>
+                    <p><strong>End Date:</strong> ${booking.endDate}</p>
+                    <p><strong>Status:</strong> ${booking.status}</p>
+                    ${booking.item && booking.item.price ? `<div class="price">$${booking.item.price.toFixed(2)}/day</div>` : ''}
+                    <span class="badge">${booking.status}</span>
+                </div>
+            `).join('');
+        }
+
+        async function loadStatistics() {
+            try {
+                const response = await fetch('/api/admin/statistics/bookings');
+                const stats = await response.json();
+                displayStatistics(stats);
+            } catch (error) {
+                console.error('Error loading statistics:', error);
+            }
+        }
+
+        function displayStatistics(stats) {
+            document.getElementById('stat-total').textContent = stats.total || 0;
+            document.getElementById('stat-pending').textContent = stats.pending || 0;
+            document.getElementById('stat-approved').textContent = stats.approved || 0;
+            document.getElementById('stat-rejected').textContent = stats.rejected || 0;
+            document.getElementById('stat-cancelled').textContent = stats.cancelled || 0;
+        }
+
+        // Load statistics on page load
+        window.addEventListener('load', loadStatistics);
+    </script>
+</body>
+
+</html>

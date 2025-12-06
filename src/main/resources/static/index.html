@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discover - OLSHEETS</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <nav>
+        <div class="nav-brand">🎸 OLSHEETS</div>
+        <div class="nav-links">
+            <a href="index.html" class="active">Discover</a>
+            <a href="rent-up.html">Rent Up</a>
+            <a href="my-bookings.html">My Bookings</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>Discover Music</h1>
+            <p>Find the perfect instruments and music sheets for your musical journey</p>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('instruments')">Instruments</button>
+            <button class="tab" onclick="switchTab('sheets')">Music Sheets</button>
+        </div>
+
+        <!-- Instruments Section -->
+        <div id="instruments-section">
+            <!-- Search Instruments -->
+            <div class="search-section">
+                <h2>Search Instruments</h2>
+                <div class="search-form">
+                    <div class="form-group">
+                        <label for="instrument-search-input">Instrument Name</label>
+                        <input type="text" id="instrument-search-input" placeholder="e.g., Yamaha P-125">
+                    </div>
+                    <button class="btn btn-primary" id="search-instruments-btn"
+                        onclick="searchInstruments()">Search</button>
+                </div>
+            </div>
+
+            <!-- Filter Instruments -->
+            <div class="search-section">
+                <h2>Filter by Type</h2>
+                <div class="search-form">
+                    <div class="form-group">
+                        <label for="filter-type-select">Instrument Type</label>
+                        <select id="filter-type-select">
+                            <option value="">-- Select Type --</option>
+                            <option value="ACOUSTIC">Acoustic</option>
+                            <option value="ELECTRIC">Electric</option>
+                            <option value="DIGITAL">Digital</option>
+                            <option value="BASS">Bass</option>
+                            <option value="DRUMS">Drums</option>
+                            <option value="WIND">Wind</option>
+                            <option value="SYNTHESIZER">Synthesizer</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-secondary" id="filter-type-btn"
+                        onclick="filterInstrumentsByType()">Filter</button>
+                </div>
+            </div>
+
+            <!-- Instruments Results -->
+            <div class="results-container" id="instruments-results">
+                <h2>Results</h2>
+                <div class="results-grid" id="instruments-grid">
+                    <div class="empty-state">
+                        <h3>No instruments found</h3>
+                        <p>Try searching or filtering to discover instruments</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Music Sheets Section -->
+        <div id="sheets-section" class="hidden">
+            <!-- Search Sheets -->
+            <div class="search-section">
+                <h2>Search Music Sheets</h2>
+                <div class="search-form">
+                    <div class="form-group">
+                        <label for="sheet-search-input">Sheet Name</label>
+                        <input type="text" id="sheet-search-input" placeholder="e.g., Moonlight Sonata">
+                    </div>
+                    <button class="btn btn-primary" id="search-sheets-btn" onclick="searchSheets()">Search</button>
+                </div>
+            </div>
+
+            <!-- Filter Sheets -->
+            <div class="search-section">
+                <h2>Filter by Category</h2>
+                <div class="search-form">
+                    <div class="form-group">
+                        <label for="filter-category-select">Category</label>
+                        <select id="filter-category-select">
+                            <option value="">-- Select Category --</option>
+                            <option value="CLASSICAL">Classical</option>
+                            <option value="JAZZ">Jazz</option>
+                            <option value="ROCK">Rock</option>
+                            <option value="POP">Pop</option>
+                            <option value="BLUES">Blues</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-secondary" id="filter-category-btn"
+                        onclick="filterSheetsByCategory()">Filter</button>
+                </div>
+            </div>
+
+            <!-- Sheets Results -->
+            <div class="results-container" id="sheets-results">
+                <h2>Results</h2>
+                <div class="results-grid" id="sheets-grid">
+                    <div class="empty-state">
+                        <h3>No music sheets found</h3>
+                        <p>Try searching or filtering to discover music sheets</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tab) {
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+
+            if (tab === 'instruments') {
+                document.getElementById('instruments-section').classList.remove('hidden');
+                document.getElementById('sheets-section').classList.add('hidden');
+            } else {
+                document.getElementById('instruments-section').classList.add('hidden');
+                document.getElementById('sheets-section').classList.remove('hidden');
+            }
+        }
+
+        async function searchInstruments() {
+            const name = document.getElementById('instrument-search-input').value;
+            if (!name) return;
+
+            try {
+                const response = await fetch(`/api/instruments/search?name=${encodeURIComponent(name)}`);
+                const instruments = await response.json();
+                displayInstruments(instruments);
+            } catch (error) {
+                console.error('Error searching instruments:', error);
+            }
+        }
+
+        async function filterInstrumentsByType() {
+            const type = document.getElementById('filter-type-select').value;
+            if (!type) return;
+
+            try {
+                const response = await fetch(`/api/instruments/filter/type?type=${type}`);
+                const instruments = await response.json();
+                displayInstruments(instruments);
+            } catch (error) {
+                console.error('Error filtering instruments:', error);
+            }
+        }
+
+        function displayInstruments(instruments) {
+            const grid = document.getElementById('instruments-grid');
+
+            if (instruments.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No instruments found</h3>
+                        <p>Try a different search or filter</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = instruments.map(instrument => `
+                <div class="result-card instrument-result" data-id="${instrument.id}">
+                    <h3>${instrument.name}</h3>
+                    <p><strong>Type:</strong> ${instrument.type}</p>
+                    <p><strong>Family:</strong> ${instrument.family}</p>
+                    <p><strong>Age:</strong> ${instrument.age} years</p>
+                    <p>${instrument.description}</p>
+                    <div class="price">$${instrument.price.toFixed(2)}</div>
+                    <span class="badge">${instrument.type}</span>
+                </div>
+            `).join('');
+        }
+
+        async function searchSheets() {
+            const name = document.getElementById('sheet-search-input').value;
+            if (!name) return;
+
+            try {
+                const response = await fetch(`/api/sheets/search?name=${encodeURIComponent(name)}`);
+                const sheets = await response.json();
+                displaySheets(sheets);
+            } catch (error) {
+                console.error('Error searching sheets:', error);
+            }
+        }
+
+        async function filterSheetsByCategory() {
+            const category = document.getElementById('filter-category-select').value;
+            if (!category) return;
+
+            try {
+                const response = await fetch(`/api/sheets/filter/category?category=${category}`);
+                const sheets = await response.json();
+                displaySheets(sheets);
+            } catch (error) {
+                console.error('Error filtering sheets:', error);
+            }
+        }
+
+        function displaySheets(sheets) {
+            const grid = document.getElementById('sheets-grid');
+
+            if (sheets.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No music sheets found</h3>
+                        <p>Try a different search or filter</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = sheets.map(sheet => `
+                <div class="result-card sheet-result" data-id="${sheet.id}">
+                    <h3>${sheet.name}</h3>
+                    <p><strong>Composer:</strong> ${sheet.composer}</p>
+                    <p><strong>Category:</strong> ${sheet.category}</p>
+                    <p>${sheet.description}</p>
+                    <div class="price">$${sheet.price.toFixed(2)}</div>
+                    <span class="badge">${sheet.category}</span>
+                </div>
+            `).join('');
+        }
+
+        // Allow Enter key to trigger search
+        document.getElementById('instrument-search-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') searchInstruments();
+        });
+
+        document.getElementById('sheet-search-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') searchSheets();
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rent Up - OLSHEETS</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <nav>
+        <div class="nav-brand">🎸 OLSHEETS</div>
+        <div class="nav-links">
+            <a href="index.html">Discover</a>
+            <a href="rent-up.html" class="active">Rent Up</a>
+            <a href="my-bookings.html">My Bookings</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>Rent Up Your Instrument</h1>
+            <p>List your instrument and start earning rental income</p>
+        </div>
+
+        <div class="registration-form">
+            <h2>Register New Instrument</h2>
+
+            <div id="registration-message" class="message hidden"></div>
+
+            <form id="registration-form" onsubmit="registerInstrument(event)">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="instrument-name">Instrument Name *</label>
+                        <input type="text" id="instrument-name" required placeholder="e.g., Gibson Les Paul">
+                    </div>
+                    <div class="form-group">
+                        <label for="instrument-price">Price (per day) *</label>
+                        <input type="number" id="instrument-price" step="0.01" required placeholder="e.g., 1499.99">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="instrument-type">Type *</label>
+                        <select id="instrument-type" required>
+                            <option value="">-- Select Type --</option>
+                            <option value="ACOUSTIC">Acoustic</option>
+                            <option value="ELECTRIC">Electric</option>
+                            <option value="DIGITAL">Digital</option>
+                            <option value="BASS">Bass</option>
+                            <option value="DRUMS">Drums</option>
+                            <option value="WIND">Wind</option>
+                            <option value="SYNTHESIZER">Synthesizer</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="instrument-family">Family *</label>
+                        <select id="instrument-family" required>
+                            <option value="">-- Select Family --</option>
+                            <option value="GUITAR">Guitar</option>
+                            <option value="KEYBOARD">Keyboard</option>
+                            <option value="PERCUSSION">Percussion</option>
+                            <option value="WOODWIND">Woodwind</option>
+                            <option value="BRASS">Brass</option>
+                            <option value="STRING">String</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="instrument-age">Age (years) *</label>
+                        <input type="number" id="instrument-age" required placeholder="e.g., 3">
+                    </div>
+                    <div class="form-group">
+                        <label for="owner-id">Owner ID *</label>
+                        <input type="number" id="owner-id" required placeholder="e.g., 5">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="instrument-description">Description *</label>
+                    <textarea id="instrument-description" required
+                        placeholder="Describe your instrument's condition, features, and any additional details..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="instrument-photos">Photo Paths (comma-separated)</label>
+                    <input type="text" id="instrument-photos"
+                        placeholder="e.g., /photos/guitar1.jpg,/photos/guitar2.jpg">
+                </div>
+
+                <button type="submit" class="btn btn-success" id="register-instrument-btn">Register Instrument</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        async function registerInstrument(event) {
+            event.preventDefault();
+
+            const messageDiv = document.getElementById('registration-message');
+            messageDiv.classList.add('hidden');
+
+            // Collect form data
+            const data = {
+                name: document.getElementById('instrument-name').value,
+                price: parseFloat(document.getElementById('instrument-price').value),
+                type: document.getElementById('instrument-type').value,
+                family: document.getElementById('instrument-family').value,
+                age: parseInt(document.getElementById('instrument-age').value),
+                ownerId: parseInt(document.getElementById('owner-id').value),
+                description: document.getElementById('instrument-description').value
+            };
+
+            // Handle photos
+            const photosInput = document.getElementById('instrument-photos').value.trim();
+            if (photosInput) {
+                data.photoPaths = photosInput.split(',').map(p => p.trim());
+            }
+
+            try {
+                const response = await fetch('/api/instruments/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    messageDiv.textContent = `Success! Instrument "${result.name}" registered with ID ${result.id}`;
+                    messageDiv.className = 'message success';
+                    messageDiv.classList.remove('hidden');
+
+                    // Reset form
+                    document.getElementById('registration-form').reset();
+
+                    // Scroll to message
+                    messageDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                } else {
+                    const error = await response.json();
+                    messageDiv.textContent = `Error: ${error.error || 'Registration failed'}`;
+                    messageDiv.className = 'message error';
+                    messageDiv.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Error registering instrument:', error);
+                messageDiv.textContent = `Error: ${error.message}`;
+                messageDiv.className = 'message error';
+                messageDiv.classList.remove('hidden');
+            }
+        }
+    </script>
+</body>
+
+</html>

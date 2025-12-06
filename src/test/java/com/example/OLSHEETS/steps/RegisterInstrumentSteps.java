@@ -36,7 +36,7 @@ public class RegisterInstrumentSteps {
 
     private WebDriver driver;
     private WebDriverWait wait;
-    private static final String FRONTEND_URL = "http://localhost:5000";
+    private static final String FRONTEND_URL = "http://localhost:8080";
 
     private Integer currentOwnerId;
     private int instrumentCountBeforeRegistration;
@@ -73,7 +73,7 @@ public class RegisterInstrumentSteps {
 
     private void registerInstrument(Map<String, String> details) {
         // Navigate to Rent Up page
-        driver.get(FRONTEND_URL + "/rent-up");
+        driver.get(FRONTEND_URL + "/rent-up.html");
 
         // Wait for form to load
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("instrument-name")));
