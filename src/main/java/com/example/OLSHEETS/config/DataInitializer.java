@@ -8,8 +8,9 @@ import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 
-@Component
+
 @Profile("dev")
+@Component
 public class DataInitializer {
 
     @Autowired
