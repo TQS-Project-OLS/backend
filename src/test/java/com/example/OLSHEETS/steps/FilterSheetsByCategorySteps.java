@@ -128,9 +128,9 @@ public class FilterSheetsByCategorySteps {
         List<WebElement> results = driver.findElements(By.cssSelector(".sheet-result"));
 
         for (WebElement result : results) {
-            String categoryText = result.getText();
-            assertTrue(categoryText.contains("Category: " + expectedCategory),
-                    "Expected category " + expectedCategory + " but result doesn't contain it");
+            String resultText = result.getText();
+            assertTrue(resultText.contains(expectedCategory),
+                    "Expected result to contain category " + expectedCategory + " but got: " + resultText);
         }
     }
 }

@@ -7,45 +7,56 @@
     <title>Rent Up - OLSHEETS</title>
     <link rel="stylesheet" href="css/styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="js/nav.js"></script>
+    <style>
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-md);
+        }
+
+        @media (max-width: 600px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 
 <body>
-    <nav>
-        <div class="nav-brand">🎸 OLSHEETS</div>
-        <div class="nav-links">
-            <a href="index.html">Discover</a>
-            <a href="rent-up.html" class="active">Rent Up</a>
-            <a href="my-bookings.html">My Bookings</a>
-        </div>
-    </nav>
+    <!-- Nav injected by js/nav.js -->
 
-    <div class="container">
+    <div class="container" style="max-width: 800px;">
         <div class="page-header">
             <h1>Rent Up Your Instrument</h1>
-            <p>List your instrument and start earning rental income</p>
+            <p style="color: var(--text-muted);">List your instrument and start earning rental income</p>
         </div>
 
-        <div class="registration-form">
-            <h2>Register New Instrument</h2>
+        <div class="card">
+            <h2 class="text-center" style="margin-bottom: var(--space-xl);">Register New Instrument</h2>
 
-            <div id="registration-message" class="message hidden"></div>
+            <div id="registration-message" class="hidden"
+                style="padding: var(--space-md); border-radius: var(--radius-md); margin-bottom: var(--space-lg); text-align: center;">
+            </div>
 
             <form id="registration-form" onsubmit="registerInstrument(event)">
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="instrument-name">Instrument Name *</label>
-                        <input type="text" id="instrument-name" required placeholder="e.g., Gibson Les Paul">
+                        <label class="form-label" for="instrument-name">Instrument Name *</label>
+                        <input type="text" class="form-control" id="instrument-name" required
+                            placeholder="e.g., Gibson Les Paul">
                     </div>
                     <div class="form-group">
-                        <label for="instrument-price">Price (per day) *</label>
-                        <input type="number" id="instrument-price" step="0.01" required placeholder="e.g., 1499.99">
+                        <label class="form-label" for="instrument-price">Price (per day) *</label>
+                        <input type="number" class="form-control" id="instrument-price" step="0.01" required
+                            placeholder="e.g., 50.00">
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="instrument-type">Type *</label>
-                        <select id="instrument-type" required>
+                        <label class="form-label" for="instrument-type">Type *</label>
+                        <select class="form-control" id="instrument-type" required>
                             <option value="">-- Select Type --</option>
                             <option value="ACOUSTIC">Acoustic</option>
                             <option value="ELECTRIC">Electric</option>
@@ -57,8 +68,8 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="instrument-family">Family *</label>
-                        <select id="instrument-family" required>
+                        <label class="form-label" for="instrument-family">Family *</label>
+                        <select class="form-control" id="instrument-family" required>
                             <option value="">-- Select Family --</option>
                             <option value="GUITAR">Guitar</option>
                             <option value="KEYBOARD">Keyboard</option>
@@ -72,28 +83,31 @@
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="instrument-age">Age (years) *</label>
-                        <input type="number" id="instrument-age" required placeholder="e.g., 3">
+                        <label class="form-label" for="instrument-age">Age (years) *</label>
+                        <input type="number" class="form-control" id="instrument-age" required placeholder="e.g., 3">
                     </div>
                     <div class="form-group">
-                        <label for="owner-id">Owner ID *</label>
-                        <input type="number" id="owner-id" required placeholder="e.g., 5">
+                        <label class="form-label" for="owner-id">Owner ID *</label>
+                        <input type="number" class="form-control" id="owner-id" required placeholder="e.g., 5">
+                        <small style="color: var(--text-muted); font-size: 0.8rem;">For demo purposes, enter your User
+                            ID</small>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label for="instrument-description">Description *</label>
-                    <textarea id="instrument-description" required
+                    <label class="form-label" for="instrument-description">Description *</label>
+                    <textarea class="form-control" id="instrument-description" required rows="4"
                         placeholder="Describe your instrument's condition, features, and any additional details..."></textarea>
                 </div>
 
                 <div class="form-group">
-                    <label for="instrument-photos">Photo Paths (comma-separated)</label>
-                    <input type="text" id="instrument-photos"
+                    <label class="form-label" for="instrument-photos">Photo Paths (comma-separated)</label>
+                    <input type="text" class="form-control" id="instrument-photos"
                         placeholder="e.g., /photos/guitar1.jpg,/photos/guitar2.jpg">
                 </div>
 
-                <button type="submit" class="btn btn-success" id="register-instrument-btn">Register Instrument</button>
+                <button type="submit" class="btn btn-primary" style="width: 100%;" id="register-instrument-btn">Register
+                    Instrument</button>
             </form>
         </div>
     </div>
@@ -104,6 +118,7 @@
 
             const messageDiv = document.getElementById('registration-message');
             messageDiv.classList.add('hidden');
+            messageDiv.style.backgroundColor = 'transparent';
 
             // Collect form data
             const data = {
@@ -122,6 +137,11 @@
                 data.photoPaths = photosInput.split(',').map(p => p.trim());
             }
 
+            const btn = document.getElementById('register-instrument-btn');
+            const originalText = btn.textContent;
+            btn.textContent = 'Registering...';
+            btn.disabled = true;
+
             try {
                 const response = await fetch('/api/instruments/register', {
                     method: 'POST',
@@ -133,26 +153,42 @@
 
                 if (response.ok) {
                     const result = await response.json();
-                    messageDiv.textContent = `Success! Instrument "${result.name}" registered with ID ${result.id}`;
-                    messageDiv.className = 'message success';
-                    messageDiv.classList.remove('hidden');
+                    messageDiv.innerHTML = `<strong>Success!</strong> Instrument "${result.name}" registered with ID ${result.id}`;
+                    messageDiv.className = 'success'; // Reset classes and add success
+                    messageDiv.style.backgroundColor = 'rgba(16, 185, 129, 0.2)';
+                    messageDiv.style.color = '#34d399';
+                    messageDiv.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+                    // messageDiv.classList.remove('hidden'); // classList search in test relies on 'success' being one of them, but hidden logic is separate. 
+                    // Actually, let's just use classList.add but clear others first if needed or just ensure success is there.
+                    // The CSS for 'success' isn't defined but the test looks for it.
+                    // Let's stick to the previous style but add the class marker.
+                    messageDiv.classList.add('success');
+                    messageDiv.classList.remove('hidden', 'error');
 
                     // Reset form
                     document.getElementById('registration-form').reset();
 
-                    // Scroll to message
-                    messageDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 } else {
                     const error = await response.json();
-                    messageDiv.textContent = `Error: ${error.error || 'Registration failed'}`;
-                    messageDiv.className = 'message error';
-                    messageDiv.classList.remove('hidden');
+                    messageDiv.innerHTML = `<strong>Error:</strong> ${error.error || 'Registration failed'}`;
+                    messageDiv.style.backgroundColor = 'rgba(239, 68, 68, 0.2)';
+                    messageDiv.style.color = '#f87171';
+                    messageDiv.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+                    messageDiv.classList.add('error');
+                    messageDiv.classList.remove('hidden', 'success');
                 }
             } catch (error) {
                 console.error('Error registering instrument:', error);
-                messageDiv.textContent = `Error: ${error.message}`;
-                messageDiv.className = 'message error';
-                messageDiv.classList.remove('hidden');
+                messageDiv.innerHTML = `<strong>Error:</strong> ${error.message}`;
+                messageDiv.style.backgroundColor = 'rgba(239, 68, 68, 0.2)';
+                messageDiv.style.color = '#f87171';
+                messageDiv.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+                messageDiv.classList.add('error');
+                messageDiv.classList.remove('hidden', 'success');
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+                messageDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         }
     </script>

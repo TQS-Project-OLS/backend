@@ -128,7 +128,7 @@ public class AdminOversightSteps {
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("bookings-grid")));
 
         // Click load bookings button
-        driver.findElement(By.xpath("//button[contains(text(), 'Load Bookings')]")).click();
+        driver.findElement(By.xpath("//button[contains(text(), 'Refresh List')]")).click();
 
         // Wait for bookings to load
         try {
@@ -177,7 +177,7 @@ public class AdminOversightSteps {
 
         // Click refresh statistics button
         wait.until(
-                ExpectedConditions.elementToBeClickable(By.xpath("//button[contains(text(), 'Refresh Statistics')]")))
+                ExpectedConditions.elementToBeClickable(By.xpath("//button[contains(text(), 'Refresh Stats')]")))
                 .click();
 
         // Wait for statistics to load

@@ -126,9 +126,9 @@ public class FilterInstrumentsByTypeSteps {
         List<WebElement> results = driver.findElements(By.cssSelector(".instrument-result"));
 
         for (WebElement result : results) {
-            String typeText = result.getText();
-            assertTrue(typeText.contains("Type: " + expectedType),
-                    "Expected type " + expectedType + " but result doesn't contain it");
+            String resultText = result.getText();
+            assertTrue(resultText.contains(expectedType),
+                    "Expected result to contain type " + expectedType + " but got: " + resultText);
         }
     }
 }

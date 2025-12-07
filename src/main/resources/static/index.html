@@ -7,22 +7,16 @@
     <title>Discover - OLSHEETS</title>
     <link rel="stylesheet" href="css/styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="js/nav.js"></script>
 </head>
 
 <body>
-    <nav>
-        <div class="nav-brand">🎸 OLSHEETS</div>
-        <div class="nav-links">
-            <a href="index.html" class="active">Discover</a>
-            <a href="rent-up.html">Rent Up</a>
-            <a href="my-bookings.html">My Bookings</a>
-        </div>
-    </nav>
+    <!-- Nav injected by js/nav.js -->
 
     <div class="container">
         <div class="page-header">
             <h1>Discover Music</h1>
-            <p>Find the perfect instruments and music sheets for your musical journey</p>
+            <p style="color: var(--text-muted); font-size: 1.2rem;">Find the perfect instruments and music sheets for your musical journey</p>
         </div>
 
         <!-- Tabs -->
@@ -33,27 +27,20 @@
 
         <!-- Instruments Section -->
         <div id="instruments-section">
-            <!-- Search Instruments -->
             <div class="search-section">
-                <h2>Search Instruments</h2>
+                <h2>Find Instruments</h2>
                 <div class="search-form">
-                    <div class="form-group">
-                        <label for="instrument-search-input">Instrument Name</label>
-                        <input type="text" id="instrument-search-input" placeholder="e.g., Yamaha P-125">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <input type="text" 
+                               class="form-control" 
+                               id="instrument-search-input" 
+                               placeholder="Search instrument name (e.g., Yamaha P-125)...">
                     </div>
-                    <button class="btn btn-primary" id="search-instruments-btn"
-                        onclick="searchInstruments()">Search</button>
-                </div>
-            </div>
-
-            <!-- Filter Instruments -->
-            <div class="search-section">
-                <h2>Filter by Type</h2>
-                <div class="search-form">
-                    <div class="form-group">
-                        <label for="filter-type-select">Instrument Type</label>
-                        <select id="filter-type-select">
-                            <option value="">-- Select Type --</option>
+                    <button class="btn btn-primary" id="search-instruments-btn" onclick="searchInstruments()">Search</button>
+                    
+                    <div class="form-group" style="margin-bottom: 0;">
+                         <select id="filter-type-select" class="form-control">
+                            <option value="">Filter by Type</option>
                             <option value="ACOUSTIC">Acoustic</option>
                             <option value="ELECTRIC">Electric</option>
                             <option value="DIGITAL">Digital</option>
@@ -63,18 +50,15 @@
                             <option value="SYNTHESIZER">Synthesizer</option>
                         </select>
                     </div>
-                    <button class="btn btn-secondary" id="filter-type-btn"
-                        onclick="filterInstrumentsByType()">Filter</button>
+                     <button class="btn btn-secondary" id="filter-type-btn" onclick="filterInstrumentsByType()">Filter</button>
                 </div>
             </div>
 
-            <!-- Instruments Results -->
             <div class="results-container" id="instruments-results">
-                <h2>Results</h2>
                 <div class="results-grid" id="instruments-grid">
-                    <div class="empty-state">
-                        <h3>No instruments found</h3>
-                        <p>Try searching or filtering to discover instruments</p>
+                    <div class="empty-state text-center" style="grid-column: 1/-1; padding: 4rem;">
+                        <h3 style="color: var(--text-muted);">Start your search</h3>
+                        <p style="color: var(--text-muted);">Use the filters above to find your next instrument</p>
                     </div>
                 </div>
             </div>
@@ -82,26 +66,20 @@
 
         <!-- Music Sheets Section -->
         <div id="sheets-section" class="hidden">
-            <!-- Search Sheets -->
             <div class="search-section">
-                <h2>Search Music Sheets</h2>
+                <h2>Find Music Sheets</h2>
                 <div class="search-form">
-                    <div class="form-group">
-                        <label for="sheet-search-input">Sheet Name</label>
-                        <input type="text" id="sheet-search-input" placeholder="e.g., Moonlight Sonata">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <input type="text" 
+                               class="form-control" 
+                               id="sheet-search-input" 
+                               placeholder="Search sheet name (e.g., Moonlight Sonata)...">
                     </div>
                     <button class="btn btn-primary" id="search-sheets-btn" onclick="searchSheets()">Search</button>
-                </div>
-            </div>
 
-            <!-- Filter Sheets -->
-            <div class="search-section">
-                <h2>Filter by Category</h2>
-                <div class="search-form">
-                    <div class="form-group">
-                        <label for="filter-category-select">Category</label>
-                        <select id="filter-category-select">
-                            <option value="">-- Select Category --</option>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <select id="filter-category-select" class="form-control">
+                            <option value="">Filter by Category</option>
                             <option value="CLASSICAL">Classical</option>
                             <option value="JAZZ">Jazz</option>
                             <option value="ROCK">Rock</option>
@@ -109,18 +87,15 @@
                             <option value="BLUES">Blues</option>
                         </select>
                     </div>
-                    <button class="btn btn-secondary" id="filter-category-btn"
-                        onclick="filterSheetsByCategory()">Filter</button>
+                    <button class="btn btn-secondary" id="filter-category-btn" onclick="filterSheetsByCategory()">Filter</button>
                 </div>
             </div>
 
-            <!-- Sheets Results -->
             <div class="results-container" id="sheets-results">
-                <h2>Results</h2>
                 <div class="results-grid" id="sheets-grid">
-                    <div class="empty-state">
-                        <h3>No music sheets found</h3>
-                        <p>Try searching or filtering to discover music sheets</p>
+                    <div class="empty-state text-center" style="grid-column: 1/-1; padding: 4rem;">
+                        <h3 style="color: var(--text-muted);">Browse Library</h3>
+                        <p style="color: var(--text-muted);">Search for masterpieces to play</p>
                     </div>
                 </div>
             </div>
@@ -173,23 +148,31 @@
 
             if (instruments.length === 0) {
                 grid.innerHTML = `
-                    <div class="empty-state">
+                    <div class="empty-state text-center" style="grid-column: 1/-1; padding: 4rem;">
                         <h3>No instruments found</h3>
-                        <p>Try a different search or filter</p>
+                        <p style="color: var(--text-muted);">Try a different search or filter</p>
                     </div>
                 `;
                 return;
             }
 
             grid.innerHTML = instruments.map(instrument => `
-                <div class="result-card instrument-result" data-id="${instrument.id}">
+                <div class="card result-card instrument-result" data-id="${instrument.id}">
+                    <div style="height: 120px; background: linear-gradient(135deg, var(--surface), var(--surface-hover)); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; margin-bottom: var(--space-md);">
+                        <span style="font-size: 3rem;">🎸</span>
+                    </div>
                     <h3>${instrument.name}</h3>
-                    <p><strong>Type:</strong> ${instrument.type}</p>
-                    <p><strong>Family:</strong> ${instrument.family}</p>
-                    <p><strong>Age:</strong> ${instrument.age} years</p>
-                    <p>${instrument.description}</p>
-                    <div class="price">$${instrument.price.toFixed(2)}</div>
-                    <span class="badge">${instrument.type}</span>
+                    <p style="color: var(--text-muted); margin-bottom: var(--space-xs);">${instrument.description || 'No description available'}</p>
+                    
+                    <div style="display: flex; gap: var(--space-xs); flex-wrap: wrap; margin: var(--space-md) 0;">
+                        <span class="badge badge-primary">${instrument.type}</span>
+                        <span class="badge badge-secondary" style="border: 1px solid var(--border-color);">${instrument.family}</span>
+                        <span class="badge badge-secondary" style="border: 1px solid var(--border-color);">${instrument.age} yrs old</span>
+                    </div>
+
+                    <div class="price">$${instrument.price.toFixed(2)}<span style="font-size: 0.9rem; color: var(--text-muted); font-weight: normal;">/day</span></div>
+                    
+                    <a href="booking.html?id=${instrument.id}" class="btn btn-primary" style="width: 100%; margin-top: var(--space-lg);">Book Now</a>
                 </div>
             `).join('');
         }
@@ -225,22 +208,30 @@
 
             if (sheets.length === 0) {
                 grid.innerHTML = `
-                    <div class="empty-state">
+                     <div class="empty-state text-center" style="grid-column: 1/-1; padding: 4rem;">
                         <h3>No music sheets found</h3>
-                        <p>Try a different search or filter</p>
+                        <p style="color: var(--text-muted);">Try a different search or filter</p>
                     </div>
                 `;
                 return;
             }
 
             grid.innerHTML = sheets.map(sheet => `
-                <div class="result-card sheet-result" data-id="${sheet.id}">
+                <div class="card result-card sheet-result" data-id="${sheet.id}">
+                     <div style="height: 120px; background: linear-gradient(135deg, var(--surface), var(--surface-hover)); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; margin-bottom: var(--space-md);">
+                        <span style="font-size: 3rem;">🎼</span>
+                    </div>
                     <h3>${sheet.name}</h3>
-                    <p><strong>Composer:</strong> ${sheet.composer}</p>
-                    <p><strong>Category:</strong> ${sheet.category}</p>
-                    <p>${sheet.description}</p>
+                    <p style="color: var(--text-muted);">By <strong>${sheet.composer}</strong></p>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: var(--space-xs);">${sheet.description || ''}</p>
+                    
+                    <div style="margin: var(--space-md) 0;">
+                        <span class="badge badge-warning">${sheet.category}</span>
+                    </div>
+                    
                     <div class="price">$${sheet.price.toFixed(2)}</div>
-                    <span class="badge">${sheet.category}</span>
+                    
+                    <a href="sheet_booking.html?id=${sheet.id}" class="btn btn-primary" style="width: 100%; margin-top: var(--space-lg);">Book Sheet</a>
                 </div>
             `).join('');
         }
