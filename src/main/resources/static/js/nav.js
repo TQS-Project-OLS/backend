@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <a href="rent-up.html" class="nav-link">Rent Up</a>
                 <a href="my-bookings.html" class="nav-link">My Bookings</a>
                 <a href="manage.html" class="nav-link">Manage</a>
+                <button id="theme-toggle" class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">☀️</button>
             </div>
         </div>
     `;
