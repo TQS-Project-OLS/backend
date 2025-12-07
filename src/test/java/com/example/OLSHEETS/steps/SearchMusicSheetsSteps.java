@@ -4,21 +4,28 @@ import com.example.OLSHEETS.data.MusicSheet;
 import com.example.OLSHEETS.repository.MusicSheetRepository;
 import com.example.OLSHEETS.repository.SheetBookingRepository;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
+import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import io.github.bonigarcia.wdm.WebDriverManager;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SearchMusicSheetsSteps {
 
@@ -26,15 +33,32 @@ public class SearchMusicSheetsSteps {
     private int port;
 
     @Autowired
-    private TestRestTemplate restTemplate;
-
-    @Autowired
     private MusicSheetRepository musicSheetRepository;
 
     @Autowired
     private SheetBookingRepository sheetBookingRepository;
 
-    private List<MusicSheet> searchResults;
+    private WebDriver driver;
+    private WebDriverWait wait;
+    private static final String FRONTEND_URL = "http://localhost:8080";
+
+    @Before
+    public void setUp() {
+        WebDriverManager.chromedriver().setup();
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--headless");
+        options.addArguments("--no-sandbox");
+        options.addArguments("--disable-dev-shm-usage");
+        driver = new ChromeDriver(options);
+        wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+    }
+
+    @After
+    public void tearDown() {
+        if (driver != null) {
+            driver.quit();
+        }
+    }
 
     @Given("the following music sheets exist:")
     public void theFollowingMusicSheetsExist(DataTable dataTable) {
@@ -57,27 +81,50 @@ public class SearchMusicSheetsSteps {
 
     @When("I search for music sheets with name {string}")
     public void iSearchForMusicSheetsWithName(String name) {
-        String url = "http://localhost:" + port + "/api/sheets/search?name=" + name;
+        driver.get(FRONTEND_URL);
 
-        ResponseEntity<List<MusicSheet>> response = restTemplate.exchange(
-            url,
-            HttpMethod.GET,
-            null,
-            new ParameterizedTypeReference<List<MusicSheet>>() {}
-        );
+        // Switch to sheets tab
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[contains(text(), 'Music Sheets')]")))
+                .click();
 
-        searchResults = response.getBody();
+        // Enter search term
+        WebElement searchInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("sheet-search-input")));
+        searchInput.clear();
+        searchInput.sendKeys(name);
+
+        // Click search button
+        driver.findElement(By.id("search-sheets-btn")).click();
+
+        // Wait for results to load - increased timeout
+        try {
+            Thread.sleep(3000); // Give more time for async call and rendering
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     @Then("I should receive {int} music sheet(s)")
     public void iShouldReceiveMusicSheets(int count) {
-        assertNotNull(searchResults);
-        assertEquals(count, searchResults.size());
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.id("sheets-grid")));
+
+        // Wait a bit more for results to render
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        List<WebElement> results = driver.findElements(By.cssSelector(".sheet-result"));
+        assertEquals(count, results.size(), "Expected " + count + " music sheet(s) but found " + results.size());
     }
 
     @Then("the first music sheet should have name {string}")
     public void theFirstMusicSheetShouldHaveName(String expectedName) {
-        assertNotNull(searchResults);
-        assertEquals(expectedName, searchResults.get(0).getName());
+        List<WebElement> results = driver.findElements(By.cssSelector(".sheet-result"));
+        assertTrue(results.size() > 0, "No music sheets found");
+
+        WebElement firstResult = results.get(0);
+        String actualName = firstResult.findElement(By.tagName("h3")).getText();
+        assertEquals(expectedName, actualName);
     }
 }

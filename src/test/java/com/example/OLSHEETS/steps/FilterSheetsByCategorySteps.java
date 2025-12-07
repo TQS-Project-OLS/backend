@@ -4,21 +4,29 @@ import com.example.OLSHEETS.data.MusicSheet;
 import com.example.OLSHEETS.repository.MusicSheetRepository;
 import com.example.OLSHEETS.repository.SheetBookingRepository;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
+import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import io.github.bonigarcia.wdm.WebDriverManager;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.Select;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class FilterSheetsByCategorySteps {
 
@@ -26,15 +34,32 @@ public class FilterSheetsByCategorySteps {
     private int port;
 
     @Autowired
-    private TestRestTemplate restTemplate;
-
-    @Autowired
     private MusicSheetRepository musicSheetRepository;
 
     @Autowired
     private SheetBookingRepository sheetBookingRepository;
 
-    private List<MusicSheet> filterResults;
+    private WebDriver driver;
+    private WebDriverWait wait;
+    private static final String FRONTEND_URL = "http://localhost:8080";
+
+    @Before
+    public void setUp() {
+        WebDriverManager.chromedriver().setup();
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--headless");
+        options.addArguments("--no-sandbox");
+        options.addArguments("--disable-dev-shm-usage");
+        driver = new ChromeDriver(options);
+        wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+    }
+
+    @After
+    public void tearDown() {
+        if (driver != null) {
+            driver.quit();
+        }
+    }
 
     @Given("the following music sheets exist for category filter:")
     public void theFollowingMusicSheetsExistForCategoryFilter(DataTable dataTable) {
@@ -57,35 +82,55 @@ public class FilterSheetsByCategorySteps {
 
     @When("I filter music sheets by category {string}")
     public void iFilterMusicSheetsByCategory(String category) {
-        String url = "http://localhost:" + port + "/api/sheets/filter/category?category=" + category;
+        driver.get(FRONTEND_URL);
 
-        ResponseEntity<List<MusicSheet>> response = restTemplate.exchange(
-            url,
-            HttpMethod.GET,
-            null,
-            new ParameterizedTypeReference<List<MusicSheet>>() {}
-        );
+        // Switch to sheets tab
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[contains(text(), 'Music Sheets')]")))
+                .click();
 
-        filterResults = response.getBody();
+        // Wait for filter dropdown
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("filter-category-select")));
+
+        // Select category from dropdown
+        Select categorySelect = new Select(driver.findElement(By.id("filter-category-select")));
+        categorySelect.selectByValue(category);
+
+        // Click filter button
+        driver.findElement(By.id("filter-category-btn")).click();
+
+        // Wait for results - increased timeout
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     @Then("the filter should return {int} music sheet(s)")
     public void theFilterShouldReturnMusicSheets(int count) {
-        assertNotNull(filterResults);
-        assertEquals(count, filterResults.size());
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.id("sheets-grid")));
+        List<WebElement> results = driver.findElements(By.cssSelector(".sheet-result"));
+        assertEquals(count, results.size());
     }
 
     @Then("the first filtered music sheet should have name {string}")
     public void theFirstFilteredMusicSheetShouldHaveName(String expectedName) {
-        assertNotNull(filterResults);
-        assertEquals(expectedName, filterResults.get(0).getName());
+        List<WebElement> results = driver.findElements(By.cssSelector(".sheet-result"));
+        assertTrue(results.size() > 0, "No music sheets found");
+
+        WebElement firstResult = results.get(0);
+        String actualName = firstResult.findElement(By.tagName("h3")).getText();
+        assertEquals(expectedName, actualName);
     }
 
     @Then("all filtered music sheets should have category {string}")
     public void allFilteredMusicSheetsShouldHaveCategory(String expectedCategory) {
-        assertNotNull(filterResults);
-        for (MusicSheet sheet : filterResults) {
-            assertEquals(expectedCategory, sheet.getCategory());
+        List<WebElement> results = driver.findElements(By.cssSelector(".sheet-result"));
+
+        for (WebElement result : results) {
+            String resultText = result.getText();
+            assertTrue(resultText.contains(expectedCategory),
+                    "Expected result to contain category " + expectedCategory + " but got: " + resultText);
         }
     }
 }
