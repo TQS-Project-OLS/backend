@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - OLSHEETS</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="js/theme.js"></script>
+</head>
+
+<body>
+    <div class="container" style="max-width: 500px; padding-top: 4rem;">
+        <div class="page-header" style="margin-bottom: var(--space-xl);">
+            <h1 style="text-align: center;">🎸 OLSHEETS</h1>
+            <p style="color: var(--text-muted); text-align: center;">Create your account</p>
+        </div>
+
+        <div class="card">
+            <div id="signup-message" class="hidden"
+                style="padding: var(--space-md); border-radius: var(--radius-md); margin-bottom: var(--space-lg); text-align: center;">
+            </div>
+
+            <form id="signup-form">
+                <div class="form-group">
+                    <label class="form-label" for="username">Username *</label>
+                    <input type="text" class="form-control" id="username" name="username" required
+                        placeholder="Choose a username" autocomplete="username">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="email">Email *</label>
+                    <input type="email" class="form-control" id="email" name="email" required
+                        placeholder="your.email@example.com" autocomplete="email">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="name">Full Name *</label>
+                    <input type="text" class="form-control" id="name" name="name" required placeholder="John Doe"
+                        autocomplete="name">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="password">Password *</label>
+                    <input type="password" class="form-control" id="password" name="password" required
+                        placeholder="Choose a strong password" autocomplete="new-password" minlength="6">
+                    <small style="color: var(--text-muted); font-size: 0.85rem;">At least 6 characters</small>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%;" id="signup-btn">
+                    Create Account
+                </button>
+            </form>
+
+            <div style="margin-top: var(--space-lg); text-align: center; color: var(--text-muted);">
+                Already have an account?
+                <a href="login.html" style="color: var(--primary-light); text-decoration: none; font-weight: 600;">
+                    Sign in
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('signup-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const messageDiv = document.getElementById('signup-message');
+            messageDiv.classList.add('hidden');
+
+            const formData = {
+                username: document.getElementById('username').value,
+                email: document.getElementById('email').value,
+                name: document.getElementById('name').value,
+                password: document.getElementById('password').value
+            };
+
+            const btn = document.getElementById('signup-btn');
+            const originalText = btn.textContent;
+            btn.textContent = 'Creating account...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/auth/signup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Store token in localStorage
+                    localStorage.setItem('olsheets-token', data.token);
+                    localStorage.setItem('olsheets-username', data.username);
+                    localStorage.setItem('olsheets-name', data.name);
+
+                    messageDiv.innerHTML = '<strong>Success!</strong> Account created. Redirecting...';
+                    messageDiv.style.backgroundColor = 'rgba(16, 185, 129, 0.2)';
+                    messageDiv.style.color = '#34d399';
+                    messageDiv.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+                    messageDiv.classList.remove('hidden');
+
+                    // Redirect to home page
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1000);
+                } else {
+                    messageDiv.innerHTML = '<strong>Error:</strong> ' + (data.error || 'Signup failed');
+                    messageDiv.style.backgroundColor = 'rgba(239, 68, 68, 0.2)';
+                    messageDiv.style.color = '#f87171';
+                    messageDiv.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+                    messageDiv.classList.remove('hidden');
+                }
+            } catch (error) {
+                messageDiv.innerHTML = '<strong>Error:</strong> ' + error.message;
+                messageDiv.style.backgroundColor = 'rgba(239, 68, 68, 0.2)';
+                messageDiv.style.color = '#f87171';
+                messageDiv.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+                messageDiv.classList.remove('hidden');
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -57,7 +57,15 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Create/Update .env from .env.example
+        run: cp -f .env.example .env
+
       - name: Deploy containers
         run: |
           docker-compose down --remove-orphans
           docker-compose up --build -d
+
+      - name: Show status
+        run: |
+          echo "Deployment complete!"
+          docker-compose ps
