@@ -42,30 +42,44 @@ class AdminServiceTest {
     private Booking booking3;
     private Item item1;
     private Item item2;
+    private com.example.OLSHEETS.data.User user100;
+    private com.example.OLSHEETS.data.User user200;
+    private com.example.OLSHEETS.data.User user300;
 
     @BeforeEach
     void setUp() {
         item1 = new Instrument();
         item1.setId(1L);
-        item1.setOwnerId(10);
+        com.example.OLSHEETS.data.User owner10 = new com.example.OLSHEETS.data.User("owner10");
+        owner10.setId(10L);
+        item1.setOwner(owner10);
         item1.setName("Test Guitar");
         item1.setPrice(50.0);
 
         item2 = new Instrument();
         item2.setId(2L);
-        item2.setOwnerId(20);
+        com.example.OLSHEETS.data.User owner20 = new com.example.OLSHEETS.data.User("owner20");
+        owner20.setId(20L);
+        item2.setOwner(owner20);
         item2.setName("Test Piano");
         item2.setPrice(100.0);
 
-        booking1 = new Booking(item1, 100L, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
+        user100 = new com.example.OLSHEETS.data.User("user100");
+        user100.setId(100L);
+        user200 = new com.example.OLSHEETS.data.User("user200");
+        user200.setId(200L);
+        user300 = new com.example.OLSHEETS.data.User("user300");
+        user300.setId(300L);
+
+        booking1 = new Booking(item1, user100, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
         booking1.setId(1L);
         booking1.setStatus(BookingStatus.PENDING);
 
-        booking2 = new Booking(item2, 200L, LocalDate.now().plusDays(5), LocalDate.now().plusDays(7));
+        booking2 = new Booking(item2, user200, LocalDate.now().plusDays(5), LocalDate.now().plusDays(7));
         booking2.setId(2L);
         booking2.setStatus(BookingStatus.APPROVED);
 
-        booking3 = new Booking(item1, 300L, LocalDate.now().plusDays(10), LocalDate.now().plusDays(12));
+        booking3 = new Booking(item1, user300, LocalDate.now().plusDays(10), LocalDate.now().plusDays(12));
         booking3.setId(3L);
         booking3.setStatus(BookingStatus.REJECTED);
     }
@@ -100,7 +114,7 @@ class AdminServiceTest {
         List<Booking> renterBookings = adminService.getBookingsByRenter(100L);
 
         assertThat(renterBookings).hasSize(1);
-        assertThat(renterBookings.get(0).getRenterId()).isEqualTo(100L);
+        assertThat(renterBookings.get(0).getRenter().getId()).isEqualTo(100L);
         verify(bookingRepository, times(1)).findByRenterId(100L);
     }
 

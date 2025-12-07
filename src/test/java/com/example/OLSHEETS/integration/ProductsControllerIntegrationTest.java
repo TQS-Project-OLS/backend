@@ -46,7 +46,9 @@ class ProductsControllerIntegrationTest {
         Instrument yamahaPiano = new Instrument();
         yamahaPiano.setName("Yamaha P-125");
         yamahaPiano.setDescription("Digital Piano");
-        yamahaPiano.setOwnerId(1);
+        com.example.OLSHEETS.data.User owner1 = new com.example.OLSHEETS.data.User("owner1");
+        owner1.setId(1L);
+        yamahaPiano.setOwner(owner1);
         yamahaPiano.setPrice(599.99);
         yamahaPiano.setAge(2);
         yamahaPiano.setType(InstrumentType.DIGITAL);
@@ -56,7 +58,9 @@ class ProductsControllerIntegrationTest {
         Instrument fenderGuitar = new Instrument();
         fenderGuitar.setName("Fender Stratocaster");
         fenderGuitar.setDescription("Electric Guitar");
-        fenderGuitar.setOwnerId(1);
+        com.example.OLSHEETS.data.User owner1b = new com.example.OLSHEETS.data.User("owner1");
+        owner1b.setId(1L);
+        fenderGuitar.setOwner(owner1b);
         fenderGuitar.setPrice(899.99);
         fenderGuitar.setAge(5);
         fenderGuitar.setType(InstrumentType.ELECTRIC);
@@ -66,7 +70,9 @@ class ProductsControllerIntegrationTest {
         Instrument yamahaSax = new Instrument();
         yamahaSax.setName("Yamaha YAS-280");
         yamahaSax.setDescription("Alto Saxophone");
-        yamahaSax.setOwnerId(2);
+        com.example.OLSHEETS.data.User owner2 = new com.example.OLSHEETS.data.User("owner2");
+        owner2.setId(2L);
+        yamahaSax.setOwner(owner2);
         yamahaSax.setPrice(1299.99);
         yamahaSax.setAge(1);
         yamahaSax.setType(InstrumentType.WIND);
@@ -89,8 +95,8 @@ class ProductsControllerIntegrationTest {
                 .andExpect(jsonPath("$[0].name", is("Yamaha P-125")))
                 .andExpect(jsonPath("$[0].description", is("Digital Piano")))
                 .andExpect(jsonPath("$[0].price", is(599.99)))
-                .andExpect(jsonPath("$[0].ownerId", is(1)))
-                .andExpect(jsonPath("$[0].age", is(2)))
+                .andExpect(jsonPath("$[0].owner.id", is(1)))
+                .andExpect(jsonPath("$[0].type", is("DIGITAL")))
                 .andExpect(jsonPath("$[0].type", is("DIGITAL")))
                 .andExpect(jsonPath("$[0].family", is("KEYBOARD")));
     }
@@ -347,7 +353,7 @@ class ProductsControllerIntegrationTest {
                 .andExpect(jsonPath("$.name", is("Gibson Les Paul")))
                 .andExpect(jsonPath("$.description", is("Classic electric guitar in excellent condition")))
                 .andExpect(jsonPath("$.price", is(1499.99)))
-                .andExpect(jsonPath("$.ownerId", is(5)))
+                .andExpect(jsonPath("$.owner.id", is(5)))
                 .andExpect(jsonPath("$.age", is(3)))
                 .andExpect(jsonPath("$.type", is("ELECTRIC")))
                 .andExpect(jsonPath("$.family", is("GUITAR")));

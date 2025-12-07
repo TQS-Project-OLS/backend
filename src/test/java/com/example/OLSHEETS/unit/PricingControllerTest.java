@@ -39,7 +39,9 @@ class PricingControllerTest {
         instrument.setName("Yamaha P-125");
         instrument.setDescription("Digital Piano");
         instrument.setPrice(599.99);
-        instrument.setOwnerId(1);
+        com.example.OLSHEETS.data.User owner1 = new com.example.OLSHEETS.data.User("owner1");
+        owner1.setId(1L);
+        instrument.setOwner(owner1);
         instrument.setAge(2);
         instrument.setType(InstrumentType.DIGITAL);
         instrument.setFamily(InstrumentFamily.KEYBOARD);
@@ -51,7 +53,9 @@ class PricingControllerTest {
         musicSheet.setCategory("CLASSICAL");
         musicSheet.setDescription("Piano Sonata No. 14");
         musicSheet.setPrice(9.99);
-        musicSheet.setOwnerId(1);
+        com.example.OLSHEETS.data.User owner2 = new com.example.OLSHEETS.data.User("owner1");
+        owner2.setId(1L);
+        musicSheet.setOwner(owner2);
     }
 
     @Test

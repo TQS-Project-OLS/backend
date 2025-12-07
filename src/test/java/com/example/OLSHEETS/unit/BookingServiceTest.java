@@ -32,21 +32,30 @@ class BookingServiceTest {
     @Mock
     private ItemRepository itemRepository;
 
+    @Mock
+    private com.example.OLSHEETS.repository.UserRepository userRepository;
+
     @InjectMocks
     private BookingService bookingService;
 
     private Booking booking;
     private Item item;
+    private com.example.OLSHEETS.data.User testUser;
 
     @BeforeEach
     void setUp() {
         item = new Instrument();
         item.setId(1L);
-        item.setOwnerId(10);
+        com.example.OLSHEETS.data.User owner10 = new com.example.OLSHEETS.data.User("owner10");
+        owner10.setId(10L);
+        item.setOwner(owner10);
         item.setName("Test Guitar");
         item.setPrice(50.0);
 
-        booking = new Booking(item, 100L, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
+        testUser = new com.example.OLSHEETS.data.User("test");
+        testUser.setId(100L);
+
+        booking = new Booking(item, testUser, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
         booking.setId(1L);
         booking.setStatus(BookingStatus.PENDING);
     }
@@ -154,6 +163,8 @@ class BookingServiceTest {
         when(itemRepository.findById(1L)).thenReturn(Optional.of(item));
         when(bookingRepository.findOverlapping(anyLong(), any(), any())).thenReturn(List.of());
         when(bookingRepository.save(any(Booking.class))).thenReturn(booking);
+
+        when(userRepository.findById(100L)).thenReturn(Optional.of(testUser));
 
         Booking created = bookingService.createBooking(1L, 100L, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
 

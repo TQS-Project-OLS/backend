@@ -2,6 +2,7 @@ package com.example.OLSHEETS.service;
 
 import com.example.OLSHEETS.data.MusicSheet;
 import com.example.OLSHEETS.data.SheetBooking;
+import com.example.OLSHEETS.data.User;
 import com.example.OLSHEETS.repository.MusicSheetRepository;
 import com.example.OLSHEETS.repository.SheetBookingRepository;
 import org.springframework.stereotype.Service;
@@ -15,10 +16,12 @@ public class SheetBookingService {
 
     private final SheetBookingRepository bookingRepository;
     private final MusicSheetRepository sheetRepository;
+    private final com.example.OLSHEETS.repository.UserRepository userRepository;
 
-    public SheetBookingService(SheetBookingRepository bookingRepository, MusicSheetRepository sheetRepository) {
+    public SheetBookingService(SheetBookingRepository bookingRepository, MusicSheetRepository sheetRepository, com.example.OLSHEETS.repository.UserRepository userRepository) {
         this.bookingRepository = bookingRepository;
         this.sheetRepository = sheetRepository;
+        this.userRepository = userRepository;
     }
 
     public SheetBooking createBooking(Long sheetId, Long renterId, LocalDate startDate, LocalDate endDate) {
@@ -34,7 +37,10 @@ public class SheetBookingService {
             throw new IllegalStateException("Music sheet is already booked for the selected dates");
         }
 
-        SheetBooking booking = new SheetBooking(sheet, renterId, startDate, endDate);
+        User renter = userRepository.findById(renterId)
+            .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + renterId));
+
+        SheetBooking booking = new SheetBooking(sheet, renter, startDate, endDate);
         return bookingRepository.save(booking);
     }
 

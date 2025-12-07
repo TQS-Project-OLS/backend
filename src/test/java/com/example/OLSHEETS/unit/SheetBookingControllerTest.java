@@ -3,6 +3,7 @@ package com.example.OLSHEETS.unit;
 import com.example.OLSHEETS.boundary.SheetBookingController;
 import com.example.OLSHEETS.data.MusicSheet;
 import com.example.OLSHEETS.data.SheetBooking;
+import com.example.OLSHEETS.data.User;
 import com.example.OLSHEETS.service.SheetBookingService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,15 +36,18 @@ class SheetBookingControllerTest {
 
     @BeforeEach
     void setUp() {
+        User owner = new User("owner1");
+        owner.setId(1L);
         sheet = new MusicSheet();
         sheet.setTitle("Moonlight Sonata");
         sheet.setCategory("classical");
         sheet.setComposer("Beautiful piece");
         sheet.setPrice(5.00);
-        sheet.setOwnerId(1L);
+        sheet.setOwner(owner);
         sheet.setId(1L);
-
-        booking = new SheetBooking(sheet, 100L, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
+        com.example.OLSHEETS.data.User testUser = new com.example.OLSHEETS.data.User("tester");
+        testUser.setId(100L);
+        booking = new SheetBooking(sheet, testUser, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
         booking.setId(1L);
     }
 
@@ -60,7 +64,7 @@ class SheetBookingControllerTest {
                 .content("{\"sheetId\":1,\"renterId\":100,\"startDate\":\"" + startDate + "\",\"endDate\":\"" + endDate + "\"}"))
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.id").value(1))
-            .andExpect(jsonPath("$.renterId").value(100));
+            .andExpect(jsonPath("$.renter.id").value(100));
     }
 
     @Test
@@ -69,7 +73,7 @@ class SheetBookingControllerTest {
 
         mockMvc.perform(get("/api/sheets/bookings/renter/100"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$[0].renterId").value(100));
+            .andExpect(jsonPath("$[0].renter.id").value(100));
     }
 
     @Test

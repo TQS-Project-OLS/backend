@@ -4,6 +4,7 @@ import com.example.OLSHEETS.data.Instrument;
 import com.example.OLSHEETS.data.InstrumentType;
 import com.example.OLSHEETS.data.InstrumentFamily;
 import com.example.OLSHEETS.data.MusicSheet;
+import com.example.OLSHEETS.data.User;
 import com.example.OLSHEETS.data.Item;
 import com.example.OLSHEETS.dto.InstrumentRegistrationRequest;
 import com.example.OLSHEETS.repository.InstrumentRepository;
@@ -44,17 +45,19 @@ class ProductsServiceTest {
 
     @BeforeEach
     void setUp() {
+        User owner = new User("owner1");
+        owner.setId(1L);
         instrument1 = new Instrument();
         instrument1.setId(1L);
         instrument1.setName("Yamaha P-125");
         instrument1.setPrice(599.99);
-        instrument1.setOwnerId(1);
+        instrument1.setOwner(owner);
 
         instrument2 = new Instrument();
         instrument2.setId(2L);
         instrument2.setName("Yamaha YAS-280");
         instrument2.setPrice(1299.99);
-        instrument2.setOwnerId(1);
+        instrument2.setOwner(owner);
 
         sheet1 = new MusicSheet();
         sheet1.setId(1L);
@@ -62,7 +65,7 @@ class ProductsServiceTest {
         sheet1.setComposer("Beethoven");
         sheet1.setCategory("CLASSICAL");
         sheet1.setPrice(9.99);
-        sheet1.setOwnerId(1);
+        sheet1.setOwner(owner);
 
         sheet2 = new MusicSheet();
         sheet2.setId(2L);
@@ -70,7 +73,7 @@ class ProductsServiceTest {
         sheet2.setComposer("Freddie Mercury");
         sheet2.setCategory("ROCK");
         sheet2.setPrice(12.99);
-        sheet2.setOwnerId(1);
+        sheet2.setOwner(owner);
     }
 
     @Test
@@ -438,7 +441,9 @@ class ProductsServiceTest {
         savedInstrument.setName(request.getName());
         savedInstrument.setDescription(request.getDescription());
         savedInstrument.setPrice(request.getPrice());
-        savedInstrument.setOwnerId(request.getOwnerId());
+        com.example.OLSHEETS.data.User ownerUser = new com.example.OLSHEETS.data.User("owner" + request.getOwnerId());
+        ownerUser.setId((long) request.getOwnerId());
+        savedInstrument.setOwner(ownerUser);
         savedInstrument.setAge(request.getAge());
         savedInstrument.setType(request.getType());
         savedInstrument.setFamily(request.getFamily());
@@ -452,7 +457,7 @@ class ProductsServiceTest {
         assertEquals("Gibson Les Paul", result.getName());
         assertEquals("Classic electric guitar in excellent condition", result.getDescription());
         assertEquals(1499.99, result.getPrice());
-        assertEquals(5, result.getOwnerId());
+        assertEquals(5L, result.getOwner().getId());
         assertEquals(3, result.getAge());
         assertEquals(InstrumentType.ELECTRIC, result.getType());
         assertEquals(InstrumentFamily.GUITAR, result.getFamily());
@@ -506,7 +511,9 @@ class ProductsServiceTest {
         savedInstrument.setName(request.getName());
         savedInstrument.setDescription(request.getDescription());
         savedInstrument.setPrice(request.getPrice());
-        savedInstrument.setOwnerId(request.getOwnerId());
+        com.example.OLSHEETS.data.User ownerUser3 = new com.example.OLSHEETS.data.User("owner" + request.getOwnerId());
+        ownerUser3.setId((long) request.getOwnerId());
+        savedInstrument.setOwner(ownerUser3);
         savedInstrument.setAge(request.getAge());
         savedInstrument.setType(request.getType());
         savedInstrument.setFamily(request.getFamily());

@@ -1,10 +1,12 @@
 package com.example.OLSHEETS.service;
 
 import com.example.OLSHEETS.data.Booking;
+import com.example.OLSHEETS.data.User;
 import com.example.OLSHEETS.repository.BookingRepository;
 import com.example.OLSHEETS.data.BookingStatus;
 import com.example.OLSHEETS.data.Item;
 import com.example.OLSHEETS.repository.ItemRepository;
+import com.example.OLSHEETS.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,10 +18,12 @@ public class BookingService {
 
     private final BookingRepository bookingRepository;
     private final ItemRepository itemRepository;
+    private final UserRepository userRepository;
 
-    public BookingService(BookingRepository bookingRepository, ItemRepository itemRepository) {
+    public BookingService(BookingRepository bookingRepository, ItemRepository itemRepository, UserRepository userRepository) {
         this.bookingRepository = bookingRepository;
         this.itemRepository = itemRepository;
+        this.userRepository = userRepository;
     }
 
     @Transactional
@@ -36,7 +40,10 @@ public class BookingService {
             throw new IllegalStateException("Item already booked for requested period");
         }
 
-        Booking b = new Booking(item, renterId, startDate, endDate);
+        User renter = userRepository.findById(renterId)
+            .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + renterId));
+
+        Booking b = new Booking(item, renter, startDate, endDate);
         return bookingRepository.save(b);
     }
 
@@ -45,7 +52,7 @@ public class BookingService {
         Booking booking = bookingRepository.findById(bookingId)
             .orElseThrow(() -> new IllegalArgumentException("Booking not found with id: " + bookingId));
 
-        if (booking.getItem().getOwnerId() != ownerId) {
+        if (booking.getItem().getOwner().getId() != ownerId) {
             throw new IllegalArgumentException("You are not authorized to approve this booking");
         }
 
@@ -66,7 +73,7 @@ public class BookingService {
         Booking booking = bookingRepository.findById(bookingId)
             .orElseThrow(() -> new IllegalArgumentException("Booking not found with id: " + bookingId));
 
-        if (booking.getItem().getOwnerId() != ownerId) {
+        if (booking.getItem().getOwner().getId() != ownerId) {
             throw new IllegalArgumentException("You are not authorized to reject this booking");
         }
 

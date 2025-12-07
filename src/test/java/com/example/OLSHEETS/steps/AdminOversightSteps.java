@@ -90,7 +90,9 @@ public class AdminOversightSteps {
             instrument.setPrice(Double.parseDouble(row.get("price")));
             instrument.setDescription(row.get("description"));
             try {
-                instrument.setOwnerId(Integer.parseInt(row.get("ownerId")));
+                com.example.OLSHEETS.data.User owner = new com.example.OLSHEETS.data.User("owner" + row.get("ownerId"));
+                owner.setId(Long.parseLong(row.get("ownerId")));
+                instrument.setOwner(owner);
             } catch (NumberFormatException e) {
                 fail("Invalid ownerId value: '" + row.get("ownerId") + "' in instrument row: " + row + ". Error: "
                         + e.getMessage());
@@ -113,7 +115,9 @@ public class AdminOversightSteps {
 
             Booking booking = new Booking();
             booking.setItem(instrument);
-            booking.setRenterId(Long.parseLong(row.get("renterId")));
+            com.example.OLSHEETS.data.User u = new com.example.OLSHEETS.data.User();
+            u.setId(Long.parseLong(row.get("renterId")));
+            booking.setRenter(u);
             booking.setStartDate(LocalDate.parse(row.get("startDate")));
             booking.setEndDate(LocalDate.parse(row.get("endDate")));
             booking.setStatus(BookingStatus.valueOf(row.get("status").toUpperCase()));
@@ -156,8 +160,8 @@ public class AdminOversightSteps {
         // Count bookings for specific renter from database
         List<Booking> allBookings = bookingRepository.findAll();
         visibleBookingCount = (int) allBookings.stream()
-                .filter(b -> b.getRenterId().equals(renterId))
-                .count();
+            .filter(b -> b.getRenter().getId().equals(renterId))
+            .count();
     }
 
     @When("the admin cancels the booking for {string}")
@@ -199,8 +203,8 @@ public class AdminOversightSteps {
     public void theAdminChecksActivityForRenter(Long renterId) {
         List<Booking> allBookings = bookingRepository.findAll();
         visibleBookingCount = (int) allBookings.stream()
-                .filter(b -> b.getRenterId().equals(renterId))
-                .count();
+            .filter(b -> b.getRenter().getId().equals(renterId))
+            .count();
     }
 
     @When("the admin checks activity for owner {int}")

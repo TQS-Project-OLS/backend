@@ -35,7 +35,9 @@ public abstract class Item {
     @JsonManagedReference
     private List<FileReference> fileReferences;
 
-    private int ownerId;
+    @ManyToOne
+    @JoinColumn(name = "owner_id")
+    private User owner;
 
     @Column(nullable = false)
     private Double price;
@@ -67,12 +69,12 @@ public abstract class Item {
         this.description = description;
     }
 
-    public int getOwnerId() {
-        return ownerId;
+    public User getOwner() {
+        return owner;
     }
 
-    public void setOwnerId(int ownerId) {
-        this.ownerId = ownerId;
+    public void setOwner(User owner) {
+        this.owner = owner;
     }
 
     public Double getPrice() {
@@ -98,7 +100,9 @@ public abstract class Item {
 
         Item item = (Item) o;
 
-        if (ownerId != item.ownerId) return false;
+        Long thisOwnerId = this.owner != null ? this.owner.getId() : null;
+        Long otherOwnerId = item.owner != null ? item.owner.getId() : null;
+        if (thisOwnerId != null ? !thisOwnerId.equals(otherOwnerId) : otherOwnerId != null) return false;
         if (id != null ? !id.equals(item.id) : item.id != null) return false;
         if (name != null ? !name.equals(item.name) : item.name != null) return false;
         if (description != null ? !description.equals(item.description) : item.description != null) return false;
@@ -110,7 +114,7 @@ public abstract class Item {
         int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (description != null ? description.hashCode() : 0);
-        result = 31 * result + ownerId;
+        result = 31 * result + (owner != null && owner.getId() != null ? owner.getId().hashCode() : 0);
         result = 31 * result + (price != null ? price.hashCode() : 0);
         return result;
     }

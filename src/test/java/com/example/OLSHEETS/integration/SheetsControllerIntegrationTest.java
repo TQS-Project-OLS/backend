@@ -42,7 +42,9 @@ class SheetsControllerIntegrationTest {
         moonlightSonata.setComposer("Beethoven");
         moonlightSonata.setCategory("CLASSICAL");
         moonlightSonata.setDescription("Piano Sonata No. 14");
-        moonlightSonata.setOwnerId(1);
+        com.example.OLSHEETS.data.User owner1 = new com.example.OLSHEETS.data.User("owner1");
+        owner1.setId(1L);
+        moonlightSonata.setOwner(owner1);
         moonlightSonata.setPrice(9.99);
         musicSheetRepository.save(moonlightSonata);
 
@@ -51,7 +53,9 @@ class SheetsControllerIntegrationTest {
         bohemianRhapsody.setComposer("Freddie Mercury");
         bohemianRhapsody.setCategory("ROCK");
         bohemianRhapsody.setDescription("Queen masterpiece");
-        bohemianRhapsody.setOwnerId(1);
+        com.example.OLSHEETS.data.User owner1b = new com.example.OLSHEETS.data.User("owner1");
+        owner1b.setId(1L);
+        bohemianRhapsody.setOwner(owner1b);
         bohemianRhapsody.setPrice(12.99);
         musicSheetRepository.save(bohemianRhapsody);
 
@@ -60,7 +64,9 @@ class SheetsControllerIntegrationTest {
         autumnLeaves.setComposer("Joseph Kosma");
         autumnLeaves.setCategory("JAZZ");
         autumnLeaves.setDescription("Jazz standard");
-        autumnLeaves.setOwnerId(2);
+        com.example.OLSHEETS.data.User owner2 = new com.example.OLSHEETS.data.User("owner2");
+        owner2.setId(2L);
+        autumnLeaves.setOwner(owner2);
         autumnLeaves.setPrice(7.99);
         musicSheetRepository.save(autumnLeaves);
     }

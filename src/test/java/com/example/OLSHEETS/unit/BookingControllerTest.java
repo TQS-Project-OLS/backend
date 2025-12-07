@@ -4,6 +4,7 @@ import com.example.OLSHEETS.boundary.BookingController;
 import com.example.OLSHEETS.data.Booking;
 import com.example.OLSHEETS.data.BookingStatus;
 import com.example.OLSHEETS.data.Item;
+import com.example.OLSHEETS.data.User;
 import com.example.OLSHEETS.data.Instrument;
 import com.example.OLSHEETS.service.BookingService;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,11 +37,15 @@ class BookingControllerTest {
     void setUp() {
         item = new Instrument();
         item.setId(1L);
-        item.setOwnerId(10);
+        com.example.OLSHEETS.data.User owner = new com.example.OLSHEETS.data.User("owner");
+        owner.setId(10L);
+        item.setOwner(owner);
         item.setName("Test Guitar");
         item.setPrice(50.0);
         
-        booking = new Booking(item, 100L, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
+        User testUser = new User("test");
+        testUser.setId(100L);
+        booking = new Booking(item, testUser, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
         booking.setId(1L);
         booking.setStatus(BookingStatus.PENDING);
     }
@@ -56,7 +61,7 @@ class BookingControllerTest {
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.id", is(1)))
                 .andExpect(jsonPath("$.status", is("APPROVED")))
-                .andExpect(jsonPath("$.renterId", is(100)));
+                .andExpect(jsonPath("$.renter.id", is(100)));
 
         verify(bookingService, times(1)).approveBooking(1L, 10);
     }
@@ -114,7 +119,7 @@ class BookingControllerTest {
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.id", is(1)))
                 .andExpect(jsonPath("$.status", is("REJECTED")))
-                .andExpect(jsonPath("$.renterId", is(100)));
+                .andExpect(jsonPath("$.renter.id", is(100)));
 
         verify(bookingService, times(1)).rejectBooking(1L, 10);
     }

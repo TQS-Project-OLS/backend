@@ -5,10 +5,13 @@ import com.example.OLSHEETS.data.Instrument;
 import com.example.OLSHEETS.data.InstrumentType;
 import com.example.OLSHEETS.data.InstrumentFamily;
 import com.example.OLSHEETS.data.MusicSheet;
+import com.example.OLSHEETS.data.User;
 import com.example.OLSHEETS.data.Item;
 import com.example.OLSHEETS.dto.InstrumentRegistrationRequest;
 import com.example.OLSHEETS.repository.InstrumentRepository;
 import com.example.OLSHEETS.repository.MusicSheetRepository;
+import com.example.OLSHEETS.repository.UserRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +27,9 @@ public class ProductsService {
 
     @Autowired
     private MusicSheetRepository musicSheetRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     public List<Instrument> searchInstrumentsByName(String name) {
         return instrumentRepository.findByNameContainingIgnoreCase(name);
@@ -84,7 +90,9 @@ public class ProductsService {
         instrument.setName(request.getName());
         instrument.setDescription(request.getDescription());
         instrument.setPrice(request.getPrice());
-        instrument.setOwnerId(request.getOwnerId());
+        User owner = userRepository.findById(request.getOwnerId())
+            .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + request.getOwnerId()));
+        instrument.setOwner(owner);
         instrument.setAge(request.getAge());
         instrument.setType(request.getType());
         instrument.setFamily(request.getFamily());

@@ -13,8 +13,9 @@ public class SheetBooking {
     @ManyToOne
     @JoinColumn(name = "sheet_id")
     private MusicSheet musicSheet;
-
-    private Long renterId;
+    @ManyToOne
+    @JoinColumn(name = "renter_id")
+    private User renter;
     private LocalDate startDate;
     private LocalDate endDate;
 
@@ -23,9 +24,9 @@ public class SheetBooking {
 
     public SheetBooking() {}
 
-    public SheetBooking(MusicSheet musicSheet, Long renterId, LocalDate startDate, LocalDate endDate) {
+    public SheetBooking(MusicSheet musicSheet, User renter, LocalDate startDate, LocalDate endDate) {
         this.musicSheet = musicSheet;
-        this.renterId = renterId;
+        this.renter = renter;
         this.startDate = startDate;
         this.endDate = endDate;
         this.status = BookingStatus.PENDING;
@@ -47,13 +48,14 @@ public class SheetBooking {
         this.musicSheet = musicSheet;
     }
 
-    public Long getRenterId() {
-        return renterId;
+    public User getRenter() {
+        return renter;
     }
 
-    public void setRenterId(Long renterId) {
-        this.renterId = renterId;
+    public void setRenter(User renter) {
+        this.renter = renter;
     }
+
 
     public LocalDate getStartDate() {
         return startDate;

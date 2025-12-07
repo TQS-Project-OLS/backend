@@ -32,6 +32,9 @@ class AdminServiceIntegrationTest {
     @Autowired
     ItemRepository itemRepository;
 
+    @Autowired
+    private com.example.OLSHEETS.repository.UserRepository userRepository;
+
     private Instrument instrument1;
     private Instrument instrument2;
     private Booking booking1;
@@ -46,7 +49,9 @@ class AdminServiceIntegrationTest {
         instrument1 = new Instrument();
         instrument1.setName("Guitar");
         instrument1.setDescription("Electric Guitar");
-        instrument1.setOwnerId(10);
+        com.example.OLSHEETS.data.User owner10 = new com.example.OLSHEETS.data.User("owner10");
+        owner10.setId(10L);
+        instrument1.setOwner(owner10);
         instrument1.setPrice(50.0);
         instrument1.setAge(2);
         instrument1.setType(InstrumentType.ELECTRIC);
@@ -56,7 +61,9 @@ class AdminServiceIntegrationTest {
         instrument2 = new Instrument();
         instrument2.setName("Piano");
         instrument2.setDescription("Digital Piano");
-        instrument2.setOwnerId(20);
+        com.example.OLSHEETS.data.User owner20 = new com.example.OLSHEETS.data.User("owner20");
+        owner20.setId(20L);
+        instrument2.setOwner(owner20);
         instrument2.setPrice(100.0);
         instrument2.setAge(1);
         instrument2.setType(InstrumentType.DIGITAL);
@@ -66,28 +73,35 @@ class AdminServiceIntegrationTest {
 
     @Test
     void shouldGetAllBookingsFromDatabase() {
-        booking1 = bookingRepository.save(new Booking(instrument1, 100L, 
+        com.example.OLSHEETS.data.User u100 = userRepository.save(new com.example.OLSHEETS.data.User("u100"));
+        com.example.OLSHEETS.data.User u200 = userRepository.save(new com.example.OLSHEETS.data.User("u200"));
+
+        booking1 = bookingRepository.save(new Booking(instrument1, u100, 
             LocalDate.of(2025, 12, 1), LocalDate.of(2025, 12, 5)));
-        booking2 = bookingRepository.save(new Booking(instrument2, 200L, 
+        booking2 = bookingRepository.save(new Booking(instrument2, u200, 
             LocalDate.of(2025, 12, 10), LocalDate.of(2025, 12, 15)));
 
         List<Booking> bookings = adminService.getAllBookings();
 
         assertThat(bookings).hasSize(2);
-        assertThat(bookings).extracting("renterId").containsExactlyInAnyOrder(100L, 200L);
+        assertThat(bookings).extracting(b -> b.getRenter().getId()).containsExactlyInAnyOrder(u100.getId(), u200.getId());
     }
 
     @Test
     void shouldFilterBookingsByStatus() {
-        booking1 = new Booking(instrument1, 100L, LocalDate.of(2025, 12, 1), LocalDate.of(2025, 12, 5));
+        com.example.OLSHEETS.data.User u100 = userRepository.save(new com.example.OLSHEETS.data.User("u100"));
+        com.example.OLSHEETS.data.User u200 = userRepository.save(new com.example.OLSHEETS.data.User("u200"));
+        com.example.OLSHEETS.data.User u300 = userRepository.save(new com.example.OLSHEETS.data.User("u300"));
+
+        booking1 = new Booking(instrument1, u100, LocalDate.of(2025, 12, 1), LocalDate.of(2025, 12, 5));
         booking1.setStatus(BookingStatus.PENDING);
         booking1 = bookingRepository.save(booking1);
 
-        booking2 = new Booking(instrument2, 200L, LocalDate.of(2025, 12, 10), LocalDate.of(2025, 12, 15));
+        booking2 = new Booking(instrument2, u200, LocalDate.of(2025, 12, 10), LocalDate.of(2025, 12, 15));
         booking2.setStatus(BookingStatus.APPROVED);
         booking2 = bookingRepository.save(booking2);
 
-        booking3 = new Booking(instrument1, 300L, LocalDate.of(2025, 12, 20), LocalDate.of(2025, 12, 25));
+        booking3 = new Booking(instrument1, u300, LocalDate.of(2025, 12, 20), LocalDate.of(2025, 12, 25));
         booking3.setStatus(BookingStatus.PENDING);
         booking3 = bookingRepository.save(booking3);
 
@@ -99,22 +113,27 @@ class AdminServiceIntegrationTest {
 
     @Test
     void shouldFilterBookingsByRenter() {
-        booking1 = bookingRepository.save(new Booking(instrument1, 100L, 
+        com.example.OLSHEETS.data.User u100 = userRepository.save(new com.example.OLSHEETS.data.User("u100"));
+        com.example.OLSHEETS.data.User u200 = userRepository.save(new com.example.OLSHEETS.data.User("u200"));
+
+        booking1 = bookingRepository.save(new Booking(instrument1, u100, 
             LocalDate.of(2025, 12, 1), LocalDate.of(2025, 12, 5)));
-        booking2 = bookingRepository.save(new Booking(instrument2, 100L, 
+        booking2 = bookingRepository.save(new Booking(instrument2, u100, 
             LocalDate.of(2025, 12, 10), LocalDate.of(2025, 12, 15)));
-        booking3 = bookingRepository.save(new Booking(instrument1, 200L, 
+        booking3 = bookingRepository.save(new Booking(instrument1, u200, 
             LocalDate.of(2025, 12, 20), LocalDate.of(2025, 12, 25)));
 
-        List<Booking> renter100Bookings = adminService.getBookingsByRenter(100L);
+        List<Booking> renter100Bookings = adminService.getBookingsByRenter(u100.getId());
 
         assertThat(renter100Bookings).hasSize(2);
-        assertThat(renter100Bookings).allMatch(b -> b.getRenterId().equals(100L));
+        assertThat(renter100Bookings).allMatch(b -> b.getRenter().getId().equals(u100.getId()));
     }
 
     @Test
     void shouldCancelBookingAsAdmin() {
-        booking1 = bookingRepository.save(new Booking(instrument1, 100L, 
+        com.example.OLSHEETS.data.User u100 = userRepository.save(new com.example.OLSHEETS.data.User("u100"));
+
+        booking1 = bookingRepository.save(new Booking(instrument1, u100, 
             LocalDate.of(2025, 12, 1), LocalDate.of(2025, 12, 5)));
 
         Booking cancelled = adminService.cancelBooking(booking1.getId());
@@ -134,15 +153,19 @@ class AdminServiceIntegrationTest {
 
     @Test
     void shouldGetBookingStatistics() {
-        booking1 = new Booking(instrument1, 100L, LocalDate.of(2025, 12, 1), LocalDate.of(2025, 12, 5));
+        com.example.OLSHEETS.data.User u100 = userRepository.save(new com.example.OLSHEETS.data.User("u100"));
+        com.example.OLSHEETS.data.User u200 = userRepository.save(new com.example.OLSHEETS.data.User("u200"));
+        com.example.OLSHEETS.data.User u300 = userRepository.save(new com.example.OLSHEETS.data.User("u300"));
+
+        booking1 = new Booking(instrument1, u100, LocalDate.of(2025, 12, 1), LocalDate.of(2025, 12, 5));
         booking1.setStatus(BookingStatus.PENDING);
         bookingRepository.save(booking1);
 
-        booking2 = new Booking(instrument2, 200L, LocalDate.of(2025, 12, 10), LocalDate.of(2025, 12, 15));
+        booking2 = new Booking(instrument2, u200, LocalDate.of(2025, 12, 10), LocalDate.of(2025, 12, 15));
         booking2.setStatus(BookingStatus.APPROVED);
         bookingRepository.save(booking2);
 
-        booking3 = new Booking(instrument1, 300L, LocalDate.of(2025, 12, 20), LocalDate.of(2025, 12, 25));
+        booking3 = new Booking(instrument1, u300, LocalDate.of(2025, 12, 20), LocalDate.of(2025, 12, 25));
         booking3.setStatus(BookingStatus.REJECTED);
         bookingRepository.save(booking3);
 
@@ -157,15 +180,18 @@ class AdminServiceIntegrationTest {
 
     @Test
     void shouldGetRenterActivity() {
-        booking1 = bookingRepository.save(new Booking(instrument1, 100L, 
+        com.example.OLSHEETS.data.User u100 = userRepository.save(new com.example.OLSHEETS.data.User("u100"));
+        com.example.OLSHEETS.data.User u200 = userRepository.save(new com.example.OLSHEETS.data.User("u200"));
+
+        booking1 = bookingRepository.save(new Booking(instrument1, u100, 
             LocalDate.of(2025, 12, 1), LocalDate.of(2025, 12, 5)));
-        booking2 = bookingRepository.save(new Booking(instrument2, 100L, 
+        booking2 = bookingRepository.save(new Booking(instrument2, u100, 
             LocalDate.of(2025, 12, 10), LocalDate.of(2025, 12, 15)));
-        booking3 = bookingRepository.save(new Booking(instrument1, 200L, 
+        booking3 = bookingRepository.save(new Booking(instrument1, u200, 
             LocalDate.of(2025, 12, 20), LocalDate.of(2025, 12, 25)));
 
-        Long activityRenter100 = adminService.getRenterActivity(100L);
-        Long activityRenter200 = adminService.getRenterActivity(200L);
+        Long activityRenter100 = adminService.getRenterActivity(u100.getId());
+        Long activityRenter200 = adminService.getRenterActivity(u200.getId());
 
         assertThat(activityRenter100).isEqualTo(2L);
         assertThat(activityRenter200).isEqualTo(1L);
@@ -173,15 +199,19 @@ class AdminServiceIntegrationTest {
 
     @Test
     void shouldGetOwnerActivity() {
-        booking1 = bookingRepository.save(new Booking(instrument1, 100L, 
+        com.example.OLSHEETS.data.User u100 = userRepository.save(new com.example.OLSHEETS.data.User("u100"));
+        com.example.OLSHEETS.data.User u200 = userRepository.save(new com.example.OLSHEETS.data.User("u200"));
+        com.example.OLSHEETS.data.User u300 = userRepository.save(new com.example.OLSHEETS.data.User("u300"));
+
+        booking1 = bookingRepository.save(new Booking(instrument1, u100, 
             LocalDate.of(2025, 12, 1), LocalDate.of(2025, 12, 5)));
-        booking2 = bookingRepository.save(new Booking(instrument1, 200L, 
+        booking2 = bookingRepository.save(new Booking(instrument1, u200, 
             LocalDate.of(2025, 12, 10), LocalDate.of(2025, 12, 15)));
-        booking3 = bookingRepository.save(new Booking(instrument2, 300L, 
+        booking3 = bookingRepository.save(new Booking(instrument2, u300, 
             LocalDate.of(2025, 12, 20), LocalDate.of(2025, 12, 25)));
 
-        Long activityOwner10 = adminService.getOwnerActivity(10);
-        Long activityOwner20 = adminService.getOwnerActivity(20);
+        Long activityOwner10 = adminService.getOwnerActivity(10L);
+        Long activityOwner20 = adminService.getOwnerActivity(20L);
 
         assertThat(activityOwner10).isEqualTo(2L);
         assertThat(activityOwner20).isEqualTo(1L);
@@ -189,15 +219,18 @@ class AdminServiceIntegrationTest {
 
     @Test
     void shouldCalculateRevenueByOwner() {
-        booking1 = new Booking(instrument1, 100L, LocalDate.of(2025, 12, 1), LocalDate.of(2025, 12, 5));
+        com.example.OLSHEETS.data.User u100 = userRepository.save(new com.example.OLSHEETS.data.User("u100"));
+        com.example.OLSHEETS.data.User u200 = userRepository.save(new com.example.OLSHEETS.data.User("u200"));
+
+        booking1 = new Booking(instrument1, u100, LocalDate.of(2025, 12, 1), LocalDate.of(2025, 12, 5));
         booking1.setStatus(BookingStatus.APPROVED);
         bookingRepository.save(booking1);
 
-        booking2 = new Booking(instrument1, 200L, LocalDate.of(2025, 12, 10), LocalDate.of(2025, 12, 15));
+        booking2 = new Booking(instrument1, u200, LocalDate.of(2025, 12, 10), LocalDate.of(2025, 12, 15));
         booking2.setStatus(BookingStatus.APPROVED);
         bookingRepository.save(booking2);
 
-        Double revenue = adminService.getRevenueByOwner(10);
+        Double revenue = adminService.getRevenueByOwner(10L);
 
         // 2 bookings: (5-1=4 days * 50) + (15-10=5 days * 50) = 200 + 250 = 450
         assertThat(revenue).isEqualTo(450.0);
@@ -205,11 +238,14 @@ class AdminServiceIntegrationTest {
 
     @Test
     void shouldCalculateTotalRevenue() {
-        booking1 = new Booking(instrument1, 100L, LocalDate.of(2025, 12, 1), LocalDate.of(2025, 12, 5));
+        com.example.OLSHEETS.data.User u100 = userRepository.save(new com.example.OLSHEETS.data.User("u100"));
+        com.example.OLSHEETS.data.User u200 = userRepository.save(new com.example.OLSHEETS.data.User("u200"));
+
+        booking1 = new Booking(instrument1, u100, LocalDate.of(2025, 12, 1), LocalDate.of(2025, 12, 5));
         booking1.setStatus(BookingStatus.APPROVED);
         bookingRepository.save(booking1);
 
-        booking2 = new Booking(instrument2, 200L, LocalDate.of(2025, 12, 10), LocalDate.of(2025, 12, 15));
+        booking2 = new Booking(instrument2, u200, LocalDate.of(2025, 12, 10), LocalDate.of(2025, 12, 15));
         booking2.setStatus(BookingStatus.APPROVED);
         bookingRepository.save(booking2);
 
@@ -221,11 +257,14 @@ class AdminServiceIntegrationTest {
 
     @Test
     void shouldNotCountPendingOrRejectedBookingsInRevenue() {
-        booking1 = new Booking(instrument1, 100L, LocalDate.of(2025, 12, 1), LocalDate.of(2025, 12, 5));
+        com.example.OLSHEETS.data.User u100 = userRepository.save(new com.example.OLSHEETS.data.User("u100"));
+        com.example.OLSHEETS.data.User u200 = userRepository.save(new com.example.OLSHEETS.data.User("u200"));
+
+        booking1 = new Booking(instrument1, u100, LocalDate.of(2025, 12, 1), LocalDate.of(2025, 12, 5));
         booking1.setStatus(BookingStatus.PENDING);
         bookingRepository.save(booking1);
 
-        booking2 = new Booking(instrument2, 200L, LocalDate.of(2025, 12, 10), LocalDate.of(2025, 12, 15));
+        booking2 = new Booking(instrument2, u200, LocalDate.of(2025, 12, 10), LocalDate.of(2025, 12, 15));
         booking2.setStatus(BookingStatus.REJECTED);
         bookingRepository.save(booking2);
 

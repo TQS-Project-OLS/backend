@@ -76,7 +76,9 @@ public class FilterInstrumentsByTypeSteps {
             instrument.setAge(Integer.parseInt(row.get("age")));
             instrument.setPrice(Double.parseDouble(row.get("price")));
             instrument.setDescription(row.get("description"));
-            instrument.setOwnerId(1); // Default owner for test data
+            com.example.OLSHEETS.data.User owner = new com.example.OLSHEETS.data.User("owner1");
+            owner.setId(1L);
+            instrument.setOwner(owner); // Default owner for test data
 
             instrumentRepository.save(instrument);
         }

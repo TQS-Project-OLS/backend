@@ -20,7 +20,9 @@ class InstrumentTest {
         instrument1.setId(1L);
         instrument1.setName("Guitar");
         instrument1.setDescription("Acoustic guitar");
-        instrument1.setOwnerId(100);
+        com.example.OLSHEETS.data.User owner100 = new com.example.OLSHEETS.data.User("owner100");
+        owner100.setId(100L);
+        instrument1.setOwner(owner100);
         instrument1.setPrice(500.0);
         instrument1.setAge(5);
         instrument1.setType(InstrumentType.ACOUSTIC);
@@ -30,7 +32,9 @@ class InstrumentTest {
         instrument2.setId(1L);
         instrument2.setName("Guitar");
         instrument2.setDescription("Acoustic guitar");
-        instrument2.setOwnerId(100);
+        com.example.OLSHEETS.data.User owner100b = new com.example.OLSHEETS.data.User("owner100");
+        owner100b.setId(100L);
+        instrument2.setOwner(owner100b);
         instrument2.setPrice(500.0);
         instrument2.setAge(5);
         instrument2.setType(InstrumentType.ACOUSTIC);
@@ -314,7 +318,9 @@ class InstrumentTest {
     void testInstrumentInheritance() {
         instrument1.setName("Test Instrument");
         instrument1.setDescription("Test Description");
-        instrument1.setOwnerId(999);
+        com.example.OLSHEETS.data.User owner999 = new com.example.OLSHEETS.data.User("owner999");
+        owner999.setId(999L);
+        instrument1.setOwner(owner999);
         instrument1.setPrice(1000.0);
         
         assertThat(instrument1.getName()).isEqualTo("Test Instrument");

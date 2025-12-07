@@ -34,7 +34,9 @@ class InstrumentRepositoryIntegrationTest {
         yamahaPiano = new Instrument();
         yamahaPiano.setName("Yamaha P-125");
         yamahaPiano.setDescription("Digital Piano");
-        yamahaPiano.setOwnerId(1);
+        com.example.OLSHEETS.data.User owner1 = new com.example.OLSHEETS.data.User("owner1");
+        owner1.setId(1L);
+        yamahaPiano.setOwner(owner1);
         yamahaPiano.setPrice(599.99);
         yamahaPiano.setAge(2);
         yamahaPiano.setType(InstrumentType.DIGITAL);
@@ -43,7 +45,9 @@ class InstrumentRepositoryIntegrationTest {
         fenderGuitar = new Instrument();
         fenderGuitar.setName("Fender Stratocaster");
         fenderGuitar.setDescription("Electric Guitar");
-        fenderGuitar.setOwnerId(1);
+        com.example.OLSHEETS.data.User owner1b = new com.example.OLSHEETS.data.User("owner1");
+        owner1b.setId(1L);
+        fenderGuitar.setOwner(owner1b);
         fenderGuitar.setPrice(899.99);
         fenderGuitar.setAge(5);
         fenderGuitar.setType(InstrumentType.ELECTRIC);
@@ -52,7 +56,9 @@ class InstrumentRepositoryIntegrationTest {
         yamahaSax = new Instrument();
         yamahaSax.setName("Yamaha YAS-280");
         yamahaSax.setDescription("Alto Saxophone");
-        yamahaSax.setOwnerId(2);
+        com.example.OLSHEETS.data.User owner2 = new com.example.OLSHEETS.data.User("owner2");
+        owner2.setId(2L);
+        yamahaSax.setOwner(owner2);
         yamahaSax.setPrice(1299.99);
         yamahaSax.setAge(1);
         yamahaSax.setType(InstrumentType.WIND);
@@ -178,13 +184,17 @@ class InstrumentRepositoryIntegrationTest {
         Instrument acousticGuitar1 = new Instrument();
         acousticGuitar1.setName("Martin D-28");
         acousticGuitar1.setType(InstrumentType.ACOUSTIC);
-        acousticGuitar1.setOwnerId(1);
+        com.example.OLSHEETS.data.User ownerA = new com.example.OLSHEETS.data.User("owner1");
+        ownerA.setId(1L);
+        acousticGuitar1.setOwner(ownerA);
         acousticGuitar1.setPrice(2899.99);
 
         Instrument acousticGuitar2 = new Instrument();
         acousticGuitar2.setName("Taylor 214ce");
         acousticGuitar2.setType(InstrumentType.ACOUSTIC);
-        acousticGuitar2.setOwnerId(2);
+        com.example.OLSHEETS.data.User ownerB = new com.example.OLSHEETS.data.User("owner2");
+        ownerB.setId(2L);
+        acousticGuitar2.setOwner(ownerB);
         acousticGuitar2.setPrice(1099.99);
 
         entityManager.persistAndFlush(acousticGuitar1);
