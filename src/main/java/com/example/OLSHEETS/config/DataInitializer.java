@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import java.util.Arrays;
 
 @Component
+@Profile("dev")
 public class DataInitializer {
 
     @Autowired
