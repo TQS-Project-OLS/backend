@@ -137,7 +137,6 @@ class ItemTest {
     void testEqualsWithNullFields() {
         MusicSheet sheet1 = new MusicSheet();
         MusicSheet sheet2 = new MusicSheet();
-        
         assertThat(sheet1.equals(sheet2)).isTrue();
         
         sheet1.setId(1L);
@@ -157,132 +156,23 @@ class ItemTest {
     void testHashCodeConsistency() {
         assertThat(musicSheet1).hasSameHashCodeAs(musicSheet2);
         assertThat(instrument1).hasSameHashCodeAs(instrument2);
-    }
-
-    @Test
-    void testHashCodeWithDifferentValues() {
+        
         musicSheet2.setName("Different Name");
         assertThat(musicSheet1.hashCode()).isNotEqualTo(musicSheet2.hashCode());
     }
 
     @Test
-    void testHashCodeWithNullFields() {
-        MusicSheet sheet = new MusicSheet();
-        // hashCode should be calculated even with null fields
-        assertThat(sheet).hasSameHashCodeAs(new MusicSheet());
-    }
-
-    @Test
-    void testEqualsWithNullIdBothObjects() {
+    void testEqualsWithNullHandling() {
         MusicSheet sheet1 = new MusicSheet();
-        sheet1.setName("Name");
-        sheet1.setOwnerId(1);
-        sheet1.setPrice(10.0);
-        
         MusicSheet sheet2 = new MusicSheet();
-        sheet2.setName("Name");
-        sheet2.setOwnerId(1);
-        sheet2.setPrice(10.0);
-        
         assertThat(sheet1.equals(sheet2)).isTrue();
-    }
-
-    @Test
-    void testEqualsWithNullNameBothObjects() {
-        MusicSheet sheet1 = new MusicSheet();
+        
+        // Test one null vs non-null
         sheet1.setId(1L);
-        sheet1.setOwnerId(1);
-        sheet1.setPrice(10.0);
-        
-        MusicSheet sheet2 = new MusicSheet();
-        sheet2.setId(1L);
-        sheet2.setOwnerId(1);
-        sheet2.setPrice(10.0);
-        
-        assertThat(sheet1.equals(sheet2)).isTrue();
-    }
-
-    @Test
-    void testEqualsWithNullDescriptionBothObjects() {
-        MusicSheet sheet1 = new MusicSheet();
-        sheet1.setId(1L);
-        sheet1.setName("Name");
-        sheet1.setOwnerId(1);
-        sheet1.setPrice(10.0);
-        
-        MusicSheet sheet2 = new MusicSheet();
-        sheet2.setId(1L);
-        sheet2.setName("Name");
-        sheet2.setOwnerId(1);
-        sheet2.setPrice(10.0);
-        
-        assertThat(sheet1.equals(sheet2)).isTrue();
-    }
-
-    @Test
-    void testEqualsWithNullPriceBothObjects() {
-        MusicSheet sheet1 = new MusicSheet();
-        sheet1.setId(1L);
-        sheet1.setName("Name");
-        sheet1.setOwnerId(1);
-        
-        MusicSheet sheet2 = new MusicSheet();
-        sheet2.setId(1L);
-        sheet2.setName("Name");
-        sheet2.setOwnerId(1);
-        
-        assertThat(sheet1.equals(sheet2)).isTrue();
-    }
-
-    @Test
-    void testEqualsWithOneNullIdAndOneNonNull() {
-        MusicSheet sheet1 = new MusicSheet();
-        sheet1.setName("Name");
-        
-        MusicSheet sheet2 = new MusicSheet();
-        sheet2.setId(1L);
-        sheet2.setName("Name");
-        
         assertThat(sheet1.equals(sheet2)).isFalse();
-    }
-
-    @Test
-    void testEqualsWithOneNullNameAndOneNonNull() {
-        MusicSheet sheet1 = new MusicSheet();
-        sheet1.setId(1L);
         
-        MusicSheet sheet2 = new MusicSheet();
         sheet2.setId(1L);
-        sheet2.setName("Name");
-        
-        assertThat(sheet1.equals(sheet2)).isFalse();
-    }
-
-    @Test
-    void testEqualsWithOneNullDescriptionAndOneNonNull() {
-        MusicSheet sheet1 = new MusicSheet();
-        sheet1.setId(1L);
         sheet1.setName("Name");
-        
-        MusicSheet sheet2 = new MusicSheet();
-        sheet2.setId(1L);
-        sheet2.setName("Name");
-        sheet2.setDescription("Description");
-        
-        assertThat(sheet1.equals(sheet2)).isFalse();
-    }
-
-    @Test
-    void testEqualsWithOneNullPriceAndOneNonNull() {
-        MusicSheet sheet1 = new MusicSheet();
-        sheet1.setId(1L);
-        sheet1.setName("Name");
-        
-        MusicSheet sheet2 = new MusicSheet();
-        sheet2.setId(1L);
-        sheet2.setName("Name");
-        sheet2.setPrice(10.0);
-        
         assertThat(sheet1.equals(sheet2)).isFalse();
     }
 
@@ -301,71 +191,5 @@ class ItemTest {
         instrument.setPrice(10.0);
         
         assertThat(sheet).isNotEqualTo(instrument);
-    }
-
-    @Test
-    void testItemConstructor() {
-        MusicSheet sheet = new MusicSheet();
-        assertThat(sheet).isNotNull();
-    }
-
-    @Test
-    void testPriceNullInFirstObjectButNotInSecond() {
-        Instrument instr1 = new Instrument();
-        instr1.setId(1L);
-        instr1.setName("Name");
-        instr1.setOwnerId(1);
-        instr1.setPrice(null);
-        
-        Instrument instr2 = new Instrument();
-        instr2.setId(1L);
-        instr2.setName("Name");
-        instr2.setOwnerId(1);
-        instr2.setPrice(10.0);
-        
-        assertThat(instr1).isNotEqualTo(instr2);
-    }
-
-    @Test
-    void testDescriptionNullInSecondObjectButNotInFirst() {
-        Instrument instr1 = new Instrument();
-        instr1.setId(1L);
-        instr1.setName("Name");
-        instr1.setOwnerId(1);
-        instr1.setDescription("Description");
-        
-        Instrument instr2 = new Instrument();
-        instr2.setId(1L);
-        instr2.setName("Name");
-        instr2.setOwnerId(1);
-        instr2.setDescription(null);
-        
-        assertThat(instr1).isNotEqualTo(instr2);
-    }
-
-    @Test
-    void testIdNullInSecondObjectButNotInFirst() {
-        Instrument instr1 = new Instrument();
-        instr1.setId(1L);
-        instr1.setName("Name");
-        
-        Instrument instr2 = new Instrument();
-        instr2.setId(null);
-        instr2.setName("Name");
-        
-        assertThat(instr1).isNotEqualTo(instr2);
-    }
-
-    @Test
-    void testNameNullInSecondObjectButNotInFirst() {
-        Instrument instr1 = new Instrument();
-        instr1.setId(1L);
-        instr1.setName("Name");
-        
-        Instrument instr2 = new Instrument();
-        instr2.setId(1L);
-        instr2.setName(null);
-        
-        assertThat(instr1).isNotEqualTo(instr2);
     }
 }

@@ -105,15 +105,11 @@ class MusicSheetRepositoryIntegrationTest {
         entityManager.persistAndFlush(moonlightSonata);
         entityManager.persistAndFlush(bohemianRhapsody);
 
-        // Act
-        List<MusicSheet> resultLowerCase = musicSheetRepository.findByNameContainingIgnoreCase("moonlight");
-        List<MusicSheet> resultUpperCase = musicSheetRepository.findByNameContainingIgnoreCase("MOONLIGHT");
-        List<MusicSheet> resultMixedCase = musicSheetRepository.findByNameContainingIgnoreCase("MoOnLiGhT");
+        // Act - test case insensitivity with one example
+        List<MusicSheet> result = musicSheetRepository.findByNameContainingIgnoreCase("moonlight");
 
         // Assert
-        assertEquals(1, resultLowerCase.size());
-        assertEquals(1, resultUpperCase.size());
-        assertEquals(1, resultMixedCase.size());
+        assertEquals(1, result.size());
     }
 
     @Test

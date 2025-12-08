@@ -20,7 +20,7 @@ import java.util.Arrays;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Autowired
+    @Autowired(required = false)
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
@@ -39,8 +39,10 @@ public class SecurityConfig {
                         .anyRequest().permitAll() // Allow other static resources
                 )
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        if (jwtAuthenticationFilter != null) {
+            http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        }
 
         // Allow H2 console frames
         http.headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()));

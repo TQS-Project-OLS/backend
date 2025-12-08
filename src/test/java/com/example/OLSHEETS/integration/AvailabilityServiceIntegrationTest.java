@@ -15,7 +15,9 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@SpringBootTest
+@SpringBootTest(properties = {
+    "spring.main.lazy-initialization=true"
+})
 class AvailabilityServiceIntegrationTest {
 
     @Autowired

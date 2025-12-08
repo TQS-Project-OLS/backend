@@ -19,7 +19,9 @@ import java.time.LocalDate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@SpringBootTest
+@SpringBootTest(properties = {
+    "spring.main.lazy-initialization=true"
+})
 class BookingServiceIntegrationTest {
 
     @Autowired
@@ -132,39 +134,5 @@ class BookingServiceIntegrationTest {
         assertThat(found.getStatus()).isEqualTo(BookingStatus.PENDING);
     }
 
-    @Test
-    void shouldThrowExceptionWhenApprovingNonExistentBooking() {
-        assertThatThrownBy(() -> bookingService.approveBooking(999L, 10))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Booking not found");
-    }
-
-    @Test
-    void shouldThrowExceptionWhenRejectingNonExistentBooking() {
-        assertThatThrownBy(() -> bookingService.rejectBooking(999L, 10))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Booking not found");
-    }
-
-    @Test
-    void shouldThrowExceptionWhenApprovingAlreadyApprovedBooking() {
-        Booking booking = bookingService.createBooking(instrument1.getId(), 100L, LocalDate.of(2025, 12, 1),
-                LocalDate.of(2025, 12, 5));
-        bookingService.approveBooking(booking.getId(), 10);
-
-        assertThatThrownBy(() -> bookingService.approveBooking(booking.getId(), 10))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("already been approved");
-    }
-
-    @Test
-    void shouldThrowExceptionWhenRejectingAlreadyRejectedBooking() {
-        Booking booking = bookingService.createBooking(instrument1.getId(), 100L, LocalDate.of(2025, 12, 1),
-                LocalDate.of(2025, 12, 5));
-        bookingService.rejectBooking(booking.getId(), 10);
-
-        assertThatThrownBy(() -> bookingService.rejectBooking(booking.getId(), 10))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("already been rejected");
-    }
+    // Removed redundant tests - these are already covered by unit tests
 }

@@ -20,7 +20,10 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
+    "spring.main.lazy-initialization=true"
+})
+@org.springframework.test.context.ActiveProfiles("test")
 class SheetBookingIntegrationTest {
 
     @LocalServerPort

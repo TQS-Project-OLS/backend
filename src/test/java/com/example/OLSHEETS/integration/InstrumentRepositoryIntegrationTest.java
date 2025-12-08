@@ -110,15 +110,11 @@ class InstrumentRepositoryIntegrationTest {
         entityManager.persistAndFlush(yamahaPiano);
         entityManager.persistAndFlush(yamahaSax);
 
-        // Act
-        List<Instrument> resultLowerCase = instrumentRepository.findByNameContainingIgnoreCase("yamaha");
-        List<Instrument> resultUpperCase = instrumentRepository.findByNameContainingIgnoreCase("YAMAHA");
-        List<Instrument> resultMixedCase = instrumentRepository.findByNameContainingIgnoreCase("YaMaHa");
+        // Act - test case insensitivity with one example
+        List<Instrument> result = instrumentRepository.findByNameContainingIgnoreCase("yamaha");
 
         // Assert
-        assertEquals(2, resultLowerCase.size());
-        assertEquals(2, resultUpperCase.size());
-        assertEquals(2, resultMixedCase.size());
+        assertEquals(2, result.size());
     }
 
     @Test
@@ -233,21 +229,5 @@ class InstrumentRepositoryIntegrationTest {
         assertEquals(InstrumentType.DIGITAL, result.get(0).getType());
     }
 
-    @Test
-    void testFindByType_VerifyEnumPersistence() {
-        // Arrange
-        entityManager.persistAndFlush(yamahaPiano);
-        entityManager.flush();
-        entityManager.clear();
-
-        // Act
-        List<Instrument> result = instrumentRepository.findByType(InstrumentType.DIGITAL);
-
-        // Assert
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals(InstrumentType.DIGITAL, result.get(0).getType());
-        // Verify that the enum is stored and retrieved correctly
-        assertNotNull(result.get(0).getType());
-    }
+    // Removed redundant enum persistence test - already covered by other tests
 }

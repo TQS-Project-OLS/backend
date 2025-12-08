@@ -5,13 +5,17 @@ import com.example.OLSHEETS.data.Booking;
 import com.example.OLSHEETS.data.BookingStatus;
 import com.example.OLSHEETS.data.Item;
 import com.example.OLSHEETS.data.Instrument;
+import com.example.OLSHEETS.repository.UserRepository;
 import com.example.OLSHEETS.service.BookingService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import com.example.OLSHEETS.security.JwtUtil;
 
 import java.time.LocalDate;
 
@@ -20,14 +24,29 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(BookingController.class)
+@WebMvcTest(controllers = BookingController.class, excludeAutoConfiguration = {
+    org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class
+})
+@org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc(addFilters = false)
+@org.springframework.context.annotation.Import(BookingControllerTest.TestConfig.class)
 class BookingControllerTest {
+
+    @TestConfiguration
+    static class TestConfig {
+        @Bean
+        public JwtUtil jwtUtil() {
+            return org.mockito.Mockito.mock(JwtUtil.class);
+        }
+    }
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockitoBean
     private BookingService bookingService;
+
+    @MockitoBean
+    private UserRepository userRepository;
 
     private Booking booking;
     private Item item;
