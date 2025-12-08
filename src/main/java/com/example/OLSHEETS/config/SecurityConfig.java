@@ -25,8 +25,10 @@ public class SecurityConfig {
 
     @Bean
     @Profile("!test")
+    @SuppressWarnings("java:S4502") // CSRF disabled - acceptable for stateless JWT-based API
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .csrf(csrf -> csrf.disable()) // NOSONAR java:S4502 - Safe: stateless JWT authentication, no session-based CSRF risk
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints
