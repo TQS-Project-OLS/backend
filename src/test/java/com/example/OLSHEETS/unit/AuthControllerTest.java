@@ -5,6 +5,7 @@ import com.example.OLSHEETS.data.User;
 import com.example.OLSHEETS.dto.AuthResponse;
 import com.example.OLSHEETS.dto.LoginRequest;
 import com.example.OLSHEETS.dto.SignupRequest;
+import com.example.OLSHEETS.exception.UserAlreadyExistsException;
 import com.example.OLSHEETS.security.JwtUtil;
 import com.example.OLSHEETS.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -85,7 +86,7 @@ class AuthControllerTest {
     @Test
     void testSignup_Error() throws Exception {
         when(userService.registerUser(any(SignupRequest.class)))
-                .thenThrow(new RuntimeException("Username already exists"));
+                .thenThrow(new UserAlreadyExistsException("Username already exists"));
 
         mockMvc.perform(post("/api/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)

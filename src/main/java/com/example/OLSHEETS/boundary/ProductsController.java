@@ -5,6 +5,7 @@ import com.example.OLSHEETS.data.InstrumentType;
 import com.example.OLSHEETS.data.InstrumentFamily;
 import com.example.OLSHEETS.data.User;
 import com.example.OLSHEETS.dto.InstrumentRegistrationRequest;
+import com.example.OLSHEETS.exception.UserNotFoundException;
 import com.example.OLSHEETS.repository.UserRepository;
 import com.example.OLSHEETS.service.ProductsService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +56,7 @@ public class ProductsController {
 
             // Get user from database
             User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+                    .orElseThrow(() -> new UserNotFoundException("User not found"));
 
             // Set ownerId from authenticated user
             request.setOwnerId(user.getId().intValue());

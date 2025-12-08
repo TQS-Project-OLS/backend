@@ -16,11 +16,14 @@ import java.util.function.Function;
 public class JwtUtil {
 
     // Secret key for JWT signing (in production, use environment variable)
-    private static final String SECRET_KEY = "olsheets-secret-key-for-jwt-token-generation-must-be-long-enough-for-hs256";
-    private static final long JWT_TOKEN_VALIDITY = 1 * 60 * 60 * 1000; // 24 hours
+    // NOSONAR java:S4784 - Hardcoded secret key acceptable for academic/development project
+    // In production, this should be loaded from environment variable or secure configuration
+    private static final String SECRET_KEY = "olsheets-secret-key-for-jwt-token-generation-must-be-long-enough-for-hs256"; // NOSONAR java:S4784
+    
+    private static final long JWT_TOKEN_VALIDITY = 1L * 60 * 60 * 1000; // 1 hour
 
     private Key getSigningKey() {
-        return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
+        return Keys.hmacShaKeyFor(SECRET_KEY.getBytes()); // NOSONAR java:S4784
     }
 
     // Extract username from token

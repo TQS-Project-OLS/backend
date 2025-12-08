@@ -2,6 +2,7 @@ package com.example.OLSHEETS.service;
 
 import com.example.OLSHEETS.data.User;
 import com.example.OLSHEETS.dto.SignupRequest;
+import com.example.OLSHEETS.exception.UserAlreadyExistsException;
 import com.example.OLSHEETS.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -20,12 +21,12 @@ public class UserService {
     public User registerUser(SignupRequest request) {
         // Check if username already exists
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
-            throw new RuntimeException("Username already exists");
+            throw new UserAlreadyExistsException("Username already exists");
         }
 
         // Check if email already exists
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new RuntimeException("Email already exists");
+            throw new UserAlreadyExistsException("Email already exists");
         }
 
         // Create new user

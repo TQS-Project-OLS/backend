@@ -4,6 +4,7 @@ import com.example.OLSHEETS.data.User;
 import com.example.OLSHEETS.dto.AuthResponse;
 import com.example.OLSHEETS.dto.LoginRequest;
 import com.example.OLSHEETS.dto.SignupRequest;
+import com.example.OLSHEETS.exception.UserAlreadyExistsException;
 import com.example.OLSHEETS.security.JwtUtil;
 import com.example.OLSHEETS.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +35,7 @@ public class AuthController {
 
             AuthResponse response = new AuthResponse(token, user.getUsername(), user.getName());
             return ResponseEntity.ok(response);
-        } catch (RuntimeException e) {
+        } catch (UserAlreadyExistsException e) {
             Map<String, String> error = new HashMap<>();
             error.put("error", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);

@@ -2,6 +2,7 @@ package com.example.OLSHEETS.unit;
 
 import com.example.OLSHEETS.data.User;
 import com.example.OLSHEETS.dto.SignupRequest;
+import com.example.OLSHEETS.exception.UserAlreadyExistsException;
 import com.example.OLSHEETS.repository.UserRepository;
 import com.example.OLSHEETS.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -67,7 +68,7 @@ class UserServiceTest {
     void testRegisterUser_UsernameExists() {
         when(userRepository.findByUsername("newuser")).thenReturn(Optional.of(existingUser));
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+        UserAlreadyExistsException exception = assertThrows(UserAlreadyExistsException.class, () -> {
             userService.registerUser(signupRequest);
         });
 
@@ -80,7 +81,7 @@ class UserServiceTest {
         when(userRepository.findByUsername("newuser")).thenReturn(Optional.empty());
         when(userRepository.findByEmail("newuser@test.com")).thenReturn(Optional.of(existingUser));
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+        UserAlreadyExistsException exception = assertThrows(UserAlreadyExistsException.class, () -> {
             userService.registerUser(signupRequest);
         });
 

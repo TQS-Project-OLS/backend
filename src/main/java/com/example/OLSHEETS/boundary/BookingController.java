@@ -2,6 +2,7 @@ package com.example.OLSHEETS.boundary;
 
 import com.example.OLSHEETS.data.Booking;
 import com.example.OLSHEETS.data.User;
+import com.example.OLSHEETS.exception.UserNotFoundException;
 import com.example.OLSHEETS.repository.UserRepository;
 import com.example.OLSHEETS.service.BookingService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +41,7 @@ public class BookingController {
 
             // Get user from database
             User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+                    .orElseThrow(() -> new UserNotFoundException("User not found"));
 
             Booking booking = bookingService.createBooking(itemId, user.getId(), startDate, endDate);
             return ResponseEntity.ok(booking);
