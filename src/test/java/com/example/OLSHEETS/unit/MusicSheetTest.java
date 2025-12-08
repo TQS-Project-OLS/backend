@@ -62,7 +62,7 @@ class MusicSheetTest {
         assertThat(sheet.getName()).isEqualTo("Fur Elise");
         assertThat(sheet.getCategory()).isEqualTo("Classical");
         assertThat(sheet.getComposer()).isEqualTo("Beethoven");
-        assertThat(sheet.getOwnerId()).isEqualTo(200);
+        assertThat(sheet.getOwner().getId()).isEqualTo(200L);
     }
 
     @Test

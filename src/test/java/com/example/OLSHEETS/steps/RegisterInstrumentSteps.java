@@ -33,6 +33,8 @@ public class RegisterInstrumentSteps {
 
     @Autowired
     private InstrumentRepository instrumentRepository;
+    @Autowired
+    private com.example.OLSHEETS.repository.UserRepository userRepository;
 
     private WebDriver driver;
     private WebDriverWait wait;
@@ -61,7 +63,9 @@ public class RegisterInstrumentSteps {
 
     @Given("I am an instrument owner with ID {int}")
     public void iAmAnInstrumentOwnerWithID(Integer ownerId) {
-        this.currentOwnerId = ownerId;
+        // Create a user for this scenario and use its actual DB id as owner id
+        com.example.OLSHEETS.data.User saved = userRepository.save(new com.example.OLSHEETS.data.User("owner" + ownerId));
+        this.currentOwnerId = saved.getId().intValue();
         this.instrumentCountBeforeRegistration = (int) instrumentRepository.count();
     }
 
@@ -224,7 +228,7 @@ public class RegisterInstrumentSteps {
         assertNotNull(lastInstrument.getName());
         assertNotNull(lastInstrument.getDescription());
         assertNotNull(lastInstrument.getPrice());
-        assertEquals(currentOwnerId, lastInstrument.getOwnerId());
+        assertEquals(currentOwnerId.longValue(), lastInstrument.getOwner().getId().longValue());
         assertNotNull(lastInstrument.getAge());
         assertNotNull(lastInstrument.getType());
         assertNotNull(lastInstrument.getFamily());

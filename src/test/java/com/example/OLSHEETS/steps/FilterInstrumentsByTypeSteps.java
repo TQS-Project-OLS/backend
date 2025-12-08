@@ -40,6 +40,9 @@ public class FilterInstrumentsByTypeSteps {
     @Autowired
     private com.example.OLSHEETS.repository.BookingRepository bookingRepository;
 
+    @Autowired
+    private com.example.OLSHEETS.repository.UserRepository userRepository;
+
     private WebDriver driver;
     private WebDriverWait wait;
     private static final String FRONTEND_URL = "http://localhost:8080";
@@ -77,7 +80,7 @@ public class FilterInstrumentsByTypeSteps {
             instrument.setPrice(Double.parseDouble(row.get("price")));
             instrument.setDescription(row.get("description"));
             com.example.OLSHEETS.data.User owner = new com.example.OLSHEETS.data.User("owner1");
-            owner.setId(1L);
+            owner = userRepository.save(owner);
             instrument.setOwner(owner); // Default owner for test data
 
             instrumentRepository.save(instrument);

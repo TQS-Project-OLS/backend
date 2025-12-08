@@ -389,7 +389,7 @@ class ItemTest {
         instr1.setId(1L);
         instr1.setName("Name");
         
-        Instrument instr1 = new Instrument();
+        Instrument instr2 = new Instrument();
         instr1.setId(1L);
         instr1.setName("Name");
         com.example.OLSHEETS.data.User ownerE = new com.example.OLSHEETS.data.User("owner1");
@@ -400,12 +400,12 @@ class ItemTest {
 
     @Test
     void testNameNullInSecondObjectButNotInFirst() {
-        Instrument instr2 = new Instrument();
-        instr2.setId(null);
-        instr2.setName("Name");
+        Instrument instr1 = new Instrument();
+        instr1.setId(null);
+        instr1.setName("Name");
         com.example.OLSHEETS.data.User ownerF = new com.example.OLSHEETS.data.User("owner1");
         ownerF.setId(1L);
-        instr2.setOwner(ownerF);
+        instr1.setOwner(ownerF);
         Instrument instr2 = new Instrument();
         instr2.setId(1L);
         instr2.setName(null);

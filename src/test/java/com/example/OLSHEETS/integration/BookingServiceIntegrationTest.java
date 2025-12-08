@@ -116,7 +116,7 @@ class BookingServiceIntegrationTest {
                 LocalDate.of(2025, 12, 5));
         assertThat(booking.getStatus()).isEqualTo(BookingStatus.PENDING);
 
-        Booking rejected = bookingService.rejectBooking(booking.getId(), 10);
+        Booking rejected = bookingService.rejectBooking(booking.getId(), owner10.getId().intValue());
 
         assertThat(rejected.getStatus()).isEqualTo(BookingStatus.REJECTED);
         assertThat(rejected.getId()).isEqualTo(booking.getId());

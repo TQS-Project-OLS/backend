@@ -35,7 +35,8 @@ class MusicSheetRepositoryIntegrationTest {
         moonlightSonata.setCategory("CLASSICAL");
         moonlightSonata.setDescription("Piano Sonata No. 14");
         com.example.OLSHEETS.data.User owner1 = new com.example.OLSHEETS.data.User("owner1");
-        owner1.setId(1L);
+        entityManager.persist(owner1);
+        entityManager.flush();
         moonlightSonata.setOwner(owner1);
         moonlightSonata.setPrice(9.99);
 
@@ -44,8 +45,7 @@ class MusicSheetRepositoryIntegrationTest {
         bohemianRhapsody.setComposer("Freddie Mercury");
         bohemianRhapsody.setCategory("ROCK");
         bohemianRhapsody.setDescription("Queen masterpiece");
-        com.example.OLSHEETS.data.User owner1b = new com.example.OLSHEETS.data.User("owner1");
-        owner1b.setId(1L);
+        com.example.OLSHEETS.data.User owner1b = owner1;
         bohemianRhapsody.setOwner(owner1b);
         bohemianRhapsody.setPrice(12.99);
 
@@ -55,7 +55,8 @@ class MusicSheetRepositoryIntegrationTest {
         autumnLeaves.setCategory("JAZZ");
         autumnLeaves.setDescription("Jazz standard");
         com.example.OLSHEETS.data.User owner2 = new com.example.OLSHEETS.data.User("owner2");
-        owner2.setId(2L);
+        entityManager.persist(owner2);
+        entityManager.flush();
         autumnLeaves.setOwner(owner2);
         autumnLeaves.setPrice(7.99);
     }
@@ -130,7 +131,8 @@ class MusicSheetRepositoryIntegrationTest {
         furElise.setComposer("Beethoven");
         furElise.setCategory("CLASSICAL");
         com.example.OLSHEETS.data.User owner1c = new com.example.OLSHEETS.data.User("owner1");
-        owner1c.setId(1L);
+        entityManager.persist(owner1c);
+        entityManager.flush();
         furElise.setOwner(owner1c);
         furElise.setPrice(8.99);
 

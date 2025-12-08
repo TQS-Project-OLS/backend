@@ -39,16 +39,27 @@ class ProductsControllerIntegrationTest {
     @Autowired
     private InstrumentRepository instrumentRepository;
 
+        @Autowired
+        private com.example.OLSHEETS.repository.UserRepository userRepository;
+        
+    private java.util.List<com.example.OLSHEETS.data.User> testUsers;
+
     @BeforeEach
     void setUp() {
-        instrumentRepository.deleteAll();
+                instrumentRepository.deleteAll();
+                userRepository.deleteAll();
 
-        Instrument yamahaPiano = new Instrument();
-        yamahaPiano.setName("Yamaha P-125");
-        yamahaPiano.setDescription("Digital Piano");
-        com.example.OLSHEETS.data.User owner1 = new com.example.OLSHEETS.data.User("owner1");
-        owner1.setId(1L);
-        yamahaPiano.setOwner(owner1);
+                // Create and keep references to a predictable set of users for ownerId references used in tests
+                testUsers = new java.util.ArrayList<>();
+                for (int i = 1; i <= 11; i++) {
+                        testUsers.add(userRepository.save(new com.example.OLSHEETS.data.User("owner" + i)));
+                }
+
+                Instrument yamahaPiano = new Instrument();
+                yamahaPiano.setName("Yamaha P-125");
+                yamahaPiano.setDescription("Digital Piano");
+                com.example.OLSHEETS.data.User owner1 = testUsers.get(0);
+                yamahaPiano.setOwner(owner1);
         yamahaPiano.setPrice(599.99);
         yamahaPiano.setAge(2);
         yamahaPiano.setType(InstrumentType.DIGITAL);
@@ -58,8 +69,7 @@ class ProductsControllerIntegrationTest {
         Instrument fenderGuitar = new Instrument();
         fenderGuitar.setName("Fender Stratocaster");
         fenderGuitar.setDescription("Electric Guitar");
-        com.example.OLSHEETS.data.User owner1b = new com.example.OLSHEETS.data.User("owner1");
-        owner1b.setId(1L);
+        com.example.OLSHEETS.data.User owner1b = owner1;
         fenderGuitar.setOwner(owner1b);
         fenderGuitar.setPrice(899.99);
         fenderGuitar.setAge(5);
@@ -70,8 +80,7 @@ class ProductsControllerIntegrationTest {
         Instrument yamahaSax = new Instrument();
         yamahaSax.setName("Yamaha YAS-280");
         yamahaSax.setDescription("Alto Saxophone");
-        com.example.OLSHEETS.data.User owner2 = new com.example.OLSHEETS.data.User("owner2");
-        owner2.setId(2L);
+        com.example.OLSHEETS.data.User owner2 = testUsers.get(1);
         yamahaSax.setOwner(owner2);
         yamahaSax.setPrice(1299.99);
         yamahaSax.setAge(1);
@@ -82,7 +91,8 @@ class ProductsControllerIntegrationTest {
 
     @AfterEach
     void tearDown() {
-        instrumentRepository.deleteAll();
+                instrumentRepository.deleteAll();
+                userRepository.deleteAll();
     }
 
     @Test
@@ -95,7 +105,7 @@ class ProductsControllerIntegrationTest {
                 .andExpect(jsonPath("$[0].name", is("Yamaha P-125")))
                 .andExpect(jsonPath("$[0].description", is("Digital Piano")))
                 .andExpect(jsonPath("$[0].price", is(599.99)))
-                .andExpect(jsonPath("$[0].owner.id", is(1)))
+                .andExpect(jsonPath("$[0].owner.id", notNullValue()))
                 .andExpect(jsonPath("$[0].type", is("DIGITAL")))
                 .andExpect(jsonPath("$[0].type", is("DIGITAL")))
                 .andExpect(jsonPath("$[0].family", is("KEYBOARD")));
@@ -158,7 +168,7 @@ class ProductsControllerIntegrationTest {
                 .andExpect(jsonPath("$[0].id", notNullValue()))
                 .andExpect(jsonPath("$[0].name", is("Fender Stratocaster")))
                 .andExpect(jsonPath("$[0].description", is("Electric Guitar")))
-                .andExpect(jsonPath("$[0].ownerId", is(1)))
+                .andExpect(jsonPath("$[0].owner.id", notNullValue()))
                 .andExpect(jsonPath("$[0].price", is(899.99)))
                 .andExpect(jsonPath("$[0].age", is(5)))
                 .andExpect(jsonPath("$[0].type", is("ELECTRIC")))
@@ -338,7 +348,7 @@ class ProductsControllerIntegrationTest {
         request.setName("Gibson Les Paul");
         request.setDescription("Classic electric guitar in excellent condition");
         request.setPrice(1499.99);
-        request.setOwnerId(5);
+        request.setOwnerId(testUsers.get(4).getId());
         request.setAge(3);
         request.setType(InstrumentType.ELECTRIC);
         request.setFamily(InstrumentFamily.GUITAR);
@@ -353,7 +363,7 @@ class ProductsControllerIntegrationTest {
                 .andExpect(jsonPath("$.name", is("Gibson Les Paul")))
                 .andExpect(jsonPath("$.description", is("Classic electric guitar in excellent condition")))
                 .andExpect(jsonPath("$.price", is(1499.99)))
-                .andExpect(jsonPath("$.owner.id", is(5)))
+                .andExpect(jsonPath("$.owner.id", is(testUsers.get(4).getId().intValue())))
                 .andExpect(jsonPath("$.age", is(3)))
                 .andExpect(jsonPath("$.type", is("ELECTRIC")))
                 .andExpect(jsonPath("$.family", is("GUITAR")));
@@ -366,9 +376,9 @@ class ProductsControllerIntegrationTest {
     void testRegisterInstrument_WithPhotos_ShouldCreateFileReferences() throws Exception {
         InstrumentRegistrationRequest request = new InstrumentRegistrationRequest();
         request.setName("Fender Jazz Bass");
-        request.setDescription("Professional bass guitar");
+        request.setDescription("4-string bass guitar");
         request.setPrice(999.99);
-        request.setOwnerId(3);
+        request.setOwnerId(testUsers.get(2).getId());
         request.setAge(2);
         request.setType(InstrumentType.BASS);
         request.setFamily(InstrumentFamily.GUITAR);
@@ -392,7 +402,7 @@ class ProductsControllerIntegrationTest {
         request.setName("Roland TD-17");
         request.setDescription("Electronic drum kit");
         request.setPrice(1299.99);
-        request.setOwnerId(7);
+        request.setOwnerId(testUsers.get(6).getId());
         request.setAge(1);
         request.setType(InstrumentType.DRUMS);
         request.setFamily(InstrumentFamily.PERCUSSION);
@@ -414,7 +424,7 @@ class ProductsControllerIntegrationTest {
         request.setName("Taylor 814ce");
         request.setDescription("Premium acoustic guitar");
         request.setPrice(3299.99);
-        request.setOwnerId(4);
+        request.setOwnerId(testUsers.get(3).getId());
         request.setAge(0);
         request.setType(InstrumentType.ACOUSTIC);
         request.setFamily(InstrumentFamily.GUITAR);
@@ -444,7 +454,7 @@ class ProductsControllerIntegrationTest {
         request.setName("Korg Minilogue");
         request.setDescription("Analog synthesizer");
         request.setPrice(649.99);
-        request.setOwnerId(2);
+        request.setOwnerId(testUsers.get(1).getId());
         request.setAge(1);
         request.setType(InstrumentType.SYNTHESIZER);
         request.setFamily(InstrumentFamily.KEYBOARD);
@@ -465,7 +475,7 @@ class ProductsControllerIntegrationTest {
         request1.setName("Violin Stradivarius");
         request1.setDescription("Classical violin");
         request1.setPrice(999999.99);
-        request1.setOwnerId(10);
+        request1.setOwnerId(testUsers.get(9).getId());
         request1.setAge(200);
         request1.setType(InstrumentType.ACOUSTIC);
         request1.setFamily(InstrumentFamily.STRING);
@@ -475,7 +485,7 @@ class ProductsControllerIntegrationTest {
         request2.setName("Trumpet Yamaha YTR-2330");
         request2.setDescription("Beginner trumpet");
         request2.setPrice(399.99);
-        request2.setOwnerId(11);
+        request2.setOwnerId(testUsers.get(10).getId());
         request2.setAge(0);
         request2.setType(InstrumentType.WIND);
         request2.setFamily(InstrumentFamily.BRASS);

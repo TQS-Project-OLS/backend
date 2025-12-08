@@ -54,7 +54,7 @@ class SheetBookingIntegrationTest {
         sheet.setCategory("classical");
         sheet.setComposer("Beethoven");
         com.example.OLSHEETS.data.User owner1 = new com.example.OLSHEETS.data.User("owner1");
-        owner1.setId(1L);
+        owner1 = userRepository.save(owner1);
         sheet.setOwner(owner1);
         sheet.setPrice(3.50);
         sheet = sheetRepository.save(sheet);
@@ -83,7 +83,7 @@ class SheetBookingIntegrationTest {
         sheet.setCategory("classical");
         sheet.setComposer("Pachelbel");
         com.example.OLSHEETS.data.User owner1b = new com.example.OLSHEETS.data.User("owner1");
-        owner1b.setId(1L);
+        owner1b = userRepository.save(owner1b);
         sheet.setOwner(owner1b);
         sheet.setPrice(4.00);
         sheet = sheetRepository.save(sheet);

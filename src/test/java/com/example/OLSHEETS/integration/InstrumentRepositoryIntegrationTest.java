@@ -35,7 +35,8 @@ class InstrumentRepositoryIntegrationTest {
         yamahaPiano.setName("Yamaha P-125");
         yamahaPiano.setDescription("Digital Piano");
         com.example.OLSHEETS.data.User owner1 = new com.example.OLSHEETS.data.User("owner1");
-        owner1.setId(1L);
+        entityManager.persist(owner1);
+        entityManager.flush();
         yamahaPiano.setOwner(owner1);
         yamahaPiano.setPrice(599.99);
         yamahaPiano.setAge(2);
@@ -45,8 +46,7 @@ class InstrumentRepositoryIntegrationTest {
         fenderGuitar = new Instrument();
         fenderGuitar.setName("Fender Stratocaster");
         fenderGuitar.setDescription("Electric Guitar");
-        com.example.OLSHEETS.data.User owner1b = new com.example.OLSHEETS.data.User("owner1");
-        owner1b.setId(1L);
+        com.example.OLSHEETS.data.User owner1b = owner1;
         fenderGuitar.setOwner(owner1b);
         fenderGuitar.setPrice(899.99);
         fenderGuitar.setAge(5);
@@ -57,7 +57,8 @@ class InstrumentRepositoryIntegrationTest {
         yamahaSax.setName("Yamaha YAS-280");
         yamahaSax.setDescription("Alto Saxophone");
         com.example.OLSHEETS.data.User owner2 = new com.example.OLSHEETS.data.User("owner2");
-        owner2.setId(2L);
+        entityManager.persist(owner2);
+        entityManager.flush();
         yamahaSax.setOwner(owner2);
         yamahaSax.setPrice(1299.99);
         yamahaSax.setAge(1);
@@ -185,7 +186,8 @@ class InstrumentRepositoryIntegrationTest {
         acousticGuitar1.setName("Martin D-28");
         acousticGuitar1.setType(InstrumentType.ACOUSTIC);
         com.example.OLSHEETS.data.User ownerA = new com.example.OLSHEETS.data.User("owner1");
-        ownerA.setId(1L);
+        entityManager.persist(ownerA);
+        entityManager.flush();
         acousticGuitar1.setOwner(ownerA);
         acousticGuitar1.setPrice(2899.99);
 
@@ -193,7 +195,8 @@ class InstrumentRepositoryIntegrationTest {
         acousticGuitar2.setName("Taylor 214ce");
         acousticGuitar2.setType(InstrumentType.ACOUSTIC);
         com.example.OLSHEETS.data.User ownerB = new com.example.OLSHEETS.data.User("owner2");
-        ownerB.setId(2L);
+        entityManager.persist(ownerB);
+        entityManager.flush();
         acousticGuitar2.setOwner(ownerB);
         acousticGuitar2.setPrice(1099.99);
 

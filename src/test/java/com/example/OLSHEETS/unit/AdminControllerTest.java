@@ -166,7 +166,7 @@ class AdminControllerTest {
 
     @Test
     void testGetOwnerActivity_ShouldReturnActivityCount() throws Exception {
-        when(adminService.getOwnerActivity(10)).thenReturn(3L);
+        when(adminService.getOwnerActivity(10L)).thenReturn(3L);
 
         mockMvc.perform(get("/api/admin/activity/owner/10"))
                 .andExpect(status().isOk())
@@ -174,12 +174,12 @@ class AdminControllerTest {
                 .andExpect(jsonPath("$.ownerId", is(10)))
                 .andExpect(jsonPath("$.bookingCount", is(3)));
 
-        verify(adminService, times(1)).getOwnerActivity(10);
+        verify(adminService, times(1)).getOwnerActivity(10L);
     }
 
     @Test
     void testGetRevenueByOwner_ShouldReturnRevenue() throws Exception {
-        when(adminService.getRevenueByOwner(10)).thenReturn(500.0);
+        when(adminService.getRevenueByOwner(10L)).thenReturn(500.0);
 
         mockMvc.perform(get("/api/admin/revenue/owner/10"))
                 .andExpect(status().isOk())
@@ -187,7 +187,7 @@ class AdminControllerTest {
                 .andExpect(jsonPath("$.ownerId", is(10)))
                 .andExpect(jsonPath("$.revenue", is(500.0)));
 
-        verify(adminService, times(1)).getRevenueByOwner(10);
+        verify(adminService, times(1)).getRevenueByOwner(10L);
     }
 
     @Test

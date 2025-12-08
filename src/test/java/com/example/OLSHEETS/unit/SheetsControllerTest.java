@@ -165,6 +165,6 @@ class SheetsControllerTest {
                 .andExpect(jsonPath("$[0].category", is("CLASSICAL")))
                 .andExpect(jsonPath("$[0].description", is("Piano Sonata No. 14")))
                 .andExpect(jsonPath("$[0].price", is(9.99)))
-                .andExpect(jsonPath("$[0].ownerId", is(1)));
+                .andExpect(jsonPath("$[0].owner.id", is(1)));
     }
 }

@@ -35,6 +35,9 @@ class ProductsServiceTest {
     @Mock
     private MusicSheetRepository musicSheetRepository;
 
+    @Mock
+    private com.example.OLSHEETS.repository.UserRepository userRepository;
+
     @InjectMocks
     private ProductsService productsService;
 
@@ -430,7 +433,7 @@ class ProductsServiceTest {
         request.setName("Gibson Les Paul");
         request.setDescription("Classic electric guitar in excellent condition");
         request.setPrice(1499.99);
-        request.setOwnerId(5);
+        request.setOwnerId(5L);
         request.setAge(3);
         request.setType(InstrumentType.ELECTRIC);
         request.setFamily(InstrumentFamily.GUITAR);
@@ -443,6 +446,8 @@ class ProductsServiceTest {
         savedInstrument.setPrice(request.getPrice());
         com.example.OLSHEETS.data.User ownerUser = new com.example.OLSHEETS.data.User("owner" + request.getOwnerId());
         ownerUser.setId((long) request.getOwnerId());
+        // Mock the userRepository to return the expected owner
+        when(userRepository.findById(request.getOwnerId())).thenReturn(java.util.Optional.of(ownerUser));
         savedInstrument.setOwner(ownerUser);
         savedInstrument.setAge(request.getAge());
         savedInstrument.setType(request.getType());
@@ -470,7 +475,7 @@ class ProductsServiceTest {
         request.setName("Fender Jazz Bass");
         request.setDescription("Professional bass guitar");
         request.setPrice(999.99);
-        request.setOwnerId(3);
+        request.setOwnerId(3L);
         request.setAge(2);
         request.setType(InstrumentType.BASS);
         request.setFamily(InstrumentFamily.GUITAR);
@@ -479,6 +484,10 @@ class ProductsServiceTest {
         Instrument savedInstrument = new Instrument();
         savedInstrument.setId(11L);
         savedInstrument.setName(request.getName());
+
+        com.example.OLSHEETS.data.User ownerUser = new com.example.OLSHEETS.data.User("owner" + request.getOwnerId());
+        ownerUser.setId((long) request.getOwnerId());
+        when(userRepository.findById(request.getOwnerId())).thenReturn(java.util.Optional.of(ownerUser));
 
         when(instrumentRepository.save(any(Instrument.class))).thenAnswer(invocation -> {
             Instrument arg = invocation.getArgument(0);
@@ -500,7 +509,7 @@ class ProductsServiceTest {
         request.setName("Roland TD-17");
         request.setDescription("Electronic drum kit");
         request.setPrice(1299.99);
-        request.setOwnerId(7);
+        request.setOwnerId(7L);
         request.setAge(1);
         request.setType(InstrumentType.DRUMS);
         request.setFamily(InstrumentFamily.PERCUSSION);
@@ -513,6 +522,7 @@ class ProductsServiceTest {
         savedInstrument.setPrice(request.getPrice());
         com.example.OLSHEETS.data.User ownerUser3 = new com.example.OLSHEETS.data.User("owner" + request.getOwnerId());
         ownerUser3.setId((long) request.getOwnerId());
+        when(userRepository.findById(request.getOwnerId())).thenReturn(java.util.Optional.of(ownerUser3));
         savedInstrument.setOwner(ownerUser3);
         savedInstrument.setAge(request.getAge());
         savedInstrument.setType(request.getType());
@@ -534,7 +544,7 @@ class ProductsServiceTest {
         request.setName("Korg Minilogue");
         request.setDescription("Analog synthesizer");
         request.setPrice(649.99);
-        request.setOwnerId(2);
+        request.setOwnerId(2L);
         request.setAge(1);
         request.setType(InstrumentType.SYNTHESIZER);
         request.setFamily(InstrumentFamily.KEYBOARD);
@@ -543,6 +553,10 @@ class ProductsServiceTest {
         Instrument savedInstrument = new Instrument();
         savedInstrument.setId(13L);
         savedInstrument.setName(request.getName());
+
+        com.example.OLSHEETS.data.User ownerUser = new com.example.OLSHEETS.data.User("owner" + request.getOwnerId());
+        ownerUser.setId((long) request.getOwnerId());
+        when(userRepository.findById(request.getOwnerId())).thenReturn(java.util.Optional.of(ownerUser));
 
         when(instrumentRepository.save(any(Instrument.class))).thenReturn(savedInstrument);
 
@@ -559,11 +573,15 @@ class ProductsServiceTest {
         request.setName("Taylor 814ce");
         request.setDescription("Acoustic guitar");
         request.setPrice(3299.99);
-        request.setOwnerId(4);
+        request.setOwnerId(4L);
         request.setAge(0);
         request.setType(InstrumentType.ACOUSTIC);
         request.setFamily(InstrumentFamily.GUITAR);
         request.setPhotoPaths(Collections.singletonList("/photos/taylor.jpg"));
+
+        com.example.OLSHEETS.data.User ownerUserSingle = new com.example.OLSHEETS.data.User("owner" + request.getOwnerId());
+        ownerUserSingle.setId((long) request.getOwnerId());
+        when(userRepository.findById(request.getOwnerId())).thenReturn(java.util.Optional.of(ownerUserSingle));
 
         when(instrumentRepository.save(any(Instrument.class))).thenAnswer(invocation -> {
             Instrument arg = invocation.getArgument(0);

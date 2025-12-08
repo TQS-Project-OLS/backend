@@ -173,27 +173,27 @@ class AdminServiceTest {
 
     @Test
     void whenGetOwnerActivity_thenReturnBookingCount() {
-        when(itemRepository.findByOwnerId(10)).thenReturn(Arrays.asList(item1));
+        when(itemRepository.findByOwnerId(10L)).thenReturn(Arrays.asList(item1));
         when(bookingRepository.countByItemIn(Arrays.asList(item1))).thenReturn(3L);
 
-        Long activityCount = adminService.getOwnerActivity(10);
+        Long activityCount = adminService.getOwnerActivity(10L);
 
         assertThat(activityCount).isEqualTo(3L);
-        verify(itemRepository, times(1)).findByOwnerId(10);
+        verify(itemRepository, times(1)).findByOwnerId(10L);
         verify(bookingRepository, times(1)).countByItemIn(Arrays.asList(item1));
     }
 
     @Test
     void whenGetRevenueByOwner_thenReturnTotalRevenue() {
         booking2.setStatus(BookingStatus.APPROVED);
-        when(itemRepository.findByOwnerId(20)).thenReturn(Arrays.asList(item2));
+        when(itemRepository.findByOwnerId(20L)).thenReturn(Arrays.asList(item2));
         when(bookingRepository.findByItemInAndStatus(Arrays.asList(item2), BookingStatus.APPROVED))
             .thenReturn(Arrays.asList(booking2));
 
-        Double revenue = adminService.getRevenueByOwner(20);
+        Double revenue = adminService.getRevenueByOwner(20L);
 
         assertThat(revenue).isGreaterThan(0);
-        verify(itemRepository, times(1)).findByOwnerId(20);
+        verify(itemRepository, times(1)).findByOwnerId(20L);
         verify(bookingRepository, times(1)).findByItemInAndStatus(anyList(), eq(BookingStatus.APPROVED));
     }
 

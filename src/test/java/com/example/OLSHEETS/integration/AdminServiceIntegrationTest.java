@@ -7,6 +7,7 @@ import com.example.OLSHEETS.data.Instrument;
 import com.example.OLSHEETS.data.InstrumentFamily;
 import com.example.OLSHEETS.data.InstrumentType;
 import com.example.OLSHEETS.repository.ItemRepository;
+import com.example.OLSHEETS.repository.SheetBookingRepository;
 import com.example.OLSHEETS.service.AdminService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,6 +34,9 @@ class AdminServiceIntegrationTest {
     ItemRepository itemRepository;
 
     @Autowired
+    SheetBookingRepository sheetBookingRepository;
+
+    @Autowired
     private com.example.OLSHEETS.repository.UserRepository userRepository;
 
     private Instrument instrument1;
@@ -40,18 +44,22 @@ class AdminServiceIntegrationTest {
     private Booking booking1;
     private Booking booking2;
     private Booking booking3;
+    
+    private com.example.OLSHEETS.data.User testOwner10;
+    private com.example.OLSHEETS.data.User testOwner20;
 
     @BeforeEach
     void cleanup() {
+        // delete bookings and sheet bookings before items to avoid FK constraint errors
         bookingRepository.deleteAll();
+        sheetBookingRepository.deleteAll();
         itemRepository.deleteAll();
 
         instrument1 = new Instrument();
         instrument1.setName("Guitar");
         instrument1.setDescription("Electric Guitar");
-        com.example.OLSHEETS.data.User owner10 = new com.example.OLSHEETS.data.User("owner10");
-        owner10.setId(10L);
-        instrument1.setOwner(owner10);
+        testOwner10 = userRepository.save(new com.example.OLSHEETS.data.User("owner10"));
+        instrument1.setOwner(testOwner10);
         instrument1.setPrice(50.0);
         instrument1.setAge(2);
         instrument1.setType(InstrumentType.ELECTRIC);
@@ -61,9 +69,8 @@ class AdminServiceIntegrationTest {
         instrument2 = new Instrument();
         instrument2.setName("Piano");
         instrument2.setDescription("Digital Piano");
-        com.example.OLSHEETS.data.User owner20 = new com.example.OLSHEETS.data.User("owner20");
-        owner20.setId(20L);
-        instrument2.setOwner(owner20);
+        testOwner20 = userRepository.save(new com.example.OLSHEETS.data.User("owner20"));
+        instrument2.setOwner(testOwner20);
         instrument2.setPrice(100.0);
         instrument2.setAge(1);
         instrument2.setType(InstrumentType.DIGITAL);
@@ -210,8 +217,8 @@ class AdminServiceIntegrationTest {
         booking3 = bookingRepository.save(new Booking(instrument2, u300, 
             LocalDate.of(2025, 12, 20), LocalDate.of(2025, 12, 25)));
 
-        Long activityOwner10 = adminService.getOwnerActivity(10L);
-        Long activityOwner20 = adminService.getOwnerActivity(20L);
+        Long activityOwner10 = adminService.getOwnerActivity(testOwner10.getId());
+        Long activityOwner20 = adminService.getOwnerActivity(testOwner20.getId());
 
         assertThat(activityOwner10).isEqualTo(2L);
         assertThat(activityOwner20).isEqualTo(1L);
@@ -230,7 +237,7 @@ class AdminServiceIntegrationTest {
         booking2.setStatus(BookingStatus.APPROVED);
         bookingRepository.save(booking2);
 
-        Double revenue = adminService.getRevenueByOwner(10L);
+        Double revenue = adminService.getRevenueByOwner(testOwner10.getId());
 
         // 2 bookings: (5-1=4 days * 50) + (15-10=5 days * 50) = 200 + 250 = 450
         assertThat(revenue).isEqualTo(450.0);

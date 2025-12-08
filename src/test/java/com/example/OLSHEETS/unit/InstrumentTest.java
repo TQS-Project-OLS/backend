@@ -325,7 +325,7 @@ class InstrumentTest {
         
         assertThat(instrument1.getName()).isEqualTo("Test Instrument");
         assertThat(instrument1.getDescription()).isEqualTo("Test Description");
-        assertThat(instrument1.getOwnerId()).isEqualTo(999);
+        assertThat(instrument1.getOwner().getId()).isEqualTo(999L);
         assertThat(instrument1.getPrice()).isEqualTo(1000.0);
     }
 
