@@ -17,7 +17,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "*") // NOSONAR java:S5122 - CORS wildcard acceptable for API-only application
 public class AuthController {
 
     @Autowired

@@ -47,5 +47,26 @@ class DtoTest {
         assertEquals("New User", request.getName());
         assertEquals("password123", request.getPassword());
     }
+
+    @Test
+    void testAuthResponse() {
+        com.example.OLSHEETS.dto.AuthResponse response = new com.example.OLSHEETS.dto.AuthResponse();
+        response.setToken("test-token");
+        response.setUsername("testuser");
+        response.setName("Test User");
+
+        assertEquals("test-token", response.getToken());
+        assertEquals("testuser", response.getUsername());
+        assertEquals("Test User", response.getName());
+    }
+
+    @Test
+    void testAuthResponse_Constructor() {
+        com.example.OLSHEETS.dto.AuthResponse response = new com.example.OLSHEETS.dto.AuthResponse("test-token", "testuser", "Test User");
+        assertEquals("test-token", response.getToken());
+        assertEquals("testuser", response.getUsername());
+        assertEquals("Test User", response.getName());
+    }
 }
+
 

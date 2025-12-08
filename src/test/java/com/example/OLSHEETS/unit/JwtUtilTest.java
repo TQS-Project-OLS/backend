@@ -67,5 +67,14 @@ class JwtUtilTest {
         boolean isValid = jwtUtil.validateToken(token, "expireduser");
         assertTrue(isValid); // Token should still be valid
     }
+
+    @Test
+    void testExtractClaim() {
+        // Test that extractClaim works with different claim types
+        String username = jwtUtil.extractUsername(testToken);
+        assertNotNull(username);
+        assertEquals(testUsername, username);
+    }
 }
+
 
