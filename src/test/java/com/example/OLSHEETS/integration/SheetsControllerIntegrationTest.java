@@ -19,8 +19,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, properties = {
+    "spring.main.lazy-initialization=true"
+})
 @AutoConfigureMockMvc
+@org.springframework.test.context.ActiveProfiles("test")
 class SheetsControllerIntegrationTest {
 
     @Autowired

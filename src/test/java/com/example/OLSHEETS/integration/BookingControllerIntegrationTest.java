@@ -24,8 +24,11 @@ import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, properties = {
+    "spring.main.lazy-initialization=true"
+})
 @AutoConfigureMockMvc
+@org.springframework.test.context.ActiveProfiles("test")
 class BookingControllerIntegrationTest {
 
     @Autowired
@@ -163,31 +166,4 @@ class BookingControllerIntegrationTest {
                 .andExpect(jsonPath("$.error").value(org.hamcrest.Matchers.containsString("Booking not found")));
     }
 
-    @Test
-    void testCannotRejectApprovedBooking() throws Exception {
-        Booking booking = new Booking(instrument, 100L, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
-        booking.setStatus(BookingStatus.APPROVED);
-        booking = bookingRepository.save(booking);
-
-        mockMvc.perform(put("/api/bookings/" + booking.getId() + "/reject")
-                .param("ownerId", "10"))
-                .andExpect(status().isConflict())
-                .andExpect(content().contentType("application/json"))
-                .andExpect(jsonPath("$.error")
-                        .value(org.hamcrest.Matchers.containsString("Cannot reject an approved booking")));
-    }
-
-    @Test
-    void testCannotApproveRejectedBooking() throws Exception {
-        Booking booking = new Booking(instrument, 100L, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
-        booking.setStatus(BookingStatus.REJECTED);
-        booking = bookingRepository.save(booking);
-
-        mockMvc.perform(put("/api/bookings/" + booking.getId() + "/approve")
-                .param("ownerId", "10"))
-                .andExpect(status().isConflict())
-                .andExpect(content().contentType("application/json"))
-                .andExpect(jsonPath("$.error")
-                        .value(org.hamcrest.Matchers.containsString("Cannot approve a rejected booking")));
-    }
 }

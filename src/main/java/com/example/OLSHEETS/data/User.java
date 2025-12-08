@@ -1,5 +1,6 @@
 package com.example.OLSHEETS.data;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 @Entity
@@ -19,6 +20,10 @@ public class User {
     @Column(nullable = false)
     private String name;
 
+    @Column(nullable = false)
+    @JsonIgnore
+    private String password;
+
     public User() {
     }
 
@@ -26,6 +31,13 @@ public class User {
         this.username = username;
         this.email = email;
         this.name = name;
+    }
+
+    public User(String username, String email, String name, String password) {
+        this.username = username;
+        this.email = email;
+        this.name = name;
+        this.password = password;
     }
 
     public Long getId() {
@@ -58,6 +70,14 @@ public class User {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     @Override

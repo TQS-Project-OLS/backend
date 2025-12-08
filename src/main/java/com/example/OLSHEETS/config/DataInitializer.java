@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Profile;
 import java.util.Arrays;
 
 
-@Profile("dev")
+@Profile("test")
 @Component
 public class DataInitializer {
 
