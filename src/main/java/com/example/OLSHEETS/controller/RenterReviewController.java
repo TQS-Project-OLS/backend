@@ -24,14 +24,14 @@ public class RenterReviewController {
      * POST /api/renter-reviews?ownerId={id}
      */
     @PostMapping
-    public ResponseEntity<?> createRenterReview(
+    public ResponseEntity<RenterReviewResponse> createRenterReview(
             @RequestBody RenterReviewRequest request,
             @RequestParam Long ownerId) {
         try {
             RenterReviewResponse response = renterReviewService.createRenterReview(request, ownerId);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().build();
         }
     }
 
@@ -60,12 +60,12 @@ public class RenterReviewController {
      * GET /api/renter-reviews/booking/{bookingId}
      */
     @GetMapping("/booking/{bookingId}")
-    public ResponseEntity<?> getRenterReviewByBookingId(@PathVariable Long bookingId) {
+    public ResponseEntity<RenterReviewResponse> getRenterReviewByBookingId(@PathVariable Long bookingId) {
         try {
             RenterReviewResponse response = renterReviewService.getRenterReviewByBookingId(bookingId);
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            return ResponseEntity.notFound().build();
         }
     }
 
