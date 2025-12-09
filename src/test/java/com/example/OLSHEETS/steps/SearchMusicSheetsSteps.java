@@ -41,6 +41,12 @@ public class SearchMusicSheetsSteps {
     @Autowired
     private com.example.OLSHEETS.repository.UserRepository userRepository;
 
+    @Autowired
+    private com.example.OLSHEETS.repository.ReviewRepository reviewRepository;
+
+    @Autowired
+    private com.example.OLSHEETS.repository.RenterReviewRepository renterReviewRepository;
+
     private WebDriver driver;
     private WebDriverWait wait;
     private static final String FRONTEND_URL = "http://localhost:8080";
@@ -65,6 +71,9 @@ public class SearchMusicSheetsSteps {
 
     @Given("the following music sheets exist:")
     public void theFollowingMusicSheetsExist(DataTable dataTable) {
+        // Delete in correct order to avoid foreign key violations
+        reviewRepository.deleteAll();
+        renterReviewRepository.deleteAll();
         sheetBookingRepository.deleteAll();
         musicSheetRepository.deleteAll();
 

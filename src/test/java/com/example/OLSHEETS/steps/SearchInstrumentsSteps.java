@@ -42,6 +42,12 @@ public class SearchInstrumentsSteps {
     @Autowired
     private com.example.OLSHEETS.repository.UserRepository userRepository;
 
+    @Autowired
+    private com.example.OLSHEETS.repository.ReviewRepository reviewRepository;
+
+    @Autowired
+    private com.example.OLSHEETS.repository.RenterReviewRepository renterReviewRepository;
+
     private WebDriver driver;
     private WebDriverWait wait;
     private static final String FRONTEND_URL = "http://localhost:8080";
@@ -66,6 +72,10 @@ public class SearchInstrumentsSteps {
 
     @Given("the following instruments exist:")
     public void theFollowingInstrumentsExist(DataTable dataTable) {
+        // Delete in correct order to avoid foreign key violations
+        // Reviews depend on bookings, so delete them first
+        reviewRepository.deleteAll();
+        renterReviewRepository.deleteAll();
         bookingRepository.deleteAll();
         instrumentRepository.deleteAll();
 
