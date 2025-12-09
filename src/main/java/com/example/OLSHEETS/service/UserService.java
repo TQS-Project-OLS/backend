@@ -4,6 +4,7 @@ import com.example.OLSHEETS.data.User;
 import com.example.OLSHEETS.dto.SignupRequest;
 import com.example.OLSHEETS.exception.UserAlreadyExistsException;
 import com.example.OLSHEETS.repository.UserRepository;
+import io.micrometer.core.instrument.Counter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,9 @@ public class UserService {
     private UserRepository userRepository;
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+    @Autowired(required = false)
+    private Counter usersRegisteredCounter;
 
     public User registerUser(SignupRequest request) {
         // Check if username already exists
@@ -36,7 +40,11 @@ public class UserService {
         user.setName(request.getName());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
-        return userRepository.save(user);
+        User saved = userRepository.save(user);
+        if (usersRegisteredCounter != null) {
+            usersRegisteredCounter.increment();
+        }
+        return saved;
     }
 
     public Optional<User> authenticateUser(String username, String password) {

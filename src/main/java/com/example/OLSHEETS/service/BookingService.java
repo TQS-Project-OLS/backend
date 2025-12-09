@@ -5,6 +5,9 @@ import com.example.OLSHEETS.repository.BookingRepository;
 import com.example.OLSHEETS.data.BookingStatus;
 import com.example.OLSHEETS.data.Item;
 import com.example.OLSHEETS.repository.ItemRepository;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Timer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +20,18 @@ public class BookingService {
     private final BookingRepository bookingRepository;
     private final ItemRepository itemRepository;
 
+    @Autowired(required = false)
+    private Counter bookingsCreatedCounter;
+
+    @Autowired(required = false)
+    private Counter bookingsApprovedCounter;
+
+    @Autowired(required = false)
+    private Counter bookingsRejectedCounter;
+
+    @Autowired(required = false)
+    private Timer bookingCreationTimer;
+
     public BookingService(BookingRepository bookingRepository, ItemRepository itemRepository) {
         this.bookingRepository = bookingRepository;
         this.itemRepository = itemRepository;
@@ -24,20 +39,32 @@ public class BookingService {
 
     @Transactional
     public Booking createBooking(Long itemId, Long renterId, LocalDate startDate, LocalDate endDate){
-        if(startDate == null || endDate == null || !startDate.isBefore(endDate) && !startDate.isEqual(endDate)){
-            throw new IllegalArgumentException("Invalid dates");
+        java.util.function.Supplier<Booking> bookingSupplier = () -> {
+            if(startDate == null || endDate == null || !startDate.isBefore(endDate) && !startDate.isEqual(endDate)){
+                throw new IllegalArgumentException("Invalid dates");
+            }
+
+            Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new IllegalArgumentException("Item not found with id: " + itemId));
+
+            List<Booking> overlapping = bookingRepository.findOverlapping(itemId, startDate, endDate);
+            if(!overlapping.isEmpty()){
+                throw new IllegalStateException("Item already booked for requested period");
+            }
+
+            Booking b = new Booking(item, renterId, startDate, endDate);
+            Booking saved = bookingRepository.save(b);
+            if (bookingsCreatedCounter != null) {
+                bookingsCreatedCounter.increment();
+            }
+            return saved;
+        };
+
+        if (bookingCreationTimer != null) {
+            return bookingCreationTimer.record(bookingSupplier);
+        } else {
+            return bookingSupplier.get();
         }
-
-        Item item = itemRepository.findById(itemId)
-            .orElseThrow(() -> new IllegalArgumentException("Item not found with id: " + itemId));
-
-        List<Booking> overlapping = bookingRepository.findOverlapping(itemId, startDate, endDate);
-        if(!overlapping.isEmpty()){
-            throw new IllegalStateException("Item already booked for requested period");
-        }
-
-        Booking b = new Booking(item, renterId, startDate, endDate);
-        return bookingRepository.save(b);
     }
 
     @Transactional
@@ -58,7 +85,11 @@ public class BookingService {
         }
 
         booking.setStatus(BookingStatus.APPROVED);
-        return bookingRepository.save(booking);
+        Booking saved = bookingRepository.save(booking);
+        if (bookingsApprovedCounter != null) {
+            bookingsApprovedCounter.increment();
+        }
+        return saved;
     }
 
     @Transactional
@@ -79,7 +110,11 @@ public class BookingService {
         }
 
         booking.setStatus(BookingStatus.REJECTED);
-        return bookingRepository.save(booking);
+        Booking saved = bookingRepository.save(booking);
+        if (bookingsRejectedCounter != null) {
+            bookingsRejectedCounter.increment();
+        }
+        return saved;
     }
 
     public List<Booking> listBookings(){

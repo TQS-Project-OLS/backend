@@ -9,6 +9,7 @@ import com.example.OLSHEETS.data.Item;
 import com.example.OLSHEETS.dto.InstrumentRegistrationRequest;
 import com.example.OLSHEETS.repository.InstrumentRepository;
 import com.example.OLSHEETS.repository.MusicSheetRepository;
+import io.micrometer.core.instrument.Counter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +25,9 @@ public class ProductsService {
 
     @Autowired
     private MusicSheetRepository musicSheetRepository;
+
+    @Autowired(required = false)
+    private Counter instrumentsRegisteredCounter;
 
     public List<Instrument> searchInstrumentsByName(String name) {
         return instrumentRepository.findByNameContainingIgnoreCase(name);
@@ -99,6 +103,10 @@ public class ProductsService {
             instrument.setFileReferences(fileReferences);
         }
 
-        return instrumentRepository.save(instrument);
+        Instrument saved = instrumentRepository.save(instrument);
+        if (instrumentsRegisteredCounter != null) {
+            instrumentsRegisteredCounter.increment();
+        }
+        return saved;
     }
 }

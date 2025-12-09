@@ -7,6 +7,8 @@ import com.example.OLSHEETS.dto.SignupRequest;
 import com.example.OLSHEETS.exception.UserAlreadyExistsException;
 import com.example.OLSHEETS.security.JwtUtil;
 import com.example.OLSHEETS.service.UserService;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Timer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +29,15 @@ public class AuthController {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Autowired(required = false)
+    private Counter loginSuccessCounter;
+
+    @Autowired(required = false)
+    private Counter loginFailureCounter;
+
+    @Autowired(required = false)
+    private Timer authenticationTimer;
+
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody SignupRequest request) {
         try {
@@ -44,18 +55,32 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-        Optional<User> userOpt = userService.authenticateUser(request.getUsername(), request.getPassword());
+        java.util.function.Supplier<ResponseEntity<?>> loginSupplier = () -> {
+            Optional<User> userOpt = userService.authenticateUser(request.getUsername(), request.getPassword());
 
-        if (userOpt.isPresent()) {
-            User user = userOpt.get();
-            String token = jwtUtil.generateToken(user.getUsername());
+            if (userOpt.isPresent()) {
+                User user = userOpt.get();
+                String token = jwtUtil.generateToken(user.getUsername());
 
-            AuthResponse response = new AuthResponse(token, user.getUsername(), user.getName());
-            return ResponseEntity.ok(response);
+                AuthResponse response = new AuthResponse(token, user.getUsername(), user.getName());
+                if (loginSuccessCounter != null) {
+                    loginSuccessCounter.increment();
+                }
+                return ResponseEntity.ok(response);
+            } else {
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "Invalid username or password");
+                if (loginFailureCounter != null) {
+                    loginFailureCounter.increment();
+                }
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+            }
+        };
+
+        if (authenticationTimer != null) {
+            return authenticationTimer.record(loginSupplier);
         } else {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", "Invalid username or password");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+            return loginSupplier.get();
         }
     }
 
