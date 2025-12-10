@@ -50,7 +50,7 @@ class AdminServiceTest {
     void setUp() {
         item1 = new Instrument();
         item1.setId(1L);
-        com.example.OLSHEETS.data.User owner10 = new com.example.OLSHEETS.data.User("owner10");
+        com.example.OLSHEETS.data.User owner10 = new com.example.OLSHEETS.data.User("owner10", "owner10@example.com", "owner10");
         owner10.setId(10L);
         item1.setOwner(owner10);
         item1.setName("Test Guitar");
@@ -58,17 +58,17 @@ class AdminServiceTest {
 
         item2 = new Instrument();
         item2.setId(2L);
-        com.example.OLSHEETS.data.User owner20 = new com.example.OLSHEETS.data.User("owner20");
+        com.example.OLSHEETS.data.User owner20 = new com.example.OLSHEETS.data.User("owner20", "owner20@example.com", "owner20");
         owner20.setId(20L);
         item2.setOwner(owner20);
         item2.setName("Test Piano");
         item2.setPrice(100.0);
 
-        user100 = new com.example.OLSHEETS.data.User("user100");
+        user100 = new com.example.OLSHEETS.data.User("user100", "user100@example.com", "user100");
         user100.setId(100L);
-        user200 = new com.example.OLSHEETS.data.User("user200");
+        user200 = new com.example.OLSHEETS.data.User("user200", "user200@example.com", "user200");
         user200.setId(200L);
-        user300 = new com.example.OLSHEETS.data.User("user300");
+        user300 = new com.example.OLSHEETS.data.User("user300", "user300@example.com", "user300");
         user300.setId(300L);
 
         booking1 = new Booking(item1, user100, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));

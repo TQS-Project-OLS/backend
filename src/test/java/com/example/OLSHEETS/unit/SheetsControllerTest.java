@@ -8,8 +8,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import com.example.OLSHEETS.security.JwtUtil;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -21,8 +24,20 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(SheetsController.class)
+@WebMvcTest(controllers = SheetsController.class, excludeAutoConfiguration = {
+    org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class
+})
+@org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc(addFilters = false)
+@org.springframework.context.annotation.Import(SheetsControllerTest.TestConfig.class)
 class SheetsControllerTest {
+
+    @TestConfiguration
+    static class TestConfig {
+        @Bean
+        public JwtUtil jwtUtil() {
+            return org.mockito.Mockito.mock(JwtUtil.class);
+        }
+    }
 
     @Autowired
     private MockMvc mockMvc;
@@ -35,7 +50,7 @@ class SheetsControllerTest {
 
     @BeforeEach
     void setUp() {
-        User owner1 = new User("owner1");
+        User owner1 = new User("owner1", "owner1@example.com", "Owner One", "password123");
         owner1.setId(1L);
         sheet1 = new MusicSheet();
         sheet1.setId(1L);
@@ -46,7 +61,7 @@ class SheetsControllerTest {
         sheet1.setPrice(9.99);
         sheet1.setOwner(owner1);
 
-        User owner2 = new User("owner2");
+        User owner2 = new User("owner2", "owner2@example.com", "Owner Two", "password123");
         owner2.setId(2L);
         sheet2 = new MusicSheet();
         sheet2.setId(2L);

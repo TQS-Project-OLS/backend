@@ -18,8 +18,8 @@ import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,12 +62,10 @@ public class AdminOversightSteps {
 
     @Before
     public void setUp() {
-        WebDriverManager.chromedriver().setup();
-        ChromeOptions options = new ChromeOptions();
+        WebDriverManager.firefoxdriver().setup();
+        FirefoxOptions options = new FirefoxOptions();
         options.addArguments("--headless");
-        options.addArguments("--no-sandbox");
-        options.addArguments("--disable-dev-shm-usage");
-        driver = new ChromeDriver(options);
+        driver = new FirefoxDriver(options);
         wait = new WebDriverWait(driver, Duration.ofSeconds(10));
     }
 
@@ -100,7 +98,7 @@ public class AdminOversightSteps {
                 Long scenarioOwnerId = Long.parseLong(row.get("ownerId"));
                 com.example.OLSHEETS.data.User owner = ownerMap.get(scenarioOwnerId);
                 if (owner == null) {
-                    owner = userRepository.save(new com.example.OLSHEETS.data.User("owner" + scenarioOwnerId));
+                    owner = userRepository.save(new com.example.OLSHEETS.data.User("owner" + scenarioOwnerId, "owner" + scenarioOwnerId + "@a.com", "owner" + scenarioOwnerId, "123"));
                     ownerMap.put(scenarioOwnerId, owner);
                 }
                 instrument.setOwner(owner);
@@ -127,7 +125,7 @@ public class AdminOversightSteps {
             Long scenarioRenterId = Long.parseLong(row.get("renterId"));
             com.example.OLSHEETS.data.User renter = renterMap.get(scenarioRenterId);
             if (renter == null) {
-                renter = userRepository.save(new com.example.OLSHEETS.data.User("renter" + scenarioRenterId));
+                renter = userRepository.save(new com.example.OLSHEETS.data.User("owner" + scenarioRenterId, "owner" + scenarioRenterId + "@a.com", "owner" + scenarioRenterId, "123"));
                 renterMap.put(scenarioRenterId, renter);
             }
 

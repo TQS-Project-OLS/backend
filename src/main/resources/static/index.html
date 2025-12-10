@@ -7,16 +7,23 @@
     <title>Discover - OLSHEETS</title>
     <link rel="stylesheet" href="css/styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="js/theme.js"></script>
+    <script src="js/auth.js"></script>
     <script src="js/nav.js"></script>
 </head>
 
 <body>
     <!-- Nav injected by js/nav.js -->
+    <script>
+        // Require authentication for this page
+        requireAuth();
+    </script>
 
     <div class="container">
         <div class="page-header">
             <h1>Discover Music</h1>
-            <p style="color: var(--text-muted); font-size: 1.2rem;">Find the perfect instruments and music sheets for your musical journey</p>
+            <p style="color: var(--text-muted); font-size: 1.2rem;">Find the perfect instruments and music sheets for
+                your musical journey</p>
         </div>
 
         <!-- Tabs -->
@@ -31,15 +38,14 @@
                 <h2>Find Instruments</h2>
                 <div class="search-form">
                     <div class="form-group" style="margin-bottom: 0;">
-                        <input type="text" 
-                               class="form-control" 
-                               id="instrument-search-input" 
-                               placeholder="Search instrument name (e.g., Yamaha P-125)...">
+                        <input type="text" class="form-control" id="instrument-search-input"
+                            placeholder="Search instrument name (e.g., Yamaha P-125)...">
                     </div>
-                    <button class="btn btn-primary" id="search-instruments-btn" onclick="searchInstruments()">Search</button>
-                    
+                    <button class="btn btn-primary" id="search-instruments-btn"
+                        onclick="searchInstruments()">Search</button>
+
                     <div class="form-group" style="margin-bottom: 0;">
-                         <select id="filter-type-select" class="form-control">
+                        <select id="filter-type-select" class="form-control">
                             <option value="">Filter by Type</option>
                             <option value="ACOUSTIC">Acoustic</option>
                             <option value="ELECTRIC">Electric</option>
@@ -50,7 +56,8 @@
                             <option value="SYNTHESIZER">Synthesizer</option>
                         </select>
                     </div>
-                     <button class="btn btn-secondary" id="filter-type-btn" onclick="filterInstrumentsByType()">Filter</button>
+                    <button class="btn btn-secondary" id="filter-type-btn"
+                        onclick="filterInstrumentsByType()">Filter</button>
                 </div>
             </div>
 
@@ -70,10 +77,8 @@
                 <h2>Find Music Sheets</h2>
                 <div class="search-form">
                     <div class="form-group" style="margin-bottom: 0;">
-                        <input type="text" 
-                               class="form-control" 
-                               id="sheet-search-input" 
-                               placeholder="Search sheet name (e.g., Moonlight Sonata)...">
+                        <input type="text" class="form-control" id="sheet-search-input"
+                            placeholder="Search sheet name (e.g., Moonlight Sonata)...">
                     </div>
                     <button class="btn btn-primary" id="search-sheets-btn" onclick="searchSheets()">Search</button>
 
@@ -87,7 +92,8 @@
                             <option value="BLUES">Blues</option>
                         </select>
                     </div>
-                    <button class="btn btn-secondary" id="filter-category-btn" onclick="filterSheetsByCategory()">Filter</button>
+                    <button class="btn btn-secondary" id="filter-category-btn"
+                        onclick="filterSheetsByCategory()">Filter</button>
                 </div>
             </div>
 
@@ -122,8 +128,10 @@
             if (!name) return;
 
             try {
-                const response = await fetch(`/api/instruments/search?name=${encodeURIComponent(name)}`);
-                const instruments = await response.json();
+              const response = await authenticatedFetch(
+                  `/api/instruments/search?name=${encodeURIComponent(name)}`
+              );const instruments = await response.json();
+                console.log(instruments)
                 displayInstruments(instruments);
             } catch (error) {
                 console.error('Error searching instruments:', error);
@@ -135,8 +143,10 @@
             if (!type) return;
 
             try {
-                const response = await fetch(`/api/instruments/filter/type?type=${type}`);
+                const response = await authenticatedFetch(`/api/instruments/filter/type?type=${type}`);
                 const instruments = await response.json();
+                console.log(instruments)
+
                 displayInstruments(instruments);
             } catch (error) {
                 console.error('Error filtering instruments:', error);
@@ -163,7 +173,7 @@
                     </div>
                     <h3>${instrument.name}</h3>
                     <p style="color: var(--text-muted); margin-bottom: var(--space-xs);">${instrument.description || 'No description available'}</p>
-                    
+
                     <div style="display: flex; gap: var(--space-xs); flex-wrap: wrap; margin: var(--space-md) 0;">
                         <span class="badge badge-primary">${instrument.type}</span>
                         <span class="badge badge-secondary" style="border: 1px solid var(--border-color);">${instrument.family}</span>
@@ -171,7 +181,7 @@
                     </div>
 
                     <div class="price">$${instrument.price.toFixed(2)}<span style="font-size: 0.9rem; color: var(--text-muted); font-weight: normal;">/day</span></div>
-                    
+
                     <a href="booking.html?id=${instrument.id}" class="btn btn-primary" style="width: 100%; margin-top: var(--space-lg);">Book Now</a>
                 </div>
             `).join('');
@@ -182,7 +192,7 @@
             if (!name) return;
 
             try {
-                const response = await fetch(`/api/sheets/search?name=${encodeURIComponent(name)}`);
+                const response = await authenticatedFetch(`/api/sheets/search?name=${encodeURIComponent(name)}`);
                 const sheets = await response.json();
                 displaySheets(sheets);
             } catch (error) {
@@ -195,7 +205,7 @@
             if (!category) return;
 
             try {
-                const response = await fetch(`/api/sheets/filter/category?category=${category}`);
+                const response = await authenticatedFetch(`/api/sheets/filter/category?category=${category}`);
                 const sheets = await response.json();
                 displaySheets(sheets);
             } catch (error) {
@@ -224,13 +234,13 @@
                     <h3>${sheet.name}</h3>
                     <p style="color: var(--text-muted);">By <strong>${sheet.composer}</strong></p>
                     <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: var(--space-xs);">${sheet.description || ''}</p>
-                    
+
                     <div style="margin: var(--space-md) 0;">
                         <span class="badge badge-warning">${sheet.category}</span>
                     </div>
-                    
+
                     <div class="price">$${sheet.price.toFixed(2)}</div>
-                    
+
                     <a href="sheet_booking.html?id=${sheet.id}" class="btn btn-primary" style="width: 100%; margin-top: var(--space-lg);">Book Sheet</a>
                 </div>
             `).join('');

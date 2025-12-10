@@ -19,8 +19,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, properties = {
+    "spring.main.lazy-initialization=true"
+})
 @AutoConfigureMockMvc
+@org.springframework.test.context.ActiveProfiles("test")
 class SheetsControllerIntegrationTest {
 
     @Autowired
@@ -58,7 +61,7 @@ class SheetsControllerIntegrationTest {
         moonlightSonata.setComposer("Beethoven");
         moonlightSonata.setCategory("CLASSICAL");
         moonlightSonata.setDescription("Piano Sonata No. 14");
-                testOwner1 = userRepository.save(new com.example.OLSHEETS.data.User("owner1"));
+                testOwner1 = userRepository.save(new com.example.OLSHEETS.data.User("owner1", "owner1@example.com", "owner1", "123"));
                 moonlightSonata.setOwner(testOwner1);
         moonlightSonata.setPrice(9.99);
         musicSheetRepository.save(moonlightSonata);
@@ -78,7 +81,7 @@ class SheetsControllerIntegrationTest {
         autumnLeaves.setComposer("Joseph Kosma");
         autumnLeaves.setCategory("JAZZ");
         autumnLeaves.setDescription("Jazz standard");
-        com.example.OLSHEETS.data.User owner2 = userRepository.save(new com.example.OLSHEETS.data.User("owner2"));
+        com.example.OLSHEETS.data.User owner2 = userRepository.save(new com.example.OLSHEETS.data.User("owner2", "owner2@example.com", "owner2", "123"));
         autumnLeaves.setOwner(owner2);
         autumnLeaves.setPrice(7.99);
         musicSheetRepository.save(autumnLeaves);

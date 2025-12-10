@@ -42,7 +42,7 @@ class ReviewServiceTest {
 
     @BeforeEach
     void setUp() {
-        renter = new User("john_doe");
+        renter = new User("john_doe", "john@example.com", "John Doe", "password123");
         renter.setId(1L);
 
         instrument = new Instrument();

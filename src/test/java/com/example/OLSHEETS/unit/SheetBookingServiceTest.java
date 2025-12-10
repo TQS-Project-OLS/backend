@@ -44,7 +44,7 @@ class SheetBookingServiceTest {
 
     @BeforeEach
     void setUp() {
-        User owner = new User("owner1");
+        User owner = new User("owner1", "owner1@example.com", "Owner One", "password123");
         owner.setId(1L);
         sheet = new MusicSheet();
         sheet.setTitle("Moonlight Sonata");
@@ -54,7 +54,7 @@ class SheetBookingServiceTest {
         sheet.setOwner(owner);
         sheet.setId(1L);
 
-        testUser = new com.example.OLSHEETS.data.User("tester");
+        testUser = new com.example.OLSHEETS.data.User("tester", "tester@example.com", "Test User");
         testUser.setId(100L);
 
         booking = new SheetBooking(sheet, testUser, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
@@ -132,7 +132,7 @@ class SheetBookingServiceTest {
 
     @Test
     void whenGetAllBookings_thenReturnAllBookings() {
-        User user2= new User("tester2");
+        User user2 = new User("tester2", "tester2@example.com", "Test User Two", "password123");
         SheetBooking booking2 = new SheetBooking(sheet, user2, LocalDate.now().plusDays(5), LocalDate.now().plusDays(7));
         when(bookingRepository.findAll()).thenReturn(List.of(booking, booking2));
 

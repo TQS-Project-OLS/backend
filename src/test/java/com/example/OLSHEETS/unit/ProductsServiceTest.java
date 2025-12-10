@@ -48,7 +48,7 @@ class ProductsServiceTest {
 
     @BeforeEach
     void setUp() {
-        User owner = new User("owner1");
+        User owner = new User("owner1", "owner1@example.com", "Owner One", "password123");
         owner.setId(1L);
         instrument1 = new Instrument();
         instrument1.setId(1L);
@@ -444,7 +444,7 @@ class ProductsServiceTest {
         savedInstrument.setName(request.getName());
         savedInstrument.setDescription(request.getDescription());
         savedInstrument.setPrice(request.getPrice());
-        com.example.OLSHEETS.data.User ownerUser = new com.example.OLSHEETS.data.User("owner" + request.getOwnerId());
+        com.example.OLSHEETS.data.User ownerUser = new com.example.OLSHEETS.data.User("owner" + request.getOwnerId(), "owner" +request.getOwnerId() + "@a.com", "owner" + request.getOwnerId());
         ownerUser.setId((long) request.getOwnerId());
         // Mock the userRepository to return the expected owner
         when(userRepository.findById(request.getOwnerId())).thenReturn(java.util.Optional.of(ownerUser));
@@ -485,7 +485,7 @@ class ProductsServiceTest {
         savedInstrument.setId(11L);
         savedInstrument.setName(request.getName());
 
-        com.example.OLSHEETS.data.User ownerUser = new com.example.OLSHEETS.data.User("owner" + request.getOwnerId());
+        com.example.OLSHEETS.data.User ownerUser = new com.example.OLSHEETS.data.User("owner" + request.getOwnerId(), "owner" +request.getOwnerId() + "@a.com", "owner" + request.getOwnerId());
         ownerUser.setId((long) request.getOwnerId());
         when(userRepository.findById(request.getOwnerId())).thenReturn(java.util.Optional.of(ownerUser));
 
@@ -520,7 +520,7 @@ class ProductsServiceTest {
         savedInstrument.setName(request.getName());
         savedInstrument.setDescription(request.getDescription());
         savedInstrument.setPrice(request.getPrice());
-        com.example.OLSHEETS.data.User ownerUser3 = new com.example.OLSHEETS.data.User("owner" + request.getOwnerId());
+        com.example.OLSHEETS.data.User ownerUser3 = new com.example.OLSHEETS.data.User("owner" + request.getOwnerId(), "owner" +request.getOwnerId() + "@a.com", "owner" + request.getOwnerId());
         ownerUser3.setId((long) request.getOwnerId());
         when(userRepository.findById(request.getOwnerId())).thenReturn(java.util.Optional.of(ownerUser3));
         savedInstrument.setOwner(ownerUser3);
@@ -554,7 +554,7 @@ class ProductsServiceTest {
         savedInstrument.setId(13L);
         savedInstrument.setName(request.getName());
 
-        com.example.OLSHEETS.data.User ownerUser = new com.example.OLSHEETS.data.User("owner" + request.getOwnerId());
+        com.example.OLSHEETS.data.User ownerUser = new com.example.OLSHEETS.data.User("owner" + request.getOwnerId(), "owner" +request.getOwnerId() + "@a.com", "owner" + request.getOwnerId());
         ownerUser.setId((long) request.getOwnerId());
         when(userRepository.findById(request.getOwnerId())).thenReturn(java.util.Optional.of(ownerUser));
 
@@ -579,7 +579,7 @@ class ProductsServiceTest {
         request.setFamily(InstrumentFamily.GUITAR);
         request.setPhotoPaths(Collections.singletonList("/photos/taylor.jpg"));
 
-        com.example.OLSHEETS.data.User ownerUserSingle = new com.example.OLSHEETS.data.User("owner" + request.getOwnerId());
+        com.example.OLSHEETS.data.User ownerUserSingle = new com.example.OLSHEETS.data.User("owner" + request.getOwnerId(), "owner" +request.getOwnerId() + "@a.com", "owner" + request.getOwnerId());
         ownerUserSingle.setId((long) request.getOwnerId());
         when(userRepository.findById(request.getOwnerId())).thenReturn(java.util.Optional.of(ownerUserSingle));
 

@@ -25,8 +25,11 @@ import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, properties = {
+    "spring.main.lazy-initialization=true"
+})
 @AutoConfigureMockMvc
+@org.springframework.test.context.ActiveProfiles("test")
 class BookingControllerIntegrationTest {
 
     @Autowired
@@ -60,11 +63,12 @@ class BookingControllerIntegrationTest {
         availabilityRepository.deleteAll();
         musicSheetRepository.deleteAll();
         itemRepository.deleteAll();
-
+        userRepository.deleteAll();
+        
         instrument = new Instrument();
         instrument.setName("Test Guitar");
         instrument.setDescription("A test guitar");
-        owner = userRepository.save(new com.example.OLSHEETS.data.User("owner10"));
+        owner = userRepository.save(new com.example.OLSHEETS.data.User("owner10", "owner10@example.com", "owner10", "123"));
         instrument.setOwner(owner);
         instrument.setPrice(50.0);
         instrument.setAge(2);
@@ -75,7 +79,7 @@ class BookingControllerIntegrationTest {
 
     @Test
     void testApproveBooking_Success() throws Exception {
-        User renter = userRepository.save(new User("renter100"));
+        User renter = userRepository.save(new User("renter100", "renter100@test.com", "Renter 100", "password123"));
         Booking booking = new Booking(instrument, renter, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
         booking = bookingRepository.save(booking);
 
@@ -90,7 +94,7 @@ class BookingControllerIntegrationTest {
 
     @Test
     void testApproveBooking_UnauthorizedOwner() throws Exception {
-        User renter = userRepository.save(new User("renter100"));
+        User renter = userRepository.save(new User("renter100", "renter100@test.com", "Renter 100", "password123"));
         Booking booking = new Booking(instrument, renter, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
         booking = bookingRepository.save(booking);
 
@@ -103,7 +107,7 @@ class BookingControllerIntegrationTest {
 
     @Test
     void testApproveBooking_AlreadyApproved() throws Exception {
-        User renter = userRepository.save(new User("renter100"));
+        User renter = userRepository.save(new User("renter100", "renter100@test.com", "Renter 100", "password123"));
         Booking booking = new Booking(instrument, renter, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
         booking.setStatus(BookingStatus.APPROVED);
         booking = bookingRepository.save(booking);
@@ -126,7 +130,7 @@ class BookingControllerIntegrationTest {
 
     @Test
     void testRejectBooking_Success() throws Exception {
-        User renter = userRepository.save(new User("renter100"));
+        User renter = userRepository.save(new User("renter100", "renter100@test.com", "Renter 100", "password123"));
         Booking booking = new Booking(instrument, renter, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
         booking = bookingRepository.save(booking);
 
@@ -141,7 +145,7 @@ class BookingControllerIntegrationTest {
 
     @Test
     void testRejectBooking_UnauthorizedOwner() throws Exception {
-        User renter = userRepository.save(new User("renter100"));
+        User renter = userRepository.save(new User("renter100", "renter100@test.com", "Renter 100", "password123"));
         Booking booking = new Booking(instrument, renter, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
         booking = bookingRepository.save(booking);
 
@@ -154,7 +158,7 @@ class BookingControllerIntegrationTest {
 
     @Test
     void testRejectBooking_AlreadyRejected() throws Exception {
-        User renter = userRepository.save(new User("renter100"));
+        User renter = userRepository.save(new User("renter100", "renter100@test.com", "Renter 100", "password123"));
         Booking booking = new Booking(instrument, renter, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
         booking.setStatus(BookingStatus.REJECTED);
         booking = bookingRepository.save(booking);
@@ -177,7 +181,7 @@ class BookingControllerIntegrationTest {
 
     @Test
     void testCannotRejectApprovedBooking() throws Exception {
-        User renter = userRepository.save(new User("renter100"));
+        User renter = userRepository.save(new User("renter100", "renter100@test.com", "Renter 100", "password123"));
         Booking booking = new Booking(instrument, renter, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
         booking.setStatus(BookingStatus.APPROVED);
         booking = bookingRepository.save(booking);
@@ -192,7 +196,7 @@ class BookingControllerIntegrationTest {
 
     @Test
     void testCannotApproveRejectedBooking() throws Exception {
-        User renter = userRepository.save(new User("renter100"));
+        User renter = userRepository.save(new User("renter100", "renter100@test.com", "Renter 100", "password123"));
         Booking booking = new Booking(instrument, renter, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
         booking.setStatus(BookingStatus.REJECTED);
         booking = bookingRepository.save(booking);

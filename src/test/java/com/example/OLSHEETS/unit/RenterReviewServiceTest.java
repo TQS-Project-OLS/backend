@@ -43,10 +43,10 @@ class RenterReviewServiceTest {
 
     @BeforeEach
     void setUp() {
-        owner = new User("owner_user");
+        owner = new User("owner_user", "owner@example.com", "Owner User", "password123");
         owner.setId(1L);
 
-        renter = new User("renter_user");
+        renter = new User("renter_user", "renter@example.com", "Renter User", "password123");
         renter.setId(2L);
 
         instrument = new Instrument();

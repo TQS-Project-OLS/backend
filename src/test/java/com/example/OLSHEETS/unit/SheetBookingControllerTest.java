@@ -9,9 +9,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import com.example.OLSHEETS.security.JwtUtil;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -22,8 +25,20 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(SheetBookingController.class)
+@WebMvcTest(controllers = SheetBookingController.class, excludeAutoConfiguration = {
+    org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class
+})
+@org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc(addFilters = false)
+@org.springframework.context.annotation.Import(SheetBookingControllerTest.TestConfig.class)
 class SheetBookingControllerTest {
+
+    @TestConfiguration
+    static class TestConfig {
+        @Bean
+        public JwtUtil jwtUtil() {
+            return org.mockito.Mockito.mock(JwtUtil.class);
+        }
+    }
 
     @Autowired
     private MockMvc mockMvc;
@@ -36,7 +51,7 @@ class SheetBookingControllerTest {
 
     @BeforeEach
     void setUp() {
-        User owner = new User("owner1");
+        User owner = new User("owner1", "owner1@example.com", "Owner One", "password123");
         owner.setId(1L);
         sheet = new MusicSheet();
         sheet.setTitle("Moonlight Sonata");
@@ -45,7 +60,7 @@ class SheetBookingControllerTest {
         sheet.setPrice(5.00);
         sheet.setOwner(owner);
         sheet.setId(1L);
-        com.example.OLSHEETS.data.User testUser = new com.example.OLSHEETS.data.User("tester");
+        com.example.OLSHEETS.data.User testUser = new com.example.OLSHEETS.data.User("tester", "tester@example.com", "tester");
         testUser.setId(100L);
         booking = new SheetBooking(sheet, testUser, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
         booking.setId(1L);

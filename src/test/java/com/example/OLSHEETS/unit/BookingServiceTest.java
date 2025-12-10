@@ -46,13 +46,13 @@ class BookingServiceTest {
     void setUp() {
         item = new Instrument();
         item.setId(1L);
-        com.example.OLSHEETS.data.User owner10 = new com.example.OLSHEETS.data.User("owner10");
+        com.example.OLSHEETS.data.User owner10 = new com.example.OLSHEETS.data.User("owner10", "owner10@example.com", "owner10");
         owner10.setId(10L);
         item.setOwner(owner10);
         item.setName("Test Guitar");
         item.setPrice(50.0);
 
-        testUser = new com.example.OLSHEETS.data.User("test");
+        testUser = new com.example.OLSHEETS.data.User("test", "test@example.com", "test");
         testUser.setId(100L);
 
         booking = new Booking(item, testUser, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));

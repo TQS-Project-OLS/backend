@@ -20,7 +20,10 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
+    "spring.main.lazy-initialization=true"
+})
+@org.springframework.test.context.ActiveProfiles("test")
 class SheetBookingIntegrationTest {
 
     @LocalServerPort
@@ -53,13 +56,13 @@ class SheetBookingIntegrationTest {
         sheet.setTitle("Fur Elise");
         sheet.setCategory("classical");
         sheet.setComposer("Beethoven");
-        com.example.OLSHEETS.data.User owner1 = new com.example.OLSHEETS.data.User("owner1");
+        com.example.OLSHEETS.data.User owner1 = new com.example.OLSHEETS.data.User("owner1", "owner1@example.com", "owner1", "123");
         owner1 = userRepository.save(owner1);
         sheet.setOwner(owner1);
         sheet.setPrice(3.50);
         sheet = sheetRepository.save(sheet);
 
-        com.example.OLSHEETS.data.User renter = new com.example.OLSHEETS.data.User("renter200");
+        com.example.OLSHEETS.data.User renter = new com.example.OLSHEETS.data.User("renter200", "renter200@example.com", "renter200", "123");
         renter = userRepository.save(renter);
 
         Map<String, Object> request = new HashMap<>();
@@ -82,13 +85,13 @@ class SheetBookingIntegrationTest {
         sheet.setTitle("Canon in D");
         sheet.setCategory("classical");
         sheet.setComposer("Pachelbel");
-        com.example.OLSHEETS.data.User owner1b = new com.example.OLSHEETS.data.User("owner1");
+        com.example.OLSHEETS.data.User owner1b = new com.example.OLSHEETS.data.User("owner11", "owner11@example.com", "owner1", "123");
         owner1b = userRepository.save(owner1b);
         sheet.setOwner(owner1b);
         sheet.setPrice(4.00);
         sheet = sheetRepository.save(sheet);
 
-        com.example.OLSHEETS.data.User renter = new com.example.OLSHEETS.data.User("renter300");
+        com.example.OLSHEETS.data.User renter = new com.example.OLSHEETS.data.User("renter300", "renter300@example.com", "renter300", "123");
         renter = userRepository.save(renter);
 
         SheetBooking booking = new SheetBooking(sheet, renter, LocalDate.now().plusDays(1), LocalDate.now().plusDays(2));

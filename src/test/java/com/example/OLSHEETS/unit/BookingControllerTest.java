@@ -6,13 +6,17 @@ import com.example.OLSHEETS.data.BookingStatus;
 import com.example.OLSHEETS.data.Item;
 import com.example.OLSHEETS.data.User;
 import com.example.OLSHEETS.data.Instrument;
+import com.example.OLSHEETS.repository.UserRepository;
 import com.example.OLSHEETS.service.BookingService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import com.example.OLSHEETS.security.JwtUtil;
 
 import java.time.LocalDate;
 
@@ -21,14 +25,29 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(BookingController.class)
+@WebMvcTest(controllers = BookingController.class, excludeAutoConfiguration = {
+    org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class
+})
+@org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc(addFilters = false)
+@org.springframework.context.annotation.Import(BookingControllerTest.TestConfig.class)
 class BookingControllerTest {
+
+    @TestConfiguration
+    static class TestConfig {
+        @Bean
+        public JwtUtil jwtUtil() {
+            return org.mockito.Mockito.mock(JwtUtil.class);
+        }
+    }
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockitoBean
     private BookingService bookingService;
+
+    @MockitoBean
+    private UserRepository userRepository;
 
     private Booking booking;
     private Item item;
@@ -37,13 +56,13 @@ class BookingControllerTest {
     void setUp() {
         item = new Instrument();
         item.setId(1L);
-        com.example.OLSHEETS.data.User owner = new com.example.OLSHEETS.data.User("owner");
+        com.example.OLSHEETS.data.User owner = new com.example.OLSHEETS.data.User("owner", "owner@example.com", "OwnerTest");
         owner.setId(10L);
         item.setOwner(owner);
         item.setName("Test Guitar");
         item.setPrice(50.0);
         
-        User testUser = new User("test");
+        User testUser = new User("test", "test@example.com", "Test User", "password123");
         testUser.setId(100L);
         booking = new Booking(item, testUser, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
         booking.setId(1L);

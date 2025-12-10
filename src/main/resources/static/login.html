@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - OLSHEETS</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="js/theme.js"></script>
+</head>
+
+<body>
+    <div class="container" style="max-width: 450px; padding-top: 4rem;">
+        <div class="page-header" style="margin-bottom: var(--space-xl);">
+            <h1 style="text-align: center;">🎸 OLSHEETS</h1>
+            <p style="color: var(--text-muted); text-align: center;">Sign in to your account</p>
+        </div>
+
+        <div class="card">
+            <div id="login-message" class="hidden"
+                style="padding: var(--space-md); border-radius: var(--radius-md); margin-bottom: var(--space-lg); text-align: center;">
+            </div>
+
+            <form id="login-form">
+                <div class="form-group">
+                    <label class="form-label" for="username">Username</label>
+                    <input type="text" class="form-control" id="username" name="username" required
+                        placeholder="Enter your username" autocomplete="username">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <input type="password" class="form-control" id="password" name="password" required
+                        placeholder="Enter your password" autocomplete="current-password">
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%;" id="login-btn">
+                    Sign In
+                </button>
+            </form>
+
+            <div style="margin-top: var(--space-lg); text-align: center; color: var(--text-muted);">
+                Don't have an account?
+                <a href="signup.html" style="color: var(--primary-light); text-decoration: none; font-weight: 600;">
+                    Sign up
+                </a>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: var(--space-lg); color: var(--text-muted); font-size: 0.9rem;">
+            <p>Demo accounts: john_doe, jane_smith, etc.</p>
+            <p>Password: password123</p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('login-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const messageDiv = document.getElementById('login-message');
+            messageDiv.classList.add('hidden');
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            const btn = document.getElementById('login-btn');
+            const originalText = btn.textContent;
+            btn.textContent = 'Signing in...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Store token in localStorage
+                    localStorage.setItem('olsheets-token', data.token);
+                    localStorage.setItem('olsheets-username', data.username);
+                    localStorage.setItem('olsheets-name', data.name);
+
+                    messageDiv.innerHTML = '<strong>Success!</strong> Redirecting...';
+                    messageDiv.style.backgroundColor = 'rgba(16, 185, 129, 0.2)';
+                    messageDiv.style.color = '#34d399';
+                    messageDiv.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+                    messageDiv.classList.remove('hidden');
+
+                    // Redirect to home page
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1000);
+                } else {
+                    messageDiv.innerHTML = '<strong>Error:</strong> ' + (data.error || 'Login failed');
+                    messageDiv.style.backgroundColor = 'rgba(239, 68, 68, 0.2)';
+                    messageDiv.style.color = '#f87171';
+                    messageDiv.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+                    messageDiv.classList.remove('hidden');
+                }
+            } catch (error) {
+                messageDiv.innerHTML = '<strong>Error:</strong> ' + error.message;
+                messageDiv.style.backgroundColor = 'rgba(239, 68, 68, 0.2)';
+                messageDiv.style.color = '#f87171';
+                messageDiv.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+                messageDiv.classList.remove('hidden');
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -35,6 +35,9 @@ public class ReviewRentersSteps {
     private InstrumentRepository instrumentRepository;
 
     @Autowired
+    private MusicSheetRepository musicSheetRepository;
+
+    @Autowired
     private BookingRepository bookingRepository;
 
     @Autowired
@@ -54,8 +57,15 @@ public class ReviewRentersSteps {
 
     @After
     public void cleanupRenterReviews() {
-        // Clean up only data created by renter review scenarios
-        // Clear in-memory maps first
+        // Clean up database to ensure test isolation
+        reviewRepository.deleteAll();
+        renterReviewRepository.deleteAll();
+        bookingRepository.deleteAll();
+        instrumentRepository.deleteAll();
+        musicSheetRepository.deleteAll();
+        userRepository.deleteAll();
+        
+        // Clear in-memory maps
         usersRenterReview.clear();
         instrumentsRenterReview.clear();
         bookingsRenterReview.clear();
@@ -86,16 +96,44 @@ public class ReviewRentersSteps {
                 .orElseThrow(() -> new RuntimeException("No renter found"));
     }
 
+    private Booking getCompletedBooking() {
+        // First check map
+        if (bookingsRenterReview.containsKey("completed") && bookingsRenterReview.get("completed") != null) {
+            return bookingsRenterReview.get("completed");
+        }
+        
+        // Otherwise query database for any completed (past end date) booking
+        return bookingRepository.findAll().stream()
+                .filter(b -> b.getEndDate().isBefore(LocalDate.now()) && 
+                           b.getStatus() == BookingStatus.APPROVED)
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("No completed booking found"));
+    }
+
+    private Booking getActiveBooking() {
+        // First check map
+        if (bookingsRenterReview.containsKey("active") && bookingsRenterReview.get("active") != null) {
+            return bookingsRenterReview.get("active");
+        }
+        
+        // Otherwise query database for any active (future end date) booking
+        return bookingRepository.findAll().stream()
+                .filter(b -> b.getEndDate().isAfter(LocalDate.now()) && 
+                           b.getStatus() == BookingStatus.APPROVED)
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("No active booking found"));
+    }
+
     @Given("there is an owner {string} with ID {int}")
     public void thereIsAnOwnerWithID(String username, Integer userId) {
-        User user = new User(username);
+        User user = new User(username, username + "@a.com", username, "123");
         user = userRepository.save(user);
         usersRenterReview.put(username, user);
     }
 
     @Given("there is a renter {string} with ID {int}")
     public void thereIsARenterWithID(String username, Integer userId) {
-        User user = new User(username);
+        User user = new User(username,username + "@a.com", username, "123");
         user = userRepository.save(user);
         usersRenterReview.put(username, user);
     }
@@ -154,7 +192,7 @@ public class ReviewRentersSteps {
     public void theOwnerSubmitsARenterReviewWithScoreAndComment(Integer score, String comment) {
         User owner = getOwner();
         
-        Booking booking = bookingsRenterReview.get("completed");
+        Booking booking = getCompletedBooking();
         RenterReviewRequest request = new RenterReviewRequest(booking.getId(), score, comment);
         
         try {
@@ -204,7 +242,7 @@ public class ReviewRentersSteps {
     @When("user {string} tries to submit a renter review")
     public void userTriesToSubmitARenterReview(String username) {
         User user = usersRenterReview.get(username);
-        Booking booking = bookingsRenterReview.get("completed");
+        Booking booking = getCompletedBooking();
         RenterReviewRequest request = new RenterReviewRequest(booking.getId(), 5, "Test");
         
         try {
@@ -254,7 +292,7 @@ public class ReviewRentersSteps {
     public void theOwnerTriesToReviewTheRenterForTheActiveRental() {
         User owner = getOwner();
         
-        Booking booking = bookingsRenterReview.get("active");
+        Booking booking = getActiveBooking();
         RenterReviewRequest request = new RenterReviewRequest(booking.getId(), 5, "Test");
         
         try {
@@ -270,7 +308,7 @@ public class ReviewRentersSteps {
     public void theOwnerHasAlreadyReviewedTheRenterWithScore(Integer score) {
         User owner = getOwner();
         
-        Booking booking = bookingsRenterReview.get("completed");
+        Booking booking = getCompletedBooking();
         RenterReviewRequest request = new RenterReviewRequest(booking.getId(), score, "First review");
         renterReviewService.createRenterReview(request, owner.getId());
     }
@@ -340,7 +378,7 @@ public class ReviewRentersSteps {
         
         // Create 3 different owners and bookings
         for (int i = 0; i < 3; i++) {
-            User owner = new User("reviewer_owner" + i);
+            User owner = new User("reviewer_owner" + i, "reviewer_owner" + i + "@example.com", "Reviewer Owner " + i);
             owner = userRepository.save(owner);
             
             Instrument instrument = new Instrument();
@@ -391,7 +429,7 @@ public class ReviewRentersSteps {
     public void iCheckIfTheOwnerCanReviewTheRenterForTheCompletedBooking() {
         User owner = getOwner();
         
-        Booking booking = bookingsRenterReview.get("completed");
+        Booking booking = getCompletedBooking();
         canReviewRenterResult = renterReviewService.canReviewRenter(booking.getId(), owner.getId());
     }
 
@@ -409,7 +447,7 @@ public class ReviewRentersSteps {
     public void iCheckIfTheOwnerCanReviewTheRenterForTheActiveBooking() {
         User owner = getOwner();
         
-        Booking booking = bookingsRenterReview.get("active");
+        Booking booking = getActiveBooking();
         canReviewRenterResult = renterReviewService.canReviewRenter(booking.getId(), owner.getId());
     }
 
@@ -436,7 +474,7 @@ public class ReviewRentersSteps {
     // Cross-feature steps for "Owner and renter both review after booking ends" scenario
     @Then("both the item review and renter review should exist")
     public void bothTheItemReviewAndRenterReviewShouldExist() {
-        Booking booking = bookingsRenterReview.get("completed");
+        Booking booking = getCompletedBooking();
         
         // Check item review exists
         List<ReviewResponse> itemReviews = reviewService.getReviewsByItemId(booking.getItem().getId());
@@ -449,7 +487,7 @@ public class ReviewRentersSteps {
 
     @Then("the booking should have reviews from both parties")
     public void theBookingShouldHaveReviewsFromBothParties() {
-        Booking booking = bookingsRenterReview.get("completed");
+        Booking booking = getCompletedBooking();
         
         // Verify both types of reviews exist for this booking
         assertTrue(reviewRepository.findByBooking(booking).isPresent(), 
@@ -517,7 +555,7 @@ public class ReviewRentersSteps {
     @When("user {string} tries to review the renter for the booking")
     public void userTriesToReviewTheRenterForTheBooking(String username) {
         User user = usersRenterReview.get(username);
-        Booking booking = bookingsRenterReview.get("completed");
+        Booking booking = getCompletedBooking();
         RenterReviewRequest request = new RenterReviewRequest(booking.getId(), 5, "Test");
         
         try {

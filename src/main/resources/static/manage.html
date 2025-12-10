@@ -7,11 +7,16 @@
     <title>Manage - OLSHEETS</title>
     <link rel="stylesheet" href="css/styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="js/theme.js"></script>
+    <script src="js/auth.js"></script>
     <script src="js/nav.js"></script>
 </head>
 
 <body>
     <!-- Nav injected by js/nav.js -->
+    <script>
+        requireAuth();
+    </script>
 
     <div class="container">
         <div class="page-header">
@@ -90,7 +95,7 @@
     </div>
 
     <script>
-        // Use legacy search endpoint for now as there isn't a direct "get by owner" endpoint exposed in ProductsController clearly, 
+        // Use legacy search endpoint for now as there isn't a direct "get by owner" endpoint exposed in ProductsController clearly,
         // mimicking discovery but for management.
         // Actually, we can use search by name empty or filter to get list, then filter by owner in client if needed.
         // For accurate testing, we really should have a proper endpoint, but I will use the search endpoint for MVP.
@@ -177,7 +182,7 @@
             const price = document.getElementById('new-price-input').value;
 
             try {
-                const response = await fetch(`/api/items/price/${id}`, {
+                const response = await authenticatedFetch(`/api/items/price/${id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ newPrice: parseFloat(price) })
@@ -203,7 +208,7 @@
             if (!start || !end) return alert('Select dates');
 
             try {
-                const response = await fetch(`/api/availability?instrumentId=${id}&startDate=${start}&endDate=${end}&reason=${reason}`, {
+                const response = await authenticatedFetch(`/api/availability?instrumentId=${id}&startDate=${start}&endDate=${end}&reason=${reason}`, {
                     method: 'POST'
                 });
 
@@ -225,7 +230,7 @@
             list.innerHTML = 'Loading...';
 
             try {
-                const response = await fetch(`/api/availability/instrument/${id}`);
+                const response = await authenticatedFetch(`/api/availability/instrument/${id}`);
                 const data = await response.json();
 
                 if (data.length === 0) {
@@ -247,7 +252,7 @@
         async function deleteUnavailability(availId, instrumentId) {
             if (!confirm('Delete this block?')) return;
             try {
-                const response = await fetch(`/api/availability/${availId}`, { method: 'DELETE' });
+                const response = await authenticatedFetch(`/api/availability/${availId}`, { method: 'DELETE' });
                 if (response.ok) {
                     loadAvailabilities(instrumentId);
                 } else {

@@ -19,7 +19,9 @@ import java.time.LocalDate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@SpringBootTest
+@SpringBootTest(properties = {
+    "spring.main.lazy-initialization=true"
+})
 class BookingServiceIntegrationTest {
 
     @Autowired
@@ -49,15 +51,16 @@ class BookingServiceIntegrationTest {
         sheetBookingRepository.deleteAll();
         bookingRepository.deleteAll();
         itemRepository.deleteAll();
+        userRepository.deleteAll();
 
         instrument1 = new Instrument();
         instrument1.setName("Guitar");
         instrument1.setDescription("Electric Guitar");
         // create users for owners and renters
-        owner10 = userRepository.save(new com.example.OLSHEETS.data.User("owner10"));
-        owner20 = userRepository.save(new com.example.OLSHEETS.data.User("owner20"));
-        renter100 = userRepository.save(new com.example.OLSHEETS.data.User("renter100"));
-        renter200 = userRepository.save(new com.example.OLSHEETS.data.User("renter200"));
+        owner10 = userRepository.save(new com.example.OLSHEETS.data.User("owner10", "owner10@example.com", "owner10", "123"));
+        owner20 = userRepository.save(new com.example.OLSHEETS.data.User("owner20", "owner20@example.com", "owner20", "123"));
+        renter100 = userRepository.save(new com.example.OLSHEETS.data.User("renter100", "renter100@example.com", "renter100", "123"));
+        renter200 = userRepository.save(new com.example.OLSHEETS.data.User("renter200", "renter200@example.com", "renter200", "123"));
         // owner will be set to a persisted User
         instrument1.setOwner(owner10);
         instrument1.setPrice(50.0);
@@ -69,7 +72,7 @@ class BookingServiceIntegrationTest {
         instrument2 = new Instrument();
         instrument2.setName("Piano");
         instrument2.setDescription("Digital Piano");
-        owner20 = userRepository.save(new com.example.OLSHEETS.data.User("owner20"));
+        owner20 = userRepository.save(new com.example.OLSHEETS.data.User("owner201", "owner201@example.com", "owner20", "123"));
         instrument2.setOwner(owner20);
         instrument2.setPrice(100.0);
         instrument2.setAge(1);
@@ -80,7 +83,7 @@ class BookingServiceIntegrationTest {
 
     @Test
     void shouldCreateBookingWhenNoOverlap() {
-        com.example.OLSHEETS.data.User u = userRepository.save(new com.example.OLSHEETS.data.User("u100"));
+        com.example.OLSHEETS.data.User u = userRepository.save(new com.example.OLSHEETS.data.User("u100", "u100@example.com", "u100", "123"));
 
         Booking b = bookingService.createBooking(instrument1.getId(), u.getId(), LocalDate.of(2025, 12, 1),
                 LocalDate.of(2025, 12, 5));

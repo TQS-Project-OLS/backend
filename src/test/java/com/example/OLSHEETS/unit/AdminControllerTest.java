@@ -11,8 +11,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import com.example.OLSHEETS.security.JwtUtil;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -24,8 +27,20 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(AdminController.class)
+@WebMvcTest(controllers = AdminController.class, excludeAutoConfiguration = {
+    org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class
+})
+@org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc(addFilters = false)
+@org.springframework.context.annotation.Import(AdminControllerTest.TestConfig.class)
 class AdminControllerTest {
+
+    @TestConfiguration
+    static class TestConfig {
+        @Bean
+        public JwtUtil jwtUtil() {
+            return org.mockito.Mockito.mock(JwtUtil.class);
+        }
+    }
 
     @Autowired
     private MockMvc mockMvc;
@@ -41,19 +56,19 @@ class AdminControllerTest {
     void setUp() {
         item1 = new Instrument();
         item1.setId(1L);
-        com.example.OLSHEETS.data.User owner = new com.example.OLSHEETS.data.User("owner");
+        com.example.OLSHEETS.data.User owner = new com.example.OLSHEETS.data.User("owner", "owner@example.com", "owner");
         owner.setId(10L);
         item1.setOwner(owner);
         item1.setName("Test Guitar");
         item1.setPrice(50.0);
 
-        User user1 = new User("tester1");
+        User user1 = new User("tester1", "tester1@example.com", "Test User One", "password123");
         user1.setId(100L);
         booking1 = new Booking(item1, user1, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
         booking1.setId(1L);
         booking1.setStatus(BookingStatus.PENDING);
 
-        User user2 = new User("tester2");
+        User user2 = new User("tester2", "tester2@example.com", "Test User Two", "password123");
         user2.setId(200L);
         booking2 = new Booking(item1, user2, LocalDate.now().plusDays(5), LocalDate.now().plusDays(7));
         booking2.setId(2L);

@@ -21,7 +21,9 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@SpringBootTest
+@SpringBootTest(properties = {
+    "spring.main.lazy-initialization=true"
+})
 class AdminServiceIntegrationTest {
 
     @Autowired
@@ -54,11 +56,12 @@ class AdminServiceIntegrationTest {
         bookingRepository.deleteAll();
         sheetBookingRepository.deleteAll();
         itemRepository.deleteAll();
-
+        userRepository.deleteAll();
+        
         instrument1 = new Instrument();
         instrument1.setName("Guitar");
         instrument1.setDescription("Electric Guitar");
-        testOwner10 = userRepository.save(new com.example.OLSHEETS.data.User("owner10"));
+        testOwner10 = userRepository.save(new com.example.OLSHEETS.data.User("owner10", "owner10@example.com", "owner10", "123"));
         instrument1.setOwner(testOwner10);
         instrument1.setPrice(50.0);
         instrument1.setAge(2);
@@ -69,7 +72,7 @@ class AdminServiceIntegrationTest {
         instrument2 = new Instrument();
         instrument2.setName("Piano");
         instrument2.setDescription("Digital Piano");
-        testOwner20 = userRepository.save(new com.example.OLSHEETS.data.User("owner20"));
+        testOwner20 = userRepository.save(new com.example.OLSHEETS.data.User("owner20", "owner20@example.com", "owner20", "123"));
         instrument2.setOwner(testOwner20);
         instrument2.setPrice(100.0);
         instrument2.setAge(1);
@@ -80,8 +83,8 @@ class AdminServiceIntegrationTest {
 
     @Test
     void shouldGetAllBookingsFromDatabase() {
-        com.example.OLSHEETS.data.User u100 = userRepository.save(new com.example.OLSHEETS.data.User("u100"));
-        com.example.OLSHEETS.data.User u200 = userRepository.save(new com.example.OLSHEETS.data.User("u200"));
+        com.example.OLSHEETS.data.User u100 = userRepository.save(new com.example.OLSHEETS.data.User("u100", "u100@example.com", "u100", "123"));
+        com.example.OLSHEETS.data.User u200 = userRepository.save(new com.example.OLSHEETS.data.User("u200", "u200@example.com", "u200", "123"));
 
         booking1 = bookingRepository.save(new Booking(instrument1, u100, 
             LocalDate.of(2025, 12, 1), LocalDate.of(2025, 12, 5)));
@@ -96,9 +99,9 @@ class AdminServiceIntegrationTest {
 
     @Test
     void shouldFilterBookingsByStatus() {
-        com.example.OLSHEETS.data.User u100 = userRepository.save(new com.example.OLSHEETS.data.User("u100"));
-        com.example.OLSHEETS.data.User u200 = userRepository.save(new com.example.OLSHEETS.data.User("u200"));
-        com.example.OLSHEETS.data.User u300 = userRepository.save(new com.example.OLSHEETS.data.User("u300"));
+        com.example.OLSHEETS.data.User u100 = userRepository.save(new com.example.OLSHEETS.data.User("u100", "u100@example.com", "u100", "123"));
+        com.example.OLSHEETS.data.User u200 = userRepository.save(new com.example.OLSHEETS.data.User("u200", "u200@example.com", "u200", "123"));
+        com.example.OLSHEETS.data.User u300 = userRepository.save(new com.example.OLSHEETS.data.User("u300", "u300@example.com", "u300", "123"));
 
         booking1 = new Booking(instrument1, u100, LocalDate.of(2025, 12, 1), LocalDate.of(2025, 12, 5));
         booking1.setStatus(BookingStatus.PENDING);
@@ -120,8 +123,8 @@ class AdminServiceIntegrationTest {
 
     @Test
     void shouldFilterBookingsByRenter() {
-        com.example.OLSHEETS.data.User u100 = userRepository.save(new com.example.OLSHEETS.data.User("u100"));
-        com.example.OLSHEETS.data.User u200 = userRepository.save(new com.example.OLSHEETS.data.User("u200"));
+        com.example.OLSHEETS.data.User u100 = userRepository.save(new com.example.OLSHEETS.data.User("u100", "u100@example.com", "u100", "123"));
+        com.example.OLSHEETS.data.User u200 = userRepository.save(new com.example.OLSHEETS.data.User("u200", "u200@example.com", "u200", "123"));
 
         booking1 = bookingRepository.save(new Booking(instrument1, u100, 
             LocalDate.of(2025, 12, 1), LocalDate.of(2025, 12, 5)));
@@ -138,7 +141,7 @@ class AdminServiceIntegrationTest {
 
     @Test
     void shouldCancelBookingAsAdmin() {
-        com.example.OLSHEETS.data.User u100 = userRepository.save(new com.example.OLSHEETS.data.User("u100"));
+        com.example.OLSHEETS.data.User u100 = userRepository.save(new com.example.OLSHEETS.data.User("u100", "u100@example.com", "u100", "123"));
 
         booking1 = bookingRepository.save(new Booking(instrument1, u100, 
             LocalDate.of(2025, 12, 1), LocalDate.of(2025, 12, 5)));
@@ -160,9 +163,9 @@ class AdminServiceIntegrationTest {
 
     @Test
     void shouldGetBookingStatistics() {
-        com.example.OLSHEETS.data.User u100 = userRepository.save(new com.example.OLSHEETS.data.User("u100"));
-        com.example.OLSHEETS.data.User u200 = userRepository.save(new com.example.OLSHEETS.data.User("u200"));
-        com.example.OLSHEETS.data.User u300 = userRepository.save(new com.example.OLSHEETS.data.User("u300"));
+        com.example.OLSHEETS.data.User u100 = userRepository.save(new com.example.OLSHEETS.data.User("u100", "u100@example.com", "u100", "123"));
+        com.example.OLSHEETS.data.User u200 = userRepository.save(new com.example.OLSHEETS.data.User("u200", "u200@example.com", "u200", "123"));
+        com.example.OLSHEETS.data.User u300 = userRepository.save(new com.example.OLSHEETS.data.User("u300", "u300@example.com", "u300", "123"));
 
         booking1 = new Booking(instrument1, u100, LocalDate.of(2025, 12, 1), LocalDate.of(2025, 12, 5));
         booking1.setStatus(BookingStatus.PENDING);
@@ -187,8 +190,8 @@ class AdminServiceIntegrationTest {
 
     @Test
     void shouldGetRenterActivity() {
-        com.example.OLSHEETS.data.User u100 = userRepository.save(new com.example.OLSHEETS.data.User("u100"));
-        com.example.OLSHEETS.data.User u200 = userRepository.save(new com.example.OLSHEETS.data.User("u200"));
+        com.example.OLSHEETS.data.User u100 = userRepository.save(new com.example.OLSHEETS.data.User("u100", "u100@example.com", "u100", "123"));
+        com.example.OLSHEETS.data.User u200 = userRepository.save(new com.example.OLSHEETS.data.User("u200", "u200@example.com", "u200", "123"));
 
         booking1 = bookingRepository.save(new Booking(instrument1, u100, 
             LocalDate.of(2025, 12, 1), LocalDate.of(2025, 12, 5)));
@@ -206,9 +209,9 @@ class AdminServiceIntegrationTest {
 
     @Test
     void shouldGetOwnerActivity() {
-        com.example.OLSHEETS.data.User u100 = userRepository.save(new com.example.OLSHEETS.data.User("u100"));
-        com.example.OLSHEETS.data.User u200 = userRepository.save(new com.example.OLSHEETS.data.User("u200"));
-        com.example.OLSHEETS.data.User u300 = userRepository.save(new com.example.OLSHEETS.data.User("u300"));
+        com.example.OLSHEETS.data.User u100 = userRepository.save(new com.example.OLSHEETS.data.User("u100", "u100@example.com", "u100", "123"));
+        com.example.OLSHEETS.data.User u200 = userRepository.save(new com.example.OLSHEETS.data.User("u200", "u200@example.com", "u200", "123"));
+        com.example.OLSHEETS.data.User u300 = userRepository.save(new com.example.OLSHEETS.data.User("u300", "u300@example.com", "u300", "123"));
 
         booking1 = bookingRepository.save(new Booking(instrument1, u100, 
             LocalDate.of(2025, 12, 1), LocalDate.of(2025, 12, 5)));
@@ -226,8 +229,8 @@ class AdminServiceIntegrationTest {
 
     @Test
     void shouldCalculateRevenueByOwner() {
-        com.example.OLSHEETS.data.User u100 = userRepository.save(new com.example.OLSHEETS.data.User("u100"));
-        com.example.OLSHEETS.data.User u200 = userRepository.save(new com.example.OLSHEETS.data.User("u200"));
+        com.example.OLSHEETS.data.User u100 = userRepository.save(new com.example.OLSHEETS.data.User("u100", "u100@example.com", "u100", "123"));
+        com.example.OLSHEETS.data.User u200 = userRepository.save(new com.example.OLSHEETS.data.User("u200", "u200@example.com", "u200", "123"));
 
         booking1 = new Booking(instrument1, u100, LocalDate.of(2025, 12, 1), LocalDate.of(2025, 12, 5));
         booking1.setStatus(BookingStatus.APPROVED);
@@ -245,8 +248,8 @@ class AdminServiceIntegrationTest {
 
     @Test
     void shouldCalculateTotalRevenue() {
-        com.example.OLSHEETS.data.User u100 = userRepository.save(new com.example.OLSHEETS.data.User("u100"));
-        com.example.OLSHEETS.data.User u200 = userRepository.save(new com.example.OLSHEETS.data.User("u200"));
+        com.example.OLSHEETS.data.User u100 = userRepository.save(new com.example.OLSHEETS.data.User("u100", "u100@example.com", "u100", "123"));
+        com.example.OLSHEETS.data.User u200 = userRepository.save(new com.example.OLSHEETS.data.User("u200", "u200@example.com", "u200", "123"));
 
         booking1 = new Booking(instrument1, u100, LocalDate.of(2025, 12, 1), LocalDate.of(2025, 12, 5));
         booking1.setStatus(BookingStatus.APPROVED);
@@ -264,8 +267,8 @@ class AdminServiceIntegrationTest {
 
     @Test
     void shouldNotCountPendingOrRejectedBookingsInRevenue() {
-        com.example.OLSHEETS.data.User u100 = userRepository.save(new com.example.OLSHEETS.data.User("u100"));
-        com.example.OLSHEETS.data.User u200 = userRepository.save(new com.example.OLSHEETS.data.User("u200"));
+        com.example.OLSHEETS.data.User u100 = userRepository.save(new com.example.OLSHEETS.data.User("u100", "u100@example.com", "u100", "123"));
+        com.example.OLSHEETS.data.User u200 = userRepository.save(new com.example.OLSHEETS.data.User("u200", "u200@example.com", "u200", "123"));
 
         booking1 = new Booking(instrument1, u100, LocalDate.of(2025, 12, 1), LocalDate.of(2025, 12, 5));
         booking1.setStatus(BookingStatus.PENDING);
