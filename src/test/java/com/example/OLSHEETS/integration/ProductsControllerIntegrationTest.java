@@ -494,4 +494,48 @@ class ProductsControllerIntegrationTest {
         // Verify both were saved
         assertEquals(5, instrumentRepository.count());
     }
+
+    @Test
+    void testRegisterInstrument_AuthenticationBad() throws Exception {
+        instrumentRepository.deleteAll();
+        userRepository.deleteAll();
+        
+        User newUser = new User("owner1", "owner1@a.com", "Onwer", "password");
+        userRepository.save(newUser);
+
+        InstrumentRegistrationRequest request1 = new InstrumentRegistrationRequest();
+        request1.setName("Violin Stradivarius");
+        request1.setDescription("Classical violin");
+        request1.setPrice(999999.99);
+        request1.setOwnerId(newUser.getId());
+        request1.setAge(200);
+        request1.setType(InstrumentType.ACOUSTIC);
+        request1.setFamily(InstrumentFamily.STRING);
+        request1.setPhotoPaths(Collections.singletonList("/photos/violin.jpg"));
+
+        InstrumentRegistrationRequest request2 = new InstrumentRegistrationRequest();
+        request2.setName("Trumpet Yamaha YTR-2330");
+        request2.setDescription("Beginner trumpet");
+        request2.setPrice(399.99);
+        request2.setOwnerId(newUser.getId());
+        request2.setAge(0);
+        request2.setType(InstrumentType.WIND);
+        request2.setFamily(InstrumentFamily.BRASS);
+        request2.setPhotoPaths(null);
+
+        // Register first instrument
+        mockMvc.perform(post("/api/instruments/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request1)))
+                .andExpect(status().isBadRequest());
+
+        // Register second instrument
+        mockMvc.perform(post("/api/instruments/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request2)))
+                .andExpect(status().isBadRequest());
+
+        // Verify none were save
+        assertEquals(0, instrumentRepository.count());
+    }
 }
