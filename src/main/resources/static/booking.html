@@ -1,20 +1,165 @@
-<!doctype html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>Book an Instrument</title>
-</head>
-<body>
-<h1>Book an Instrument</h1>
-<form method="post" action="/api/bookings">
-    <label>Instrument ID: <input type="number" name="instrumentId" required></label>
-    <br>
-    <label>Start date: <input type="date" name="startDate" required></label>
-    <br>
-    <label>End date: <input type="date" name="endDate" required></label>
-    <br>
-    <button type="submit">Book</button>
-</form>
-</body>
-</html>
+<!DOCTYPE html>
+<html lang="en">
 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Instrument - OLSHEETS</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="js/theme.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/nav.js"></script>
+</head>
+
+<body>
+    <!-- Nav injected by js/nav.js -->
+    <script>
+        requireAuth();
+    </script>
+
+    <div class="container" style="max-width: 600px;">
+        <div class="page-header" style="margin-bottom: var(--space-xl);">
+            <h1>Finalize Booking</h1>
+            <p style="color: var(--text-muted);">Secure your instrument for the desired dates</p>
+        </div>
+
+        <div class="card">
+            <h2 id="instrument-title" style="margin-bottom: var(--space-lg);">Book Instrument</h2>
+
+            <div id="booking-message" class="hidden"
+                style="padding: var(--space-md); border-radius: var(--radius-md); margin-bottom: var(--space-lg); text-align: center;">
+            </div>
+
+            <form id="booking-form">
+                <div class="form-group">
+                    <label class="form-label" for="instrumentId">Instrument ID</label>
+                    <input type="number" class="form-control" id="instrumentId" name="instrumentId" required readonly
+                        style="background: var(--surface-hover); cursor: not-allowed; opacity: 0.7;">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="startDate">Start Date</label>
+                    <input type="date" class="form-control" id="startDate" name="startDate" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="endDate">End Date</label>
+                    <input type="date" class="form-control" id="endDate" name="endDate" required>
+                </div>
+
+                <div class="booking-summary"
+                    style="background: rgba(99, 102, 241, 0.1); padding: var(--space-md); border-radius: var(--radius-md); margin-bottom: var(--space-lg); border: 1px solid rgba(99, 102, 241, 0.2);">
+                    <h4 style="margin-bottom: var(--space-sm); color: var(--primary-light);">Booking Summary</h4>
+                    <p id="date-range-display" style="font-size: 0.9rem; color: var(--text-muted);">Select dates to
+                        calculate duration</p>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%;" id="submit-booking-btn">Confirm
+                    Booking</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Parse URL params
+            const urlParams = new URLSearchParams(window.location.search);
+            const instrumentId = urlParams.get('id');
+
+            if (instrumentId) {
+                document.getElementById('instrumentId').value = instrumentId;
+                // Optional: Fetch instrument details to show name
+                document.getElementById('instrument-title').textContent = `Book Instrument #${instrumentId}`;
+            }
+
+            // Date validation helper
+            const startInput = document.getElementById('startDate');
+            const endInput = document.getElementById('endDate');
+            const summaryDisplay = document.getElementById('date-range-display');
+
+            function updateSummary() {
+                const start = new Date(startInput.value);
+                const end = new Date(endInput.value);
+
+                if (startInput.value && endInput.value && start <= end) {
+                    const diffTime = Math.abs(end - start);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    // Add 1 day if inclusive, but assuming standard rental days logic
+                    summaryDisplay.textContent = `Total Days: ${diffDays} day(s)`;
+                    summaryDisplay.style.color = 'var(--text-main)';
+                } else {
+                    summaryDisplay.textContent = 'Please select valid range (Start <= End)';
+                    summaryDisplay.style.color = 'var(--error)';
+                }
+            }
+
+            startInput.addEventListener('change', updateSummary);
+            endInput.addEventListener('change', updateSummary);
+        });
+
+        document.getElementById('booking-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const messageDiv = document.getElementById('booking-message');
+            messageDiv.classList.add('hidden');
+            messageDiv.style.backgroundColor = 'transparent';
+
+            // Construct form data - renterId will be extracted from JWT on backend
+            const formData = new URLSearchParams();
+            formData.append('itemId', document.getElementById('instrumentId').value);
+            formData.append('startDate', document.getElementById('startDate').value);
+            formData.append('endDate', document.getElementById('endDate').value);
+
+            const btn = document.getElementById('submit-booking-btn');
+            const originalText = btn.textContent;
+            btn.textContent = 'Processing...';
+            btn.disabled = true;
+
+            try {
+                // Use authenticated fetch
+                const response = await authenticatedFetch('/api/bookings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const booking = await response.json();
+                    messageDiv.innerHTML = `<strong>Booking Confirmed!</strong><br>Booking ID: ${booking.id}<br>Status: ${booking.status}`;
+                    messageDiv.style.backgroundColor = 'rgba(16, 185, 129, 0.2)';
+                    messageDiv.style.color = '#34d399';
+                    messageDiv.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+                    messageDiv.classList.remove('hidden');
+
+                    document.getElementById('booking-form').reset();
+                    // Retain ID if desired, or redirect
+                    setTimeout(() => {
+                        window.location.href = 'my-bookings.html';
+                    }, 2000);
+
+                } else {
+                    const data = await response.json(); // May not be JSON if simple error string
+                    messageDiv.innerHTML = `<strong>Error:</strong> ${data.error || 'Booking failed'}`;
+                    messageDiv.style.backgroundColor = 'rgba(239, 68, 68, 0.2)';
+                    messageDiv.style.color = '#f87171';
+                    messageDiv.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+                    messageDiv.classList.remove('hidden');
+                }
+            } catch (error) {
+                messageDiv.innerHTML = `<strong>Error:</strong> ${error.message}`;
+                messageDiv.style.backgroundColor = 'rgba(239, 68, 68, 0.2)';
+                messageDiv.style.color = '#f87171';
+                messageDiv.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+                messageDiv.classList.remove('hidden');
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -16,7 +16,7 @@ public class InstrumentRegistrationRequest {
     private String name;
     private String description;
     private Double price;
-    private Integer ownerId;
+    private Long ownerId;
     private Integer age;
     private InstrumentType type;
     private InstrumentFamily family;

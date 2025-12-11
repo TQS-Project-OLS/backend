@@ -5,15 +5,24 @@ import com.example.OLSHEETS.data.Instrument;
 import com.example.OLSHEETS.data.InstrumentType;
 import com.example.OLSHEETS.data.InstrumentFamily;
 import com.example.OLSHEETS.dto.InstrumentRegistrationRequest;
+import com.example.OLSHEETS.repository.UserRepository;
 import com.example.OLSHEETS.service.ProductsService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import com.example.OLSHEETS.security.JwtUtil;
+import com.example.OLSHEETS.data.User;
+import java.util.Optional;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -27,8 +36,20 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(ProductsController.class)
+@WebMvcTest(controllers = ProductsController.class, excludeAutoConfiguration = {
+    org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class
+})
+@org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc(addFilters = false)
+@org.springframework.context.annotation.Import(ProductsControllerTest.TestConfig.class)
 class ProductsControllerTest {
+
+    @TestConfiguration
+    static class TestConfig {
+        @Bean
+        public JwtUtil jwtUtil() {
+            return org.mockito.Mockito.mock(JwtUtil.class);
+        }
+    }
 
     @Autowired
     private MockMvc mockMvc;
@@ -38,6 +59,9 @@ class ProductsControllerTest {
 
     @MockitoBean
     private ProductsService productsService;
+
+    @MockitoBean
+    private UserRepository userRepository;
 
     private Instrument instrument1;
     private Instrument instrument2;
@@ -49,7 +73,9 @@ class ProductsControllerTest {
         instrument1.setName("Yamaha P-125");
         instrument1.setDescription("Digital Piano");
         instrument1.setPrice(599.99);
-        instrument1.setOwnerId(1);
+        com.example.OLSHEETS.data.User owner = new com.example.OLSHEETS.data.User("owner1", "owner1@example.com", "owner1");
+        owner.setId(1L);
+        instrument1.setOwner(owner);
         instrument1.setAge(2);
         instrument1.setType(InstrumentType.DIGITAL);
         instrument1.setFamily(InstrumentFamily.KEYBOARD);
@@ -59,7 +85,7 @@ class ProductsControllerTest {
         instrument2.setName("Yamaha YAS-280");
         instrument2.setDescription("Alto Sax");
         instrument2.setPrice(1299.99);
-        instrument2.setOwnerId(1);
+        instrument2.setOwner(owner);
         instrument2.setAge(1);
         instrument2.setType(InstrumentType.WIND);
         instrument2.setFamily(InstrumentFamily.WOODWIND);
@@ -141,7 +167,7 @@ class ProductsControllerTest {
                 .andExpect(jsonPath("$[0].name", is("Yamaha P-125")))
                 .andExpect(jsonPath("$[0].description", is("Digital Piano")))
                 .andExpect(jsonPath("$[0].price", is(599.99)))
-                .andExpect(jsonPath("$[0].ownerId", is(1)))
+                .andExpect(jsonPath("$[0].owner.id", is(1)))
                 .andExpect(jsonPath("$[0].age", is(2)))
                 .andExpect(jsonPath("$[0].type", is("DIGITAL")))
                 .andExpect(jsonPath("$[0].family", is("KEYBOARD")));
@@ -239,11 +265,23 @@ class ProductsControllerTest {
     
     @Test
     void testRegisterInstrument_WithValidData_ShouldReturnCreatedInstrument() throws Exception {
+        // Mock authentication
+        Authentication auth = org.mockito.Mockito.mock(Authentication.class);
+        when(auth.getName()).thenReturn("testuser");
+        SecurityContext securityContext = org.mockito.Mockito.mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(securityContext);
+        
+        // Mock user
+        User user = new User();
+        user.setId(5L);
+        when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(user));
+        
         InstrumentRegistrationRequest request = new InstrumentRegistrationRequest();
         request.setName("Gibson Les Paul");
         request.setDescription("Classic electric guitar in excellent condition");
         request.setPrice(1499.99);
-        request.setOwnerId(5);
+        request.setOwnerId(5L);
         request.setAge(3);
         request.setType(InstrumentType.ELECTRIC);
         request.setFamily(InstrumentFamily.GUITAR);
@@ -254,7 +292,9 @@ class ProductsControllerTest {
         savedInstrument.setName(request.getName());
         savedInstrument.setDescription(request.getDescription());
         savedInstrument.setPrice(request.getPrice());
-        savedInstrument.setOwnerId(request.getOwnerId());
+        com.example.OLSHEETS.data.User ownerUser = new com.example.OLSHEETS.data.User("owner" + request.getOwnerId(), "owner" +request.getOwnerId() + "@a.com", "owner" + request.getOwnerId());
+        ownerUser.setId((long) request.getOwnerId());
+        savedInstrument.setOwner(ownerUser);
         savedInstrument.setAge(request.getAge());
         savedInstrument.setType(request.getType());
         savedInstrument.setFamily(request.getFamily());
@@ -270,21 +310,34 @@ class ProductsControllerTest {
                 .andExpect(jsonPath("$.name", is("Gibson Les Paul")))
                 .andExpect(jsonPath("$.description", is("Classic electric guitar in excellent condition")))
                 .andExpect(jsonPath("$.price", is(1499.99)))
-                .andExpect(jsonPath("$.ownerId", is(5)))
+                .andExpect(jsonPath("$.owner.id", is(5)))
                 .andExpect(jsonPath("$.age", is(3)))
                 .andExpect(jsonPath("$.type", is("ELECTRIC")))
                 .andExpect(jsonPath("$.family", is("GUITAR")));
 
         verify(productsService, times(1)).registerInstrument(any(InstrumentRegistrationRequest.class));
+        
+        SecurityContextHolder.clearContext();
     }
 
     @Test
     void testRegisterInstrument_WithPhotos_ShouldAcceptPhotoList() throws Exception {
+        // Mock authentication
+        Authentication auth = org.mockito.Mockito.mock(Authentication.class);
+        when(auth.getName()).thenReturn("testuser");
+        SecurityContext securityContext = org.mockito.Mockito.mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(securityContext);
+        
+        // Mock user
+        User user = new User();
+        user.setId(3L);
+        when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(user));
         InstrumentRegistrationRequest request = new InstrumentRegistrationRequest();
         request.setName("Fender Jazz Bass");
         request.setDescription("Professional bass guitar");
         request.setPrice(999.99);
-        request.setOwnerId(3);
+        request.setOwnerId(3L);
         request.setAge(2);
         request.setType(InstrumentType.BASS);
         request.setFamily(InstrumentFamily.GUITAR);
@@ -295,7 +348,9 @@ class ProductsControllerTest {
         savedInstrument.setName(request.getName());
         savedInstrument.setDescription(request.getDescription());
         savedInstrument.setPrice(request.getPrice());
-        savedInstrument.setOwnerId(request.getOwnerId());
+        com.example.OLSHEETS.data.User ownerUser2 = new com.example.OLSHEETS.data.User("owner" + request.getOwnerId(), "owner" +request.getOwnerId() + "@a.com", "owner" + request.getOwnerId());
+        ownerUser2.setId((long) request.getOwnerId());
+        savedInstrument.setOwner(ownerUser2);
         savedInstrument.setAge(request.getAge());
         savedInstrument.setType(request.getType());
         savedInstrument.setFamily(request.getFamily());
@@ -311,15 +366,28 @@ class ProductsControllerTest {
                 .andExpect(jsonPath("$.description", is("Professional bass guitar")));
 
         verify(productsService, times(1)).registerInstrument(any(InstrumentRegistrationRequest.class));
+        
+        SecurityContextHolder.clearContext();
     }
 
     @Test
     void testRegisterInstrument_WithoutPhotos_ShouldSucceed() throws Exception {
+        // Mock authentication
+        Authentication auth = org.mockito.Mockito.mock(Authentication.class);
+        when(auth.getName()).thenReturn("testuser");
+        SecurityContext securityContext = org.mockito.Mockito.mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(securityContext);
+        
+        // Mock user
+        User user = new User();
+        user.setId(7L);
+        when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(user));
         InstrumentRegistrationRequest request = new InstrumentRegistrationRequest();
         request.setName("Roland TD-17");
         request.setDescription("Electronic drum kit");
         request.setPrice(1299.99);
-        request.setOwnerId(7);
+        request.setOwnerId(7L);
         request.setAge(1);
         request.setType(InstrumentType.DRUMS);
         request.setFamily(InstrumentFamily.PERCUSSION);
@@ -330,7 +398,9 @@ class ProductsControllerTest {
         savedInstrument.setName(request.getName());
         savedInstrument.setDescription(request.getDescription());
         savedInstrument.setPrice(request.getPrice());
-        savedInstrument.setOwnerId(request.getOwnerId());
+        com.example.OLSHEETS.data.User ownerUser3 = new com.example.OLSHEETS.data.User("owner" + request.getOwnerId(), "owner" +request.getOwnerId() + "@a.com", "owner" + request.getOwnerId());
+        ownerUser3.setId((long) request.getOwnerId());
+        savedInstrument.setOwner(ownerUser3);
         savedInstrument.setAge(request.getAge());
         savedInstrument.setType(request.getType());
         savedInstrument.setFamily(request.getFamily());
@@ -345,15 +415,28 @@ class ProductsControllerTest {
                 .andExpect(jsonPath("$.description", is("Electronic drum kit")));
 
         verify(productsService, times(1)).registerInstrument(any(InstrumentRegistrationRequest.class));
+        
+        SecurityContextHolder.clearContext();
     }
 
     @Test
     void testRegisterInstrument_WithCompleteData_ShouldReturnAllFields() throws Exception {
+        // Mock authentication
+        Authentication auth = org.mockito.Mockito.mock(Authentication.class);
+        when(auth.getName()).thenReturn("testuser");
+        SecurityContext securityContext = org.mockito.Mockito.mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(securityContext);
+        
+        // Mock user
+        User user = new User();
+        user.setId(4L);
+        when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(user));
         InstrumentRegistrationRequest request = new InstrumentRegistrationRequest();
         request.setName("Taylor 814ce");
         request.setDescription("Premium acoustic guitar");
         request.setPrice(3299.99);
-        request.setOwnerId(4);
+        request.setOwnerId(4L);
         request.setAge(0);
         request.setType(InstrumentType.ACOUSTIC);
         request.setFamily(InstrumentFamily.GUITAR);
@@ -364,7 +447,9 @@ class ProductsControllerTest {
         savedInstrument.setName(request.getName());
         savedInstrument.setDescription(request.getDescription());
         savedInstrument.setPrice(request.getPrice());
-        savedInstrument.setOwnerId(request.getOwnerId());
+        com.example.OLSHEETS.data.User ownerUser4 = new com.example.OLSHEETS.data.User("owner" + request.getOwnerId(), "owner" +request.getOwnerId() + "@a.com", "owner" + request.getOwnerId());
+        ownerUser4.setId((long) request.getOwnerId());
+        savedInstrument.setOwner(ownerUser4);
         savedInstrument.setAge(request.getAge());
         savedInstrument.setType(request.getType());
         savedInstrument.setFamily(request.getFamily());
@@ -379,11 +464,13 @@ class ProductsControllerTest {
                 .andExpect(jsonPath("$.name", is("Taylor 814ce")))
                 .andExpect(jsonPath("$.description", is("Premium acoustic guitar")))
                 .andExpect(jsonPath("$.price", is(3299.99)))
-                .andExpect(jsonPath("$.ownerId", is(4)))
+                .andExpect(jsonPath("$.owner.id", is(4)))
                 .andExpect(jsonPath("$.age", is(0)))
                 .andExpect(jsonPath("$.type", is("ACOUSTIC")))
                 .andExpect(jsonPath("$.family", is("GUITAR")));
 
         verify(productsService, times(1)).registerInstrument(any(InstrumentRegistrationRequest.class));
+        
+        SecurityContextHolder.clearContext();
     }
 }

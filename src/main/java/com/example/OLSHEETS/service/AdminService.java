@@ -80,7 +80,7 @@ public class AdminService {
     /**
      * Get activity count for a specific owner (bookings on their items)
      */
-    public Long getOwnerActivity(int ownerId) {
+    public Long getOwnerActivity(Long ownerId) {
         List<Item> ownerItems = itemRepository.findByOwnerId(ownerId);
         return bookingRepository.countByItemIn(ownerItems);
     }
@@ -88,7 +88,7 @@ public class AdminService {
     /**
      * Calculate total revenue for a specific owner (approved bookings only)
      */
-    public Double getRevenueByOwner(int ownerId) {
+    public Double getRevenueByOwner(Long ownerId) {
         List<Item> ownerItems = itemRepository.findByOwnerId(ownerId);
         List<Booking> approvedBookings = bookingRepository.findByItemInAndStatus(ownerItems, BookingStatus.APPROVED);
         

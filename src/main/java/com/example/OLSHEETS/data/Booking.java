@@ -14,7 +14,9 @@ public class Booking {
     @JoinColumn(name = "item_id")
     private Item item;
 
-    private Long renterId;
+    @ManyToOne
+    @JoinColumn(name = "renter_id")
+    private User renter;
 
     private LocalDate startDate;
 
@@ -25,9 +27,9 @@ public class Booking {
 
     public Booking(){}
 
-    public Booking(Item item, Long renterId, LocalDate startDate, LocalDate endDate) {
+    public Booking(Item item, User renter, LocalDate startDate, LocalDate endDate) {
         this.item = item;
-        this.renterId = renterId;
+        this.renter = renter;
         this.startDate = startDate;
         this.endDate = endDate;
         this.status = BookingStatus.PENDING;
@@ -49,12 +51,12 @@ public class Booking {
         this.item = item;
     }
 
-    public Long getRenterId() {
-        return renterId;
+    public User getRenter() {
+        return renter;
     }
 
-    public void setRenterId(Long renterId) {
-        this.renterId = renterId;
+    public void setRenter(User renter) {
+        this.renter = renter;
     }
 
     public LocalDate getStartDate() {

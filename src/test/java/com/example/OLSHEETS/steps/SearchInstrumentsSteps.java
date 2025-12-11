@@ -5,21 +5,28 @@ import com.example.OLSHEETS.data.InstrumentType;
 import com.example.OLSHEETS.data.InstrumentFamily;
 import com.example.OLSHEETS.repository.InstrumentRepository;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
+import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import io.github.bonigarcia.wdm.WebDriverManager;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxOptions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SearchInstrumentsSteps {
 
@@ -27,18 +34,46 @@ public class SearchInstrumentsSteps {
     private int port;
 
     @Autowired
-    private TestRestTemplate restTemplate;
-
-    @Autowired
     private InstrumentRepository instrumentRepository;
 
     @Autowired
     private com.example.OLSHEETS.repository.BookingRepository bookingRepository;
 
-    private List<Instrument> searchResults;
+    @Autowired
+    private com.example.OLSHEETS.repository.UserRepository userRepository;
+
+    @Autowired
+    private com.example.OLSHEETS.repository.ReviewRepository reviewRepository;
+
+    @Autowired
+    private com.example.OLSHEETS.repository.RenterReviewRepository renterReviewRepository;
+
+    private WebDriver driver;
+    private WebDriverWait wait;
+    private static final String FRONTEND_URL = "http://localhost:8080";
+
+    @Before
+    public void setUp() {
+        WebDriverManager.firefoxdriver().setup();
+        FirefoxOptions options = new FirefoxOptions();
+        options.addArguments("--headless");
+        driver = new FirefoxDriver(options);
+        wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+    }
+
+    @After
+    public void tearDown() {
+        if (driver != null) {
+            driver.quit();
+        }
+    }
 
     @Given("the following instruments exist:")
     public void theFollowingInstrumentsExist(DataTable dataTable) {
+        // Delete in correct order to avoid foreign key violations
+        // Reviews depend on bookings, so delete them first
+        reviewRepository.deleteAll();
+        renterReviewRepository.deleteAll();
         bookingRepository.deleteAll();
         instrumentRepository.deleteAll();
 
@@ -61,7 +96,9 @@ public class SearchInstrumentsSteps {
             instrument.setAge(Integer.parseInt(row.get("age")));
             instrument.setPrice(Double.parseDouble(row.get("price")));
             instrument.setDescription(row.get("description"));
-            instrument.setOwnerId(1); // Default owner for test data
+            com.example.OLSHEETS.data.User owner = new com.example.OLSHEETS.data.User("owner1", "owner1@example.com", "owner1");
+            owner = userRepository.save(owner);
+            instrument.setOwner(owner); // Default owner for test data
 
             instrumentRepository.save(instrument);
         }
@@ -83,27 +120,47 @@ public class SearchInstrumentsSteps {
 
     @When("I search for instruments with name {string}")
     public void iSearchForInstrumentsWithName(String name) {
-        String url = "http://localhost:" + port + "/api/instruments/search?name=" + name;
+        driver.get(FRONTEND_URL);
 
-        ResponseEntity<List<Instrument>> response = restTemplate.exchange(
-            url,
-            HttpMethod.GET,
-            null,
-            new ParameterizedTypeReference<List<Instrument>>() {}
-        );
+        // Make sure we're on instruments tab (default)
+        WebElement searchInput = wait
+                .until(ExpectedConditions.visibilityOfElementLocated(By.id("instrument-search-input")));
+        searchInput.clear();
+        searchInput.sendKeys(name);
 
-        searchResults = response.getBody();
+        // Click search button
+        driver.findElement(By.id("search-instruments-btn")).click();
+
+        // Wait for results to load - increased timeout
+        try {
+            Thread.sleep(3000); // Give more time for async call and rendering
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     @Then("I should receive {int} instrument(s)")
     public void iShouldReceiveInstruments(int count) {
-        assertNotNull(searchResults);
-        assertEquals(count, searchResults.size());
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.id("instruments-grid")));
+
+        // Wait a bit more for results to render
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        List<WebElement> results = driver.findElements(By.cssSelector(".instrument-result"));
+        assertEquals(count, results.size(), "Expected " + count + " instrument(s) but found " + results.size());
     }
 
     @Then("the first instrument should have name {string}")
     public void theFirstInstrumentShouldHaveName(String expectedName) {
-        assertNotNull(searchResults);
-        assertEquals(expectedName, searchResults.get(0).getName());
+        List<WebElement> results = driver.findElements(By.cssSelector(".instrument-result"));
+        assertTrue(results.size() > 0, "No instruments found");
+
+        WebElement firstResult = results.get(0);
+        String actualName = firstResult.findElement(By.tagName("h3")).getText();
+        assertEquals(expectedName, actualName);
     }
 }

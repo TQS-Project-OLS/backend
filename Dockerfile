@@ -8,4 +8,4 @@ COPY . .
 EXPOSE 8080
 
 # Run Spring Boot using Maven
-CMD ["mvn", "spring-boot:run"]
+CMD ["mvn", "spring-boot:run", "-Dspring-boot.run.profiles=postgres"]

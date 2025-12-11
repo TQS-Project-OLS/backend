@@ -5,21 +5,29 @@ import com.example.OLSHEETS.data.InstrumentType;
 import com.example.OLSHEETS.data.InstrumentFamily;
 import com.example.OLSHEETS.repository.InstrumentRepository;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
+import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import io.github.bonigarcia.wdm.WebDriverManager;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxOptions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.Select;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class FilterInstrumentsByTypeSteps {
 
@@ -27,15 +35,33 @@ public class FilterInstrumentsByTypeSteps {
     private int port;
 
     @Autowired
-    private TestRestTemplate restTemplate;
-
-    @Autowired
     private InstrumentRepository instrumentRepository;
 
     @Autowired
     private com.example.OLSHEETS.repository.BookingRepository bookingRepository;
 
-    private List<Instrument> filterResults;
+    @Autowired
+    private com.example.OLSHEETS.repository.UserRepository userRepository;
+
+    private WebDriver driver;
+    private WebDriverWait wait;
+    private static final String FRONTEND_URL = "http://localhost:8080";
+
+    @Before
+    public void setUp() {
+        WebDriverManager.firefoxdriver().setup();
+        FirefoxOptions options = new FirefoxOptions();
+        options.addArguments("--headless");
+        driver = new FirefoxDriver(options);
+        wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+    }
+
+    @After
+    public void tearDown() {
+        if (driver != null) {
+            driver.quit();
+        }
+    }
 
     @Given("the following instruments exist for type filter:")
     public void theFollowingInstrumentsExistForTypeFilter(DataTable dataTable) {
@@ -51,7 +77,9 @@ public class FilterInstrumentsByTypeSteps {
             instrument.setAge(Integer.parseInt(row.get("age")));
             instrument.setPrice(Double.parseDouble(row.get("price")));
             instrument.setDescription(row.get("description"));
-            instrument.setOwnerId(1); // Default owner for test data
+            com.example.OLSHEETS.data.User owner = new com.example.OLSHEETS.data.User("owner1", "owner1@example.com", "owner1");
+            owner = userRepository.save(owner);
+            instrument.setOwner(owner); // Default owner for test data
 
             instrumentRepository.save(instrument);
         }
@@ -59,36 +87,51 @@ public class FilterInstrumentsByTypeSteps {
 
     @When("I filter instruments by type {string}")
     public void iFilterInstrumentsByType(String type) {
-        String url = "http://localhost:" + port + "/api/instruments/filter/type?type=" + type;
+        driver.get(FRONTEND_URL);
 
-        ResponseEntity<List<Instrument>> response = restTemplate.exchange(
-            url,
-            HttpMethod.GET,
-            null,
-            new ParameterizedTypeReference<List<Instrument>>() {}
-        );
+        // Wait for page to load
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("filter-type-select")));
 
-        filterResults = response.getBody();
+        // Select type from dropdown
+        Select typeSelect = new Select(driver.findElement(By.id("filter-type-select")));
+        typeSelect.selectByValue(type);
+
+        // Click filter button
+        driver.findElement(By.id("filter-type-btn")).click();
+
+        // Wait for results - increased timeout
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     @Then("the filter should return {int} instrument(s)")
     public void theFilterShouldReturnInstruments(int count) {
-        assertNotNull(filterResults);
-        assertEquals(count, filterResults.size());
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.id("instruments-grid")));
+        List<WebElement> results = driver.findElements(By.cssSelector(".instrument-result"));
+        assertEquals(count, results.size());
     }
 
     @Then("the first filtered instrument should have name {string}")
     public void theFirstFilteredInstrumentShouldHaveName(String expectedName) {
-        assertNotNull(filterResults);
-        assertEquals(expectedName, filterResults.get(0).getName());
+        List<WebElement> results = driver.findElements(By.cssSelector(".instrument-result"));
+        assertTrue(results.size() > 0, "No instruments found");
+
+        WebElement firstResult = results.get(0);
+        String actualName = firstResult.findElement(By.tagName("h3")).getText();
+        assertEquals(expectedName, actualName);
     }
 
     @Then("all filtered instruments should have type {string}")
     public void allFilteredInstrumentsShouldHaveType(String expectedType) {
-        assertNotNull(filterResults);
-        InstrumentType expectedEnum = InstrumentType.valueOf(expectedType);
-        for (Instrument instrument : filterResults) {
-            assertEquals(expectedEnum, instrument.getType());
+        List<WebElement> results = driver.findElements(By.cssSelector(".instrument-result"));
+
+        for (WebElement result : results) {
+            String resultText = result.getText();
+            assertTrue(resultText.contains(expectedType),
+                    "Expected result to contain type " + expectedType + " but got: " + resultText);
         }
     }
 }

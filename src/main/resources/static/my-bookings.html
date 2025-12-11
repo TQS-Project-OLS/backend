@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Bookings - OLSHEETS</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="js/theme.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/nav.js"></script>
+</head>
+
+<body>
+    <!-- Nav injected by js/nav.js -->
+    <script>
+        requireAuth();
+    </script>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>My Bookings</h1>
+            <p style="color: var(--text-muted);">Manage your rentals and view booking history</p>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="results-grid"
+            style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: var(--space-xl);">
+            <div class="card text-center">
+                <h3 style="color: var(--text-muted); font-size: 1rem; text-transform: uppercase;">Total Bookings</h3>
+                <div class="price" id="stat-total" style="font-size: 2.5rem; margin-top: var(--space-sm);">0</div>
+            </div>
+            <div class="card text-center">
+                <h3 style="color: var(--text-muted); font-size: 1rem; text-transform: uppercase;">Pending</h3>
+                <div class="price" id="stat-pending"
+                    style="font-size: 2.5rem; margin-top: var(--space-sm); color: var(--warning);">0</div>
+            </div>
+            <div class="card text-center">
+                <h3 style="color: var(--text-muted); font-size: 1rem; text-transform: uppercase;">Approved</h3>
+                <div class="price" id="stat-approved"
+                    style="font-size: 2.5rem; margin-top: var(--space-sm); color: var(--success);">0</div>
+            </div>
+            <div class="card text-center">
+                <h3 style="color: var(--text-muted); font-size: 1rem; text-transform: uppercase;">Rejected</h3>
+                <div class="price" id="stat-rejected"
+                    style="font-size: 2.5rem; margin-top: var(--space-sm); color: var(--error);">0</div>
+            </div>
+            <div class="card text-center">
+                <h3 style="color: var(--text-muted); font-size: 1rem; text-transform: uppercase;">Cancelled</h3>
+                <div class="price" id="stat-cancelled"
+                    style="font-size: 2.5rem; margin-top: var(--space-sm); color: var(--text-muted);">0</div>
+            </div>
+        </div>
+
+        <div
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-lg);">
+            <h2>Booking History</h2>
+            <div style="display: flex; gap: var(--space-sm);">
+                <button class="btn btn-primary" onclick="loadBookings()">Refresh List</button>
+                <button class="btn btn-secondary" onclick="loadStatistics()">Refresh Stats</button>
+            </div>
+        </div>
+
+        <div class="card" style="padding: 0; overflow: hidden;">
+            <div class="results-grid" id="bookings-grid" style="display: flex; flex-direction: column; gap: 0;">
+                <div class="empty-state text-center" style="padding: var(--space-xl);">
+                    <h3 style="color: var(--text-muted);">No bookings yet</h3>
+                    <p style="color: var(--text-muted);">Click "Refresh List" to view all bookings</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock ID for demo purposes, in real app this comes from auth
+        // Use a default or prompt
+        const CURRENT_USER_ID = 1; // Assuming admin/owner view or specific user
+
+        async function loadBookings() {
+            const grid = document.getElementById('bookings-grid');
+            grid.innerHTML = '<div class="text-center" style="padding: var(--space-xl); color: var(--text-muted);">Loading...</div>';
+
+            try {
+                const response = await fetch('/api/admin/bookings');
+                const bookings = await response.json();
+                displayBookings(bookings);
+            } catch (error) {
+                console.error('Error loading bookings:', error);
+                grid.innerHTML = `<div class="text-center" style="padding: var(--space-xl); color: var(--error);">Error loading bookings: ${error.message}</div>`;
+            }
+        }
+
+        function displayBookings(bookings) {
+            const grid = document.getElementById('bookings-grid');
+
+            if (bookings.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state text-center" style="padding: var(--space-xl);">
+                        <h3 style="color: var(--text-muted);">No bookings found</h3>
+                        <p style="color: var(--text-muted);">No bookings are currently in the system</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Table Header
+            let html = `
+                <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; background: var(--surface-hover); padding: var(--space-md); font-weight: 600; color: var(--text-muted); border-bottom: 1px solid var(--border-color);">
+                    <div>Item</div>
+                    <div>Renter ID</div>
+                    <div>Dates</div>
+                    <div>Status</div>
+                    <div>Action</div>
+                </div>
+            `;
+
+            bookings.forEach(booking => {
+                const statusClass =
+                    booking.status === 'APPROVED' ? 'badge-success' :
+                        booking.status === 'PENDING' ? 'badge-warning' :
+                            booking.status === 'REJECTED' ? 'badge-error' : 'badge-secondary';
+
+                html += `
+                    <div class="booking-item" style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; padding: var(--space-md); border-bottom: 1px solid var(--border-color); align-items: center; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='transparent'">
+                        <div>
+                            <div style="font-weight: 600; color: var(--text-main);">${booking.item ? booking.item.name : 'Unknown Item'}</div>
+                            <div style="font-size: 0.85rem; color: var(--text-muted);">$${booking.item ? booking.item.price.toFixed(2) : '-'} / day</div>
+                        </div>
+                        <div style="color: var(--text-muted);">#${booking.renterId}</div>
+                        <div style="font-size: 0.9rem;">
+                            <div>${booking.startDate}</div>
+                            <div style="color: var(--text-muted);">to ${booking.endDate}</div>
+                        </div>
+                        <div>
+                            <span class="badge ${statusClass}">${booking.status}</span>
+                        </div>
+                        <div>
+                             ${booking.status === 'PENDING' ? `
+                                <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" onclick="processBooking(${booking.id}, 'approve')">Approve</button>
+                                <button class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" onclick="processBooking(${booking.id}, 'reject')">Reject</button>
+                             ` : '-'}
+                        </div>
+                    </div>
+                `;
+            });
+
+            grid.innerHTML = html;
+        }
+
+        async function processBooking(bookingId, action) {
+            if (!confirm(`Are you sure you want to ${action} this booking?`)) return;
+
+            // Assuming ownerId is required, using generic '1' for now or prompting
+            const ownerId = 1;
+
+            try {
+                const response = await authenticatedFetch(`/api/bookings/${bookingId}/${action}?ownerId=${ownerId}`, {
+                    method: 'PUT'
+                });
+
+                if (response.ok) {
+                    loadBookings();
+                    loadStatistics();
+                } else {
+                    const err = await response.json();
+                    alert(`Error: ${err.error}`);
+                }
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            }
+        }
+
+        async function loadStatistics() {
+            try {
+                const response = await fetch('/api/admin/statistics/bookings');
+                const stats = await response.json();
+                displayStatistics(stats);
+            } catch (error) {
+                console.error('Error loading statistics:', error);
+            }
+        }
+
+        function displayStatistics(stats) {
+            document.getElementById('stat-total').textContent = stats.total || 0;
+            document.getElementById('stat-pending').textContent = stats.pending || 0;
+            document.getElementById('stat-approved').textContent = stats.approved || 0;
+            document.getElementById('stat-rejected').textContent = stats.rejected || 0;
+            document.getElementById('stat-cancelled').textContent = stats.cancelled || 0;
+        }
+
+        // Load statistics on page load
+        window.addEventListener('load', () => {
+            loadStatistics();
+            loadBookings();
+        });
+    </script>
+</body>
+
+</html>

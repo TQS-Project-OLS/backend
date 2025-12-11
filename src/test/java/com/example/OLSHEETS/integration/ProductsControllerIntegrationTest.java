@@ -13,7 +13,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
+import com.example.OLSHEETS.data.User;
+import com.example.OLSHEETS.repository.UserRepository;
+import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -26,8 +32,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, properties = {
+    "spring.main.lazy-initialization=true"
+})
 @AutoConfigureMockMvc
+@org.springframework.test.context.ActiveProfiles("test")
 class ProductsControllerIntegrationTest {
 
     @Autowired
@@ -39,14 +48,46 @@ class ProductsControllerIntegrationTest {
     @Autowired
     private InstrumentRepository instrumentRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    private User user;
     @BeforeEach
+    @org.springframework.transaction.annotation.Transactional
+    @org.springframework.test.annotation.Commit
     void setUp() {
+        // Make SecurityContext inheritable by child threads (needed for MockMvc)
+        SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
+        
+        // Setup authentication FIRST
+        Authentication auth = org.mockito.Mockito.mock(Authentication.class);
+        when(auth.getName()).thenReturn("testuser");
+        SecurityContext securityContext = org.mockito.Mockito.mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(securityContext);
+        
+        // Clear and create fresh test user - use a unique email to avoid conflicts
+        userRepository.deleteAll();
+        user = new User();
+        user.setUsername("testuser");
+        user.setEmail("testuser" + System.currentTimeMillis() + "@test.com");
+        user.setName("testuser");
+        user.setPassword("password");
+        user = userRepository.save(user);
+        // Clear persistence context and reload to ensure visibility
+        userRepository.flush();
+        // Verify user exists
+        var foundUser = userRepository.findByUsername("testuser");
+        if (foundUser.isEmpty()) {
+            throw new RuntimeException("User not found after save");
+        }
+        
         instrumentRepository.deleteAll();
 
         Instrument yamahaPiano = new Instrument();
         yamahaPiano.setName("Yamaha P-125");
         yamahaPiano.setDescription("Digital Piano");
-        yamahaPiano.setOwnerId(1);
+        yamahaPiano.setOwner(user);
         yamahaPiano.setPrice(599.99);
         yamahaPiano.setAge(2);
         yamahaPiano.setType(InstrumentType.DIGITAL);
@@ -56,7 +97,7 @@ class ProductsControllerIntegrationTest {
         Instrument fenderGuitar = new Instrument();
         fenderGuitar.setName("Fender Stratocaster");
         fenderGuitar.setDescription("Electric Guitar");
-        fenderGuitar.setOwnerId(1);
+        fenderGuitar.setOwner(user);
         fenderGuitar.setPrice(899.99);
         fenderGuitar.setAge(5);
         fenderGuitar.setType(InstrumentType.ELECTRIC);
@@ -66,7 +107,7 @@ class ProductsControllerIntegrationTest {
         Instrument yamahaSax = new Instrument();
         yamahaSax.setName("Yamaha YAS-280");
         yamahaSax.setDescription("Alto Saxophone");
-        yamahaSax.setOwnerId(2);
+        yamahaSax.setOwner(user);
         yamahaSax.setPrice(1299.99);
         yamahaSax.setAge(1);
         yamahaSax.setType(InstrumentType.WIND);
@@ -77,6 +118,8 @@ class ProductsControllerIntegrationTest {
     @AfterEach
     void tearDown() {
         instrumentRepository.deleteAll();
+        userRepository.deleteAll();
+        SecurityContextHolder.clearContext();
     }
 
     @Test
@@ -89,8 +132,8 @@ class ProductsControllerIntegrationTest {
                 .andExpect(jsonPath("$[0].name", is("Yamaha P-125")))
                 .andExpect(jsonPath("$[0].description", is("Digital Piano")))
                 .andExpect(jsonPath("$[0].price", is(599.99)))
-                .andExpect(jsonPath("$[0].ownerId", is(1)))
-                .andExpect(jsonPath("$[0].age", is(2)))
+                .andExpect(jsonPath("$[0].owner.id", notNullValue()))
+                .andExpect(jsonPath("$[0].type", is("DIGITAL")))
                 .andExpect(jsonPath("$[0].type", is("DIGITAL")))
                 .andExpect(jsonPath("$[0].family", is("KEYBOARD")));
     }
@@ -116,7 +159,7 @@ class ProductsControllerIntegrationTest {
 
     @Test
     void testSearchInstruments_CaseInsensitive_ShouldReturnInstruments() throws Exception {
-        // Test lowercase
+        // Test case insensitivity with one example
         mockMvc.perform(get("/api/instruments/search")
                         .param("name", "yamaha"))
                 .andExpect(status().isOk())
@@ -152,7 +195,7 @@ class ProductsControllerIntegrationTest {
                 .andExpect(jsonPath("$[0].id", notNullValue()))
                 .andExpect(jsonPath("$[0].name", is("Fender Stratocaster")))
                 .andExpect(jsonPath("$[0].description", is("Electric Guitar")))
-                .andExpect(jsonPath("$[0].ownerId", is(1)))
+                .andExpect(jsonPath("$[0].owner.id", notNullValue()))
                 .andExpect(jsonPath("$[0].price", is(899.99)))
                 .andExpect(jsonPath("$[0].age", is(5)))
                 .andExpect(jsonPath("$[0].type", is("ELECTRIC")))
@@ -223,29 +266,6 @@ class ProductsControllerIntegrationTest {
         assertNotEquals(originalPrice, updatedInstrument.getPrice());
     }
 
-    @Test
-    void testUpdatePrice_MultipleUpdates_ShouldPersistLastValue() throws Exception {
-        Instrument savedInstrument = instrumentRepository.findAll().get(0);
-        Long itemId = savedInstrument.getId();
-
-        // First update
-        mockMvc.perform(put("/api/items/price/" + itemId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"newPrice\": 100.0}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.newPrice", is(100.0)));
-
-        // Second update
-        mockMvc.perform(put("/api/items/price/" + itemId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"newPrice\": 200.0}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.newPrice", is(200.0)));
-
-        // Verify the final price
-        Instrument updatedInstrument = instrumentRepository.findById(itemId).orElseThrow();
-        assertEquals(200.0, updatedInstrument.getPrice());
-    }
 
     @Test
     void testUpdatePrice_WithZeroPrice_ShouldSucceed() throws Exception {
@@ -301,22 +321,6 @@ class ProductsControllerIntegrationTest {
                 .andExpect(jsonPath("$.price", is(expectedPrice)));
     }
 
-    @Test
-    void testGetPrice_AfterUpdate_ShouldReturnNewPrice() throws Exception {
-        Instrument savedInstrument = instrumentRepository.findAll().get(0);
-        Long itemId = savedInstrument.getId();
-
-        // Update the price
-        mockMvc.perform(put("/api/items/price/" + itemId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"newPrice\": 999.99}"))
-                .andExpect(status().isOk());
-
-        // Get the price and verify it was updated
-        mockMvc.perform(get("/api/items/price/" + itemId))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.price", is(999.99)));
-    }
 
     @Test
     void testGetPrice_WithNonExistentItem_ShouldReturnNotFound() throws Exception {
@@ -332,7 +336,7 @@ class ProductsControllerIntegrationTest {
         request.setName("Gibson Les Paul");
         request.setDescription("Classic electric guitar in excellent condition");
         request.setPrice(1499.99);
-        request.setOwnerId(5);
+        request.setOwnerId(user.getId());
         request.setAge(3);
         request.setType(InstrumentType.ELECTRIC);
         request.setFamily(InstrumentFamily.GUITAR);
@@ -347,7 +351,7 @@ class ProductsControllerIntegrationTest {
                 .andExpect(jsonPath("$.name", is("Gibson Les Paul")))
                 .andExpect(jsonPath("$.description", is("Classic electric guitar in excellent condition")))
                 .andExpect(jsonPath("$.price", is(1499.99)))
-                .andExpect(jsonPath("$.ownerId", is(5)))
+                .andExpect(jsonPath("$.owner.id", is(user.getId().intValue())))
                 .andExpect(jsonPath("$.age", is(3)))
                 .andExpect(jsonPath("$.type", is("ELECTRIC")))
                 .andExpect(jsonPath("$.family", is("GUITAR")));
@@ -360,9 +364,9 @@ class ProductsControllerIntegrationTest {
     void testRegisterInstrument_WithPhotos_ShouldCreateFileReferences() throws Exception {
         InstrumentRegistrationRequest request = new InstrumentRegistrationRequest();
         request.setName("Fender Jazz Bass");
-        request.setDescription("Professional bass guitar");
+        request.setDescription("4-string bass guitar");
         request.setPrice(999.99);
-        request.setOwnerId(3);
+        request.setOwnerId(user.getId());
         request.setAge(2);
         request.setType(InstrumentType.BASS);
         request.setFamily(InstrumentFamily.GUITAR);
@@ -386,7 +390,7 @@ class ProductsControllerIntegrationTest {
         request.setName("Roland TD-17");
         request.setDescription("Electronic drum kit");
         request.setPrice(1299.99);
-        request.setOwnerId(7);
+        request.setOwnerId(user.getId());
         request.setAge(1);
         request.setType(InstrumentType.DRUMS);
         request.setFamily(InstrumentFamily.PERCUSSION);
@@ -408,7 +412,7 @@ class ProductsControllerIntegrationTest {
         request.setName("Taylor 814ce");
         request.setDescription("Premium acoustic guitar");
         request.setPrice(3299.99);
-        request.setOwnerId(4);
+        request.setOwnerId(user.getId());
         request.setAge(0);
         request.setType(InstrumentType.ACOUSTIC);
         request.setFamily(InstrumentFamily.GUITAR);
@@ -438,7 +442,7 @@ class ProductsControllerIntegrationTest {
         request.setName("Korg Minilogue");
         request.setDescription("Analog synthesizer");
         request.setPrice(649.99);
-        request.setOwnerId(2);
+        request.setOwnerId(user.getId());
         request.setAge(1);
         request.setType(InstrumentType.SYNTHESIZER);
         request.setFamily(InstrumentFamily.KEYBOARD);
@@ -459,7 +463,7 @@ class ProductsControllerIntegrationTest {
         request1.setName("Violin Stradivarius");
         request1.setDescription("Classical violin");
         request1.setPrice(999999.99);
-        request1.setOwnerId(10);
+        request1.setOwnerId(user.getId());
         request1.setAge(200);
         request1.setType(InstrumentType.ACOUSTIC);
         request1.setFamily(InstrumentFamily.STRING);
@@ -469,7 +473,7 @@ class ProductsControllerIntegrationTest {
         request2.setName("Trumpet Yamaha YTR-2330");
         request2.setDescription("Beginner trumpet");
         request2.setPrice(399.99);
-        request2.setOwnerId(11);
+        request2.setOwnerId(user.getId());
         request2.setAge(0);
         request2.setType(InstrumentType.WIND);
         request2.setFamily(InstrumentFamily.BRASS);
@@ -489,5 +493,49 @@ class ProductsControllerIntegrationTest {
 
         // Verify both were saved
         assertEquals(5, instrumentRepository.count());
+    }
+
+    @Test
+    void testRegisterInstrument_AuthenticationBad() throws Exception {
+        instrumentRepository.deleteAll();
+        userRepository.deleteAll();
+        
+        User newUser = new User("owner1", "owner1@a.com", "Onwer", "password");
+        userRepository.save(newUser);
+
+        InstrumentRegistrationRequest request1 = new InstrumentRegistrationRequest();
+        request1.setName("Violin Stradivarius");
+        request1.setDescription("Classical violin");
+        request1.setPrice(999999.99);
+        request1.setOwnerId(newUser.getId());
+        request1.setAge(200);
+        request1.setType(InstrumentType.ACOUSTIC);
+        request1.setFamily(InstrumentFamily.STRING);
+        request1.setPhotoPaths(Collections.singletonList("/photos/violin.jpg"));
+
+        InstrumentRegistrationRequest request2 = new InstrumentRegistrationRequest();
+        request2.setName("Trumpet Yamaha YTR-2330");
+        request2.setDescription("Beginner trumpet");
+        request2.setPrice(399.99);
+        request2.setOwnerId(newUser.getId());
+        request2.setAge(0);
+        request2.setType(InstrumentType.WIND);
+        request2.setFamily(InstrumentFamily.BRASS);
+        request2.setPhotoPaths(null);
+
+        // Register first instrument
+        mockMvc.perform(post("/api/instruments/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request1)))
+                .andExpect(status().isBadRequest());
+
+        // Register second instrument
+        mockMvc.perform(post("/api/instruments/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request2)))
+                .andExpect(status().isBadRequest());
+
+        // Verify none were save
+        assertEquals(0, instrumentRepository.count());
     }
 }

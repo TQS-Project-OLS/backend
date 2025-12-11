@@ -1,51 +1,83 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-    <title>Book Music Sheet</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Music Sheet - OLSHEETS</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="js/theme.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/nav.js"></script>
 </head>
+
 <body>
-    <h1>Book Music Sheet</h1>
+    <!-- Nav injected by js/nav.js -->
+    <script>
+        requireAuth();
+    </script>
 
-    <form id="bookingForm">
-        <div>
-            <label for="sheetId">Sheet ID:</label>
-            <input type="number" id="sheetId" name="sheetId" required>
+    <div class="container" style="max-width: 600px;">
+        <div class="page-header" style="margin-bottom: var(--space-xl);">
+            <h1>Finalize Sheet Booking</h1>
+            <p style="color: var(--text-muted);">Get access to the music sheet</p>
         </div>
 
-        <div>
-            <label for="renterId">Renter ID:</label>
-            <input type="number" id="renterId" name="renterId" required>
+        <div class="card">
+            <h2 id="sheet-title" style="margin-bottom: var(--space-lg);">Book Music Sheet</h2>
+
+            <div id="booking-message" class="hidden"
+                style="padding: var(--space-md); border-radius: var(--radius-md); margin-bottom: var(--space-lg); text-align: center;">
+            </div>
+
+            <form id="bookingForm">
+                <div class="form-group">
+                    <label class="form-label" for="sheetId">Sheet ID</label>
+                    <input type="number" class="form-control" id="sheetId" name="sheetId" required readonly
+                        style="background: var(--surface-hover); cursor: not-allowed; opacity: 0.7;">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="renterId">Renter ID</label>
+                    <input type="number" class="form-control" id="renterId" name="renterId" required
+                        placeholder="Enter your user ID">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="startDate">Start Date</label>
+                    <input type="date" class="form-control" id="startDate" name="startDate" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="endDate">End Date</label>
+                    <input type="date" class="form-control" id="endDate" name="endDate" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%;" id="submit-booking-btn">Confirm
+                    Booking</button>
+            </form>
         </div>
-
-        <div>
-            <label for="startDate">Start Date:</label>
-            <input type="date" id="startDate" name="startDate" required>
-        </div>
-
-        <div>
-            <label for="endDate">End Date:</label>
-            <input type="date" id="endDate" name="endDate" required>
-        </div>
-
-        <button type="submit">Book Sheet</button>
-    </form>
-
-    <div id="message"></div>
-
-    <hr>
-
-    <h2>My Bookings</h2>
-    <div>
-        <label for="searchRenterId">Renter ID:</label>
-        <input type="number" id="searchRenterId">
-        <button onclick="loadBookings()">Load Bookings</button>
     </div>
 
-    <div id="bookingsList"></div>
-
     <script>
-        document.getElementById('bookingForm').addEventListener('submit', async function(e) {
+        document.addEventListener('DOMContentLoaded', () => {
+            // Parse URL params
+            const urlParams = new URLSearchParams(window.location.search);
+            const sheetId = urlParams.get('id');
+
+            if (sheetId) {
+                document.getElementById('sheetId').value = sheetId;
+                document.getElementById('sheet-title').textContent = `Book Sheet #${sheetId}`;
+            }
+        });
+
+        document.getElementById('bookingForm').addEventListener('submit', async function (e) {
             e.preventDefault();
+
+            const messageDiv = document.getElementById('booking-message');
+            messageDiv.classList.add('hidden');
+            messageDiv.style.backgroundColor = 'transparent';
 
             const formData = {
                 sheetId: parseInt(document.getElementById('sheetId').value),
@@ -53,6 +85,11 @@
                 startDate: document.getElementById('startDate').value,
                 endDate: document.getElementById('endDate').value
             };
+
+            const btn = document.getElementById('submit-booking-btn');
+            const originalText = btn.textContent;
+            btn.textContent = 'Processing...';
+            btn.disabled = true;
 
             try {
                 const response = await fetch('/api/sheets/bookings', {
@@ -66,47 +103,35 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    document.getElementById('message').innerHTML = '<p>Booking created successfully! Booking ID: ' + data.id + '</p>';
+                    messageDiv.innerHTML = `<strong>Booking Confirmed!</strong><br>Booking ID: ${data.id}`;
+                    messageDiv.style.backgroundColor = 'rgba(16, 185, 129, 0.2)';
+                    messageDiv.style.color = '#34d399';
+                    messageDiv.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+                    messageDiv.classList.remove('hidden');
+
                     document.getElementById('bookingForm').reset();
+                    setTimeout(() => {
+                        window.location.href = 'my-bookings.html';
+                    }, 2000);
                 } else {
-                    document.getElementById('message').innerHTML = '<p>Error: ' + data.error + '</p>';
+                    messageDiv.innerHTML = `<strong>Error:</strong> ${data.error}`;
+                    messageDiv.style.backgroundColor = 'rgba(239, 68, 68, 0.2)';
+                    messageDiv.style.color = '#f87171';
+                    messageDiv.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+                    messageDiv.classList.remove('hidden');
                 }
             } catch (error) {
-                document.getElementById('message').innerHTML = '<p>Error: ' + error.message + '</p>';
+                messageDiv.innerHTML = `<strong>Error:</strong> ${error.message}`;
+                messageDiv.style.backgroundColor = 'rgba(239, 68, 68, 0.2)';
+                messageDiv.style.color = '#f87171';
+                messageDiv.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+                messageDiv.classList.remove('hidden');
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
             }
         });
-
-        async function loadBookings() {
-            const renterId = document.getElementById('searchRenterId').value;
-
-            if (!renterId) {
-                alert('Please enter a Renter ID');
-                return;
-            }
-
-            try {
-                const response = await fetch('/api/sheets/bookings/renter/' + renterId);
-                const bookings = await response.json();
-
-                let html = '<table border="1"><tr><th>Booking ID</th><th>Sheet ID</th><th>Start Date</th><th>End Date</th><th>Status</th></tr>';
-
-                bookings.forEach(booking => {
-                    html += '<tr>';
-                    html += '<td>' + booking.id + '</td>';
-                    html += '<td>' + booking.musicSheet.id + '</td>';
-                    html += '<td>' + booking.startDate + '</td>';
-                    html += '<td>' + booking.endDate + '</td>';
-                    html += '<td>' + booking.status + '</td>';
-                    html += '</tr>';
-                });
-
-                html += '</table>';
-                document.getElementById('bookingsList').innerHTML = html;
-            } catch (error) {
-                document.getElementById('bookingsList').innerHTML = '<p>Error: ' + error.message + '</p>';
-            }
-        }
     </script>
 </body>
-</html>
 
+</html>

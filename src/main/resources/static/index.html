@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discover - OLSHEETS</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="js/theme.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/nav.js"></script>
+</head>
+
+<body>
+    <!-- Nav injected by js/nav.js -->
+    <script>
+        // Require authentication for this page
+        requireAuth();
+    </script>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>Discover Music</h1>
+            <p style="color: var(--text-muted); font-size: 1.2rem;">Find the perfect instruments and music sheets for
+                your musical journey</p>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('instruments')">Instruments</button>
+            <button class="tab" onclick="switchTab('sheets')">Music Sheets</button>
+        </div>
+
+        <!-- Instruments Section -->
+        <div id="instruments-section">
+            <div class="search-section">
+                <h2>Find Instruments</h2>
+                <div class="search-form">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <input type="text" class="form-control" id="instrument-search-input"
+                            placeholder="Search instrument name (e.g., Yamaha P-125)...">
+                    </div>
+                    <button class="btn btn-primary" id="search-instruments-btn"
+                        onclick="searchInstruments()">Search</button>
+
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <select id="filter-type-select" class="form-control">
+                            <option value="">Filter by Type</option>
+                            <option value="ACOUSTIC">Acoustic</option>
+                            <option value="ELECTRIC">Electric</option>
+                            <option value="DIGITAL">Digital</option>
+                            <option value="BASS">Bass</option>
+                            <option value="DRUMS">Drums</option>
+                            <option value="WIND">Wind</option>
+                            <option value="SYNTHESIZER">Synthesizer</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-secondary" id="filter-type-btn"
+                        onclick="filterInstrumentsByType()">Filter</button>
+                </div>
+            </div>
+
+            <div class="results-container" id="instruments-results">
+                <div class="results-grid" id="instruments-grid">
+                    <div class="empty-state text-center" style="grid-column: 1/-1; padding: 4rem;">
+                        <h3 style="color: var(--text-muted);">Start your search</h3>
+                        <p style="color: var(--text-muted);">Use the filters above to find your next instrument</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Music Sheets Section -->
+        <div id="sheets-section" class="hidden">
+            <div class="search-section">
+                <h2>Find Music Sheets</h2>
+                <div class="search-form">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <input type="text" class="form-control" id="sheet-search-input"
+                            placeholder="Search sheet name (e.g., Moonlight Sonata)...">
+                    </div>
+                    <button class="btn btn-primary" id="search-sheets-btn" onclick="searchSheets()">Search</button>
+
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <select id="filter-category-select" class="form-control">
+                            <option value="">Filter by Category</option>
+                            <option value="CLASSICAL">Classical</option>
+                            <option value="JAZZ">Jazz</option>
+                            <option value="ROCK">Rock</option>
+                            <option value="POP">Pop</option>
+                            <option value="BLUES">Blues</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-secondary" id="filter-category-btn"
+                        onclick="filterSheetsByCategory()">Filter</button>
+                </div>
+            </div>
+
+            <div class="results-container" id="sheets-results">
+                <div class="results-grid" id="sheets-grid">
+                    <div class="empty-state text-center" style="grid-column: 1/-1; padding: 4rem;">
+                        <h3 style="color: var(--text-muted);">Browse Library</h3>
+                        <p style="color: var(--text-muted);">Search for masterpieces to play</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tab) {
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+
+            if (tab === 'instruments') {
+                document.getElementById('instruments-section').classList.remove('hidden');
+                document.getElementById('sheets-section').classList.add('hidden');
+            } else {
+                document.getElementById('instruments-section').classList.add('hidden');
+                document.getElementById('sheets-section').classList.remove('hidden');
+            }
+        }
+
+        async function searchInstruments() {
+            const name = document.getElementById('instrument-search-input').value;
+            if (!name) return;
+
+            try {
+              const response = await authenticatedFetch(
+                  `/api/instruments/search?name=${encodeURIComponent(name)}`
+              );const instruments = await response.json();
+                console.log(instruments)
+                displayInstruments(instruments);
+            } catch (error) {
+                console.error('Error searching instruments:', error);
+            }
+        }
+
+        async function filterInstrumentsByType() {
+            const type = document.getElementById('filter-type-select').value;
+            if (!type) return;
+
+            try {
+                const response = await authenticatedFetch(`/api/instruments/filter/type?type=${type}`);
+                const instruments = await response.json();
+                console.log(instruments)
+
+                displayInstruments(instruments);
+            } catch (error) {
+                console.error('Error filtering instruments:', error);
+            }
+        }
+
+        function displayInstruments(instruments) {
+            const grid = document.getElementById('instruments-grid');
+
+            if (instruments.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state text-center" style="grid-column: 1/-1; padding: 4rem;">
+                        <h3>No instruments found</h3>
+                        <p style="color: var(--text-muted);">Try a different search or filter</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = instruments.map(instrument => `
+                <div class="card result-card instrument-result" data-id="${instrument.id}">
+                    <div style="height: 120px; background: linear-gradient(135deg, var(--surface), var(--surface-hover)); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; margin-bottom: var(--space-md);">
+                        <span style="font-size: 3rem;">🎸</span>
+                    </div>
+                    <h3>${instrument.name}</h3>
+                    <p style="color: var(--text-muted); margin-bottom: var(--space-xs);">${instrument.description || 'No description available'}</p>
+
+                    <div style="display: flex; gap: var(--space-xs); flex-wrap: wrap; margin: var(--space-md) 0;">
+                        <span class="badge badge-primary">${instrument.type}</span>
+                        <span class="badge badge-secondary" style="border: 1px solid var(--border-color);">${instrument.family}</span>
+                        <span class="badge badge-secondary" style="border: 1px solid var(--border-color);">${instrument.age} yrs old</span>
+                    </div>
+
+                    <div class="price">$${instrument.price.toFixed(2)}<span style="font-size: 0.9rem; color: var(--text-muted); font-weight: normal;">/day</span></div>
+
+                    <a href="booking.html?id=${instrument.id}" class="btn btn-primary" style="width: 100%; margin-top: var(--space-lg);">Book Now</a>
+                </div>
+            `).join('');
+        }
+
+        async function searchSheets() {
+            const name = document.getElementById('sheet-search-input').value;
+            if (!name) return;
+
+            try {
+                const response = await authenticatedFetch(`/api/sheets/search?name=${encodeURIComponent(name)}`);
+                const sheets = await response.json();
+                displaySheets(sheets);
+            } catch (error) {
+                console.error('Error searching sheets:', error);
+            }
+        }
+
+        async function filterSheetsByCategory() {
+            const category = document.getElementById('filter-category-select').value;
+            if (!category) return;
+
+            try {
+                const response = await authenticatedFetch(`/api/sheets/filter/category?category=${category}`);
+                const sheets = await response.json();
+                displaySheets(sheets);
+            } catch (error) {
+                console.error('Error filtering sheets:', error);
+            }
+        }
+
+        function displaySheets(sheets) {
+            const grid = document.getElementById('sheets-grid');
+
+            if (sheets.length === 0) {
+                grid.innerHTML = `
+                     <div class="empty-state text-center" style="grid-column: 1/-1; padding: 4rem;">
+                        <h3>No music sheets found</h3>
+                        <p style="color: var(--text-muted);">Try a different search or filter</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = sheets.map(sheet => `
+                <div class="card result-card sheet-result" data-id="${sheet.id}">
+                     <div style="height: 120px; background: linear-gradient(135deg, var(--surface), var(--surface-hover)); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; margin-bottom: var(--space-md);">
+                        <span style="font-size: 3rem;">🎼</span>
+                    </div>
+                    <h3>${sheet.name}</h3>
+                    <p style="color: var(--text-muted);">By <strong>${sheet.composer}</strong></p>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: var(--space-xs);">${sheet.description || ''}</p>
+
+                    <div style="margin: var(--space-md) 0;">
+                        <span class="badge badge-warning">${sheet.category}</span>
+                    </div>
+
+                    <div class="price">$${sheet.price.toFixed(2)}</div>
+
+                    <a href="sheet_booking.html?id=${sheet.id}" class="btn btn-primary" style="width: 100%; margin-top: var(--space-lg);">Book Sheet</a>
+                </div>
+            `).join('');
+        }
+
+        // Allow Enter key to trigger search
+        document.getElementById('instrument-search-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') searchInstruments();
+        });
+
+        document.getElementById('sheet-search-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') searchSheets();
+        });
+    </script>
+</body>
+
+</html>

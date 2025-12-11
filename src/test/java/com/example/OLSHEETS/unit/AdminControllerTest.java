@@ -5,13 +5,17 @@ import com.example.OLSHEETS.data.Booking;
 import com.example.OLSHEETS.data.BookingStatus;
 import com.example.OLSHEETS.data.Instrument;
 import com.example.OLSHEETS.data.Item;
+import com.example.OLSHEETS.data.User;
 import com.example.OLSHEETS.service.AdminService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import com.example.OLSHEETS.security.JwtUtil;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -23,8 +27,20 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(AdminController.class)
+@WebMvcTest(controllers = AdminController.class, excludeAutoConfiguration = {
+    org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class
+})
+@org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc(addFilters = false)
+@org.springframework.context.annotation.Import(AdminControllerTest.TestConfig.class)
 class AdminControllerTest {
+
+    @TestConfiguration
+    static class TestConfig {
+        @Bean
+        public JwtUtil jwtUtil() {
+            return org.mockito.Mockito.mock(JwtUtil.class);
+        }
+    }
 
     @Autowired
     private MockMvc mockMvc;
@@ -40,15 +56,21 @@ class AdminControllerTest {
     void setUp() {
         item1 = new Instrument();
         item1.setId(1L);
-        item1.setOwnerId(10);
+        com.example.OLSHEETS.data.User owner = new com.example.OLSHEETS.data.User("owner", "owner@example.com", "owner");
+        owner.setId(10L);
+        item1.setOwner(owner);
         item1.setName("Test Guitar");
         item1.setPrice(50.0);
 
-        booking1 = new Booking(item1, 100L, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
+        User user1 = new User("tester1", "tester1@example.com", "Test User One", "password123");
+        user1.setId(100L);
+        booking1 = new Booking(item1, user1, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
         booking1.setId(1L);
         booking1.setStatus(BookingStatus.PENDING);
 
-        booking2 = new Booking(item1, 200L, LocalDate.now().plusDays(5), LocalDate.now().plusDays(7));
+        User user2 = new User("tester2", "tester2@example.com", "Test User Two", "password123");
+        user2.setId(200L);
+        booking2 = new Booking(item1, user2, LocalDate.now().plusDays(5), LocalDate.now().plusDays(7));
         booking2.setId(2L);
         booking2.setStatus(BookingStatus.APPROVED);
     }
@@ -89,7 +111,7 @@ class AdminControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].renterId", is(100)));
+                .andExpect(jsonPath("$[0].renter.id", is(100)));
 
         verify(adminService, times(1)).getBookingsByRenter(100L);
     }
@@ -159,7 +181,7 @@ class AdminControllerTest {
 
     @Test
     void testGetOwnerActivity_ShouldReturnActivityCount() throws Exception {
-        when(adminService.getOwnerActivity(10)).thenReturn(3L);
+        when(adminService.getOwnerActivity(10L)).thenReturn(3L);
 
         mockMvc.perform(get("/api/admin/activity/owner/10"))
                 .andExpect(status().isOk())
@@ -167,12 +189,12 @@ class AdminControllerTest {
                 .andExpect(jsonPath("$.ownerId", is(10)))
                 .andExpect(jsonPath("$.bookingCount", is(3)));
 
-        verify(adminService, times(1)).getOwnerActivity(10);
+        verify(adminService, times(1)).getOwnerActivity(10L);
     }
 
     @Test
     void testGetRevenueByOwner_ShouldReturnRevenue() throws Exception {
-        when(adminService.getRevenueByOwner(10)).thenReturn(500.0);
+        when(adminService.getRevenueByOwner(10L)).thenReturn(500.0);
 
         mockMvc.perform(get("/api/admin/revenue/owner/10"))
                 .andExpect(status().isOk())
@@ -180,7 +202,7 @@ class AdminControllerTest {
                 .andExpect(jsonPath("$.ownerId", is(10)))
                 .andExpect(jsonPath("$.revenue", is(500.0)));
 
-        verify(adminService, times(1)).getRevenueByOwner(10);
+        verify(adminService, times(1)).getRevenueByOwner(10L);
     }
 
     @Test

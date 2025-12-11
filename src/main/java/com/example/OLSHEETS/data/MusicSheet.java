@@ -13,11 +13,12 @@ public class MusicSheet extends Item {
     public MusicSheet() {
     }
 
-    public MusicSheet(String title, String category, String composer, Long ownerId) {
+
+    public MusicSheet(String title, String category, String composer, com.example.OLSHEETS.data.User owner) {
         this.setName(title);
         this.category = category;
         this.composer = composer;
-        this.setOwnerId(ownerId.intValue());
+        this.setOwner(owner);
     }
 
     public String getComposer() {
@@ -60,9 +61,6 @@ public class MusicSheet extends Item {
         setName(title);
     }
 
-    public void setOwnerId(Long ownerId) {
-        super.setOwnerId(ownerId.intValue());
-    }
 
     @Override
     public boolean equals(Object o) {

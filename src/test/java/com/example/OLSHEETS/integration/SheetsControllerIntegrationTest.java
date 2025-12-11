@@ -19,8 +19,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, properties = {
+    "spring.main.lazy-initialization=true"
+})
 @AutoConfigureMockMvc
+@org.springframework.test.context.ActiveProfiles("test")
 class SheetsControllerIntegrationTest {
 
     @Autowired
@@ -32,17 +35,34 @@ class SheetsControllerIntegrationTest {
     @Autowired
     private SheetBookingRepository sheetBookingRepository;
 
+        @Autowired
+        private com.example.OLSHEETS.repository.InstrumentRepository instrumentRepository;
+
+    @Autowired
+    private com.example.OLSHEETS.repository.BookingRepository bookingRepository;
+
+    @Autowired
+    private com.example.OLSHEETS.repository.UserRepository userRepository;
+    
+    private com.example.OLSHEETS.data.User testOwner1;
+
     @BeforeEach
     void setUp() {
-        sheetBookingRepository.deleteAll();
-        musicSheetRepository.deleteAll();
+                // Delete children before parents to avoid FK constraint issues
+                bookingRepository.deleteAll();
+                sheetBookingRepository.deleteAll();
+                musicSheetRepository.deleteAll();
+                // Also remove any instruments (other Item subtypes) to avoid FK references to users
+                instrumentRepository.deleteAll();
+                userRepository.deleteAll();
 
-        MusicSheet moonlightSonata = new MusicSheet();
+                MusicSheet moonlightSonata = new MusicSheet();
         moonlightSonata.setName("Moonlight Sonata");
         moonlightSonata.setComposer("Beethoven");
         moonlightSonata.setCategory("CLASSICAL");
         moonlightSonata.setDescription("Piano Sonata No. 14");
-        moonlightSonata.setOwnerId(1);
+                testOwner1 = userRepository.save(new com.example.OLSHEETS.data.User("owner1", "owner1@example.com", "owner1", "123"));
+                moonlightSonata.setOwner(testOwner1);
         moonlightSonata.setPrice(9.99);
         musicSheetRepository.save(moonlightSonata);
 
@@ -51,7 +71,8 @@ class SheetsControllerIntegrationTest {
         bohemianRhapsody.setComposer("Freddie Mercury");
         bohemianRhapsody.setCategory("ROCK");
         bohemianRhapsody.setDescription("Queen masterpiece");
-        bohemianRhapsody.setOwnerId(1);
+        // reuse testOwner1 for the second sheet
+        bohemianRhapsody.setOwner(testOwner1);
         bohemianRhapsody.setPrice(12.99);
         musicSheetRepository.save(bohemianRhapsody);
 
@@ -60,7 +81,8 @@ class SheetsControllerIntegrationTest {
         autumnLeaves.setComposer("Joseph Kosma");
         autumnLeaves.setCategory("JAZZ");
         autumnLeaves.setDescription("Jazz standard");
-        autumnLeaves.setOwnerId(2);
+        com.example.OLSHEETS.data.User owner2 = userRepository.save(new com.example.OLSHEETS.data.User("owner2", "owner2@example.com", "owner2", "123"));
+        autumnLeaves.setOwner(owner2);
         autumnLeaves.setPrice(7.99);
         musicSheetRepository.save(autumnLeaves);
     }
@@ -82,7 +104,7 @@ class SheetsControllerIntegrationTest {
                 .andExpect(jsonPath("$[0].composer", is("Beethoven")))
                 .andExpect(jsonPath("$[0].category", is("CLASSICAL")))
                 .andExpect(jsonPath("$[0].price", is(9.99)))
-                .andExpect(jsonPath("$[0].ownerId", is(1)));
+                .andExpect(jsonPath("$[0].owner.id", is(testOwner1.getId().intValue())));
     }
 
     @Test
@@ -186,7 +208,7 @@ class SheetsControllerIntegrationTest {
                 .andExpect(jsonPath("$[0].composer", is("Beethoven")))
                 .andExpect(jsonPath("$[0].category", is("CLASSICAL")))
                 .andExpect(jsonPath("$[0].description", is("Piano Sonata No. 14")))
-                .andExpect(jsonPath("$[0].ownerId", is(1)))
+                .andExpect(jsonPath("$[0].owner.id", is(testOwner1.getId().intValue())))
                 .andExpect(jsonPath("$[0].price", is(9.99)));
     }
 
