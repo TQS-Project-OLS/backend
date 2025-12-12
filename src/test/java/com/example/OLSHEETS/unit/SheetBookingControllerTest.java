@@ -68,7 +68,7 @@ class SheetBookingControllerTest {
     }
 
     @Test
-    @Requirement("OLS-36")
+    @Requirement("OLS-60")
     void whenCreateBooking_thenReturn201() throws Exception {
         when(bookingService.createBooking(anyLong(), anyLong(), any(LocalDate.class), any(LocalDate.class)))
             .thenReturn(booking);
@@ -85,7 +85,7 @@ class SheetBookingControllerTest {
     }
 
     @Test
-    @Requirement("OLS-36")
+    @Requirement("OLS-60")
     void whenGetBookingsByRenter_thenReturn200() throws Exception {
         when(bookingService.getBookingsByRenter(100L)).thenReturn(List.of(booking));
 
@@ -95,7 +95,7 @@ class SheetBookingControllerTest {
     }
 
     @Test
-    @Requirement("OLS-36")
+    @Requirement("OLS-60")
     void whenGetBookingById_thenReturn200() throws Exception {
         when(bookingService.getBookingById(1L)).thenReturn(Optional.of(booking));
 
@@ -113,7 +113,7 @@ class SheetBookingControllerTest {
     }
 
     @Test
-    @Requirement("OLS-36")
+    @Requirement("OLS-60")
     void whenCreateBookingWithInvalidData_thenReturn400() throws Exception {
         when(bookingService.createBooking(anyLong(), anyLong(), any(LocalDate.class), any(LocalDate.class)))
             .thenThrow(new IllegalArgumentException("Start date must be before end date"));

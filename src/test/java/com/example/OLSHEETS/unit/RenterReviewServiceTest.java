@@ -66,7 +66,7 @@ class RenterReviewServiceTest {
     }
 
     @Test
-    @Requirement("OLS-43")
+    @Requirement("OLS-63")
     void testCreateRenterReview_WithValidData_ShouldSucceed() {
         RenterReviewRequest request = new RenterReviewRequest(1L, 5, "Great renter!");
         
@@ -162,7 +162,7 @@ class RenterReviewServiceTest {
     }
 
     @Test
-    @Requirement("OLS-43")
+    @Requirement("OLS-63")
     void testGetReviewsByRenterId_ShouldReturnReviews() {
         RenterReview review2 = new RenterReview(booking, 4, "Good!");
         review2.setId(2L);
@@ -177,7 +177,7 @@ class RenterReviewServiceTest {
     }
 
     @Test
-    @Requirement("OLS-43")
+    @Requirement("OLS-63")
     void testGetAverageScoreByRenterId_ShouldReturnAverage() {
         when(renterReviewRepository.getAverageScoreByRenterId(2L)).thenReturn(4.5);
 

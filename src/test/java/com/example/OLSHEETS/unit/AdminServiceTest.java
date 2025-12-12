@@ -86,7 +86,7 @@ class AdminServiceTest {
     }
 
     @Test
-    @Requirement("OLS-40")
+    @Requirement("OLS-57")
     void testGetAllBookings() {
         when(bookingRepository.findAll()).thenReturn(Arrays.asList(booking1, booking2, booking3));
 
@@ -98,7 +98,7 @@ class AdminServiceTest {
     }
 
     @Test
-    @Requirement("OLS-40")
+    @Requirement("OLS-57")
     void testGetBookingsByStatus() {
         when(bookingRepository.findByStatus(BookingStatus.PENDING))
             .thenReturn(Arrays.asList(booking1));
@@ -111,7 +111,7 @@ class AdminServiceTest {
     }
 
     @Test
-    @Requirement("OLS-40")
+    @Requirement("OLS-57")
     void testGetBookingsByRenter() {
         when(bookingRepository.findByRenterId(100L)).thenReturn(Arrays.asList(booking1));
 
@@ -123,7 +123,7 @@ class AdminServiceTest {
     }
 
     @Test
-    @Requirement("OLS-40")
+    @Requirement("OLS-57")
     void testCancelBooking() {
         when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking1));
         when(bookingRepository.save(any(Booking.class))).thenReturn(booking1);
@@ -136,7 +136,7 @@ class AdminServiceTest {
     }
 
     @Test
-    @Requirement("OLS-40")
+    @Requirement("OLS-57")
     void testGetBookingStatistics() {
         when(bookingRepository.countByStatus(BookingStatus.PENDING)).thenReturn(5L);
         when(bookingRepository.countByStatus(BookingStatus.APPROVED)).thenReturn(10L);
@@ -156,7 +156,7 @@ class AdminServiceTest {
     }
 
     @Test
-    @Requirement("OLS-40")
+    @Requirement("OLS-57")
     void testGetRenterActivity() {
         when(bookingRepository.countByRenterId(1L)).thenReturn(5L);
 
@@ -167,7 +167,7 @@ class AdminServiceTest {
     }
 
     @Test
-    @Requirement("OLS-40")
+    @Requirement("OLS-57")
     void testGetOwnerActivity() {
         when(itemRepository.findByOwnerId(10L)).thenReturn(Arrays.asList(item1));
         when(bookingRepository.countByItemIn(Arrays.asList(item1))).thenReturn(3L);
@@ -180,7 +180,7 @@ class AdminServiceTest {
     }
 
     @Test
-    @Requirement("OLS-40")
+    @Requirement("OLS-57")
     void testGetRevenueByOwner() {
         booking2.setStatus(BookingStatus.APPROVED);
         when(itemRepository.findByOwnerId(20L)).thenReturn(Arrays.asList(item2));
@@ -194,7 +194,7 @@ class AdminServiceTest {
     }
 
     @Test
-    @Requirement("OLS-40")
+    @Requirement("OLS-57")
     void testGetTotalRevenue() {
         booking2.setStatus(BookingStatus.APPROVED);
         when(bookingRepository.findByStatus(BookingStatus.APPROVED))

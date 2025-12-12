@@ -78,7 +78,7 @@ class SheetsControllerTest {
     }
 
     @Test
-    @Requirement("OLS-28")
+    @Requirement("OLS-58")
     void testSearchMusicSheets() throws Exception {
         List<MusicSheet> sheets = Collections.singletonList(sheet1);
         when(productsService.searchMusicSheetsByName("Moonlight")).thenReturn(sheets);
@@ -98,7 +98,7 @@ class SheetsControllerTest {
     }
 
     @Test
-    @Requirement("OLS-28")
+    @Requirement("OLS-58")
     void testSearchSheets_WithNoResults_ShouldReturnEmptyList() throws Exception {
         when(productsService.searchMusicSheetsByName("Symphony")).thenReturn(Collections.emptyList());
 
@@ -112,7 +112,7 @@ class SheetsControllerTest {
     }
 
     @Test
-    @Requirement("OLS-28")
+    @Requirement("OLS-58")
     void testSearchSheets_WithMultipleResults_ShouldReturnAllSheets() throws Exception {
         List<MusicSheet> sheets = Arrays.asList(sheet1, sheet2);
         when(productsService.searchMusicSheetsByName("a")).thenReturn(sheets);
@@ -127,7 +127,7 @@ class SheetsControllerTest {
     }
 
     @Test
-    @Requirement("OLS-28")
+    @Requirement("OLS-58")
     void testFilterMusicSheetsByCategory() throws Exception {
         List<MusicSheet> sheets = Collections.singletonList(sheet1);
         when(productsService.filterMusicSheetsByCategory("CLASSICAL")).thenReturn(sheets);
@@ -145,7 +145,7 @@ class SheetsControllerTest {
     }
 
     @Test
-    @Requirement("OLS-28")
+    @Requirement("OLS-58")
     void testFilterByCategory_WithNoResults_ShouldReturnEmptyList() throws Exception {
         when(productsService.filterMusicSheetsByCategory("JAZZ")).thenReturn(Collections.emptyList());
 
@@ -159,7 +159,7 @@ class SheetsControllerTest {
     }
 
     @Test
-    @Requirement("OLS-28")
+    @Requirement("OLS-58")
     void testFilterByCategory_WithRockCategory_ShouldReturnRockSheets() throws Exception {
         List<MusicSheet> sheets = Collections.singletonList(sheet2);
         when(productsService.filterMusicSheetsByCategory("ROCK")).thenReturn(sheets);
@@ -177,7 +177,7 @@ class SheetsControllerTest {
     }
 
     @Test
-    @Requirement("OLS-28")
+    @Requirement("OLS-58")
     void testSearchSheets_VerifyAllFieldsReturned() throws Exception {
         List<MusicSheet> sheets = Collections.singletonList(sheet1);
         when(productsService.searchMusicSheetsByName("Sonata")).thenReturn(sheets);

@@ -77,7 +77,7 @@ class AdminControllerTest {
     }
 
     @Test
-    @Requirement("OLS-40")
+    @Requirement("OLS-57")
     void testGetAllBookings() throws Exception {
         when(adminService.getAllBookings()).thenReturn(Arrays.asList(booking1, booking2));
 
@@ -92,7 +92,7 @@ class AdminControllerTest {
     }
 
     @Test
-    @Requirement("OLS-40")
+    @Requirement("OLS-57")
     void testGetBookingsByStatus() throws Exception {
         when(adminService.getBookingsByStatus(BookingStatus.PENDING))
                 .thenReturn(Arrays.asList(booking1));
@@ -107,7 +107,7 @@ class AdminControllerTest {
     }
 
     @Test
-    @Requirement("OLS-40")
+    @Requirement("OLS-57")
     void testGetBookingsByRenter() throws Exception {
         when(adminService.getBookingsByRenter(100L)).thenReturn(Arrays.asList(booking1));
 
@@ -148,7 +148,7 @@ class AdminControllerTest {
     }
 
     @Test
-    @Requirement("OLS-40")
+    @Requirement("OLS-57")
     void testGetBookingStatistics() throws Exception {
         Map<String, Long> stats = new HashMap<>();
         stats.put("total", 20L);
@@ -172,7 +172,7 @@ class AdminControllerTest {
     }
 
     @Test
-    @Requirement("OLS-40")
+    @Requirement("OLS-57")
     void testGetRenterActivity() throws Exception {
         when(adminService.getRenterActivity(100L)).thenReturn(5L);
 
@@ -186,7 +186,7 @@ class AdminControllerTest {
     }
 
     @Test
-    @Requirement("OLS-40")
+    @Requirement("OLS-57")
     void testGetOwnerActivity() throws Exception {
         when(adminService.getOwnerActivity(10L)).thenReturn(3L);
 
@@ -200,7 +200,7 @@ class AdminControllerTest {
     }
 
     @Test
-    @Requirement("OLS-40")
+    @Requirement("OLS-57")
     void testGetRevenueByOwner() throws Exception {
         when(adminService.getRevenueByOwner(10L)).thenReturn(500.0);
 
@@ -214,7 +214,7 @@ class AdminControllerTest {
     }
 
     @Test
-    @Requirement("OLS-40")
+    @Requirement("OLS-57")
     void testGetTotalRevenue() throws Exception {
         when(adminService.getTotalRevenue()).thenReturn(2500.0);
 

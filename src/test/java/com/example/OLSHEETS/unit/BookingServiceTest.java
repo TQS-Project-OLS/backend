@@ -62,7 +62,7 @@ class BookingServiceTest {
     }
 
     @Test
-    @Requirement("OLS-37")
+    @Requirement("OLS-60")
     void whenApproveBookingByOwner_thenStatusIsApproved() {
         when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
         when(bookingRepository.save(any(Booking.class))).thenReturn(booking);
@@ -75,7 +75,7 @@ class BookingServiceTest {
     }
 
     @Test
-    @Requirement("OLS-37")
+    @Requirement("OLS-60")
     void whenApproveBookingByNonOwner_thenThrowException() {
         when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
 
@@ -88,7 +88,7 @@ class BookingServiceTest {
     }
 
     @Test
-    @Requirement("OLS-37")
+    @Requirement("OLS-60")
     void whenApproveNonExistentBooking_thenThrowException() {
         when(bookingRepository.findById(999L)).thenReturn(Optional.empty());
 
@@ -101,7 +101,7 @@ class BookingServiceTest {
     }
 
     @Test
-    @Requirement("OLS-37")
+    @Requirement("OLS-60")
     void whenApproveAlreadyApprovedBooking_thenThrowException() {
         booking.setStatus(BookingStatus.APPROVED);
         when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
@@ -115,7 +115,7 @@ class BookingServiceTest {
     }
 
     @Test
-    @Requirement("OLS-37")
+    @Requirement("OLS-60")
     void whenRejectBookingByOwner_thenStatusIsRejected() {
         when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
         when(bookingRepository.save(any(Booking.class))).thenReturn(booking);
@@ -128,7 +128,7 @@ class BookingServiceTest {
     }
 
     @Test
-    @Requirement("OLS-37")
+    @Requirement("OLS-60")
     void whenRejectBookingByNonOwner_thenThrowException() {
         when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
 
@@ -141,7 +141,7 @@ class BookingServiceTest {
     }
 
     @Test
-    @Requirement("OLS-37")
+    @Requirement("OLS-60")
     void whenRejectNonExistentBooking_thenThrowException() {
         when(bookingRepository.findById(999L)).thenReturn(Optional.empty());
 
@@ -154,7 +154,7 @@ class BookingServiceTest {
     }
 
     @Test
-    @Requirement("OLS-37")
+    @Requirement("OLS-60")
     void whenRejectAlreadyRejectedBooking_thenThrowException() {
         booking.setStatus(BookingStatus.REJECTED);
         when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
@@ -168,7 +168,7 @@ class BookingServiceTest {
     }
 
     @Test
-    @Requirement("OLS-35")
+    @Requirement("OLS-60")
     void whenCreateValidBooking_thenSuccess() {
         when(itemRepository.findById(1L)).thenReturn(Optional.of(item));
         when(bookingRepository.findOverlapping(anyLong(), any(), any())).thenReturn(List.of());

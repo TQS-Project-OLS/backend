@@ -61,7 +61,7 @@ class ReviewServiceTest {
     }
 
     @Test
-    @Requirement("OLS-42")
+    @Requirement("OLS-63")
     void testCreateReview_WithValidData_ShouldSucceed() {
         ReviewRequest request = new ReviewRequest(1L, 5, "Great experience!");
         
@@ -78,7 +78,7 @@ class ReviewServiceTest {
     }
 
     @Test
-    @Requirement("OLS-42")
+    @Requirement("OLS-63")
     void testCreateReview_WithInvalidScore_ShouldThrowException() {
         ReviewRequest request = new ReviewRequest(1L, 6, "Invalid score");
 
@@ -90,7 +90,7 @@ class ReviewServiceTest {
     }
 
     @Test
-    @Requirement("OLS-42")
+    @Requirement("OLS-63")
     void testCreateReview_WithScoreBelowOne_ShouldThrowException() {
         ReviewRequest request = new ReviewRequest(1L, 0, "Invalid score");
 
@@ -102,7 +102,7 @@ class ReviewServiceTest {
     }
 
     @Test
-    @Requirement("OLS-42")
+    @Requirement("OLS-63")
     void testCreateReview_WithNonExistentBooking_ShouldThrowException() {
         ReviewRequest request = new ReviewRequest(999L, 5, "Great!");
         
@@ -116,7 +116,7 @@ class ReviewServiceTest {
     }
 
     @Test
-    @Requirement("OLS-42")
+    @Requirement("OLS-63")
     void testCreateReview_WithWrongRenter_ShouldThrowException() {
         ReviewRequest request = new ReviewRequest(1L, 5, "Great!");
         
@@ -130,7 +130,7 @@ class ReviewServiceTest {
     }
 
     @Test
-    @Requirement("OLS-42")
+    @Requirement("OLS-63")
     void testCreateReview_BeforeBookingEnds_ShouldThrowException() {
         Booking futureBooking = new Booking(instrument, renter, 
             LocalDate.now().minusDays(2), LocalDate.now().plusDays(2));
@@ -148,7 +148,7 @@ class ReviewServiceTest {
     }
 
     @Test
-    @Requirement("OLS-42")
+    @Requirement("OLS-63")
     void testCreateReview_WhenReviewAlreadyExists_ShouldThrowException() {
         ReviewRequest request = new ReviewRequest(1L, 5, "Great!");
         
@@ -163,7 +163,7 @@ class ReviewServiceTest {
     }
 
     @Test
-    @Requirement("OLS-42")
+    @Requirement("OLS-63")
     void testGetReviewsByItemId_ShouldReturnReviews() {
         Review review2 = new Review(booking, 4, "Good!");
         review2.setId(2L);
@@ -178,7 +178,7 @@ class ReviewServiceTest {
     }
 
     @Test
-    @Requirement("OLS-42")
+    @Requirement("OLS-63")
     void testGetAverageScoreByItemId_ShouldReturnAverage() {
         when(reviewRepository.getAverageScoreByItemId(1L)).thenReturn(4.5);
 
@@ -189,7 +189,7 @@ class ReviewServiceTest {
     }
 
     @Test
-    @Requirement("OLS-42")
+    @Requirement("OLS-63")
     void testGetAverageScoreByItemId_WithNoReviews_ShouldReturnZero() {
         when(reviewRepository.getAverageScoreByItemId(1L)).thenReturn(null);
 
@@ -199,7 +199,7 @@ class ReviewServiceTest {
     }
 
     @Test
-    @Requirement("OLS-42")
+    @Requirement("OLS-63")
     void testCanReviewBooking_WithValidBooking_ShouldReturnTrue() {
         when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
         when(reviewRepository.existsByBooking(booking)).thenReturn(false);
@@ -210,7 +210,7 @@ class ReviewServiceTest {
     }
 
     @Test
-    @Requirement("OLS-42")
+    @Requirement("OLS-63")
     void testCanReviewBooking_WithNonExistentBooking_ShouldReturnFalse() {
         when(bookingRepository.findById(999L)).thenReturn(Optional.empty());
 
@@ -220,7 +220,7 @@ class ReviewServiceTest {
     }
 
     @Test
-    @Requirement("OLS-42")
+    @Requirement("OLS-63")
     void testCanReviewBooking_WithWrongRenter_ShouldReturnFalse() {
         when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
 
@@ -230,7 +230,7 @@ class ReviewServiceTest {
     }
 
     @Test
-    @Requirement("OLS-42")
+    @Requirement("OLS-63")
     void testCanReviewBooking_BeforeBookingEnds_ShouldReturnFalse() {
         Booking futureBooking = new Booking(instrument, renter, 
             LocalDate.now().minusDays(2), LocalDate.now().plusDays(2));
@@ -244,7 +244,7 @@ class ReviewServiceTest {
     }
 
     @Test
-    @Requirement("OLS-42")
+    @Requirement("OLS-63")
     void testCanReviewBooking_WhenReviewExists_ShouldReturnFalse() {
         when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
         when(reviewRepository.existsByBooking(booking)).thenReturn(true);
@@ -255,7 +255,7 @@ class ReviewServiceTest {
     }
 
     @Test
-    @Requirement("OLS-42")
+    @Requirement("OLS-63")
     void testGetReviewByBookingId_WithExistingReview_ShouldReturnReview() {
         when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
         when(reviewRepository.findByBooking(booking)).thenReturn(Optional.of(review));
@@ -268,7 +268,7 @@ class ReviewServiceTest {
     }
 
     @Test
-    @Requirement("OLS-42")
+    @Requirement("OLS-63")
     void testGetReviewByBookingId_WithNonExistentBooking_ShouldThrowException() {
         when(bookingRepository.findById(999L)).thenReturn(Optional.empty());
 
@@ -278,7 +278,7 @@ class ReviewServiceTest {
     }
 
     @Test
-    @Requirement("OLS-42")
+    @Requirement("OLS-63")
     void testGetReviewByBookingId_WithNoReview_ShouldThrowException() {
         when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
         when(reviewRepository.findByBooking(booking)).thenReturn(Optional.empty());

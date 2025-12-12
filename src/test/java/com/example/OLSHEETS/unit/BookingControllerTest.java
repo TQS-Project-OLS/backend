@@ -79,7 +79,7 @@ class BookingControllerTest {
     }
 
     @Test
-    @Requirement("OLS-37")
+    @Requirement("OLS-60")
     void testApproveBooking_Success() throws Exception {
         booking.setStatus(BookingStatus.APPROVED);
         when(bookingService.approveBooking(1L, 10)).thenReturn(booking);
@@ -96,7 +96,7 @@ class BookingControllerTest {
     }
 
     @Test
-    @Requirement("OLS-37")
+    @Requirement("OLS-60")
     void testApproveBooking_NotAuthorized() throws Exception {
         when(bookingService.approveBooking(1L, 999))
                 .thenThrow(new IllegalArgumentException("You are not authorized to approve this booking"));
@@ -111,7 +111,7 @@ class BookingControllerTest {
     }
 
     @Test
-    @Requirement("OLS-37")
+    @Requirement("OLS-60")
     void testApproveBooking_WhenAlreadyApproved_ShouldReturnConflict() throws Exception {
         when(bookingService.approveBooking(1L, 10))
                 .thenThrow(new IllegalStateException("Booking has already been approved"));
@@ -126,7 +126,7 @@ class BookingControllerTest {
     }
 
     @Test
-    @Requirement("OLS-37")
+    @Requirement("OLS-60")
     void testApproveBooking_NotFound() throws Exception {
         when(bookingService.approveBooking(999L, 10))
                 .thenThrow(new IllegalArgumentException("Booking not found with id: 999"));
@@ -141,7 +141,7 @@ class BookingControllerTest {
     }
 
     @Test
-    @Requirement("OLS-37")
+    @Requirement("OLS-60")
     void testRejectBooking_Success() throws Exception {
         booking.setStatus(BookingStatus.REJECTED);
         when(bookingService.rejectBooking(1L, 10)).thenReturn(booking);
@@ -158,7 +158,7 @@ class BookingControllerTest {
     }
 
     @Test
-    @Requirement("OLS-37")
+    @Requirement("OLS-60")
     void testRejectBooking_NotAuthorized() throws Exception {
         when(bookingService.rejectBooking(1L, 999))
                 .thenThrow(new IllegalArgumentException("You are not authorized to reject this booking"));
@@ -173,7 +173,7 @@ class BookingControllerTest {
     }
 
     @Test
-    @Requirement("OLS-37")
+    @Requirement("OLS-60")
     void testRejectBooking_WhenAlreadyRejected_ShouldReturnConflict() throws Exception {
         when(bookingService.rejectBooking(1L, 10))
                 .thenThrow(new IllegalStateException("Booking has already been rejected"));
@@ -188,7 +188,7 @@ class BookingControllerTest {
     }
 
     @Test
-    @Requirement("OLS-37")
+    @Requirement("OLS-60")
     void testRejectBooking_NotFound() throws Exception {
         when(bookingService.rejectBooking(999L, 10))
                 .thenThrow(new IllegalArgumentException("Booking not found with id: 999"));
@@ -203,7 +203,7 @@ class BookingControllerTest {
     }
 
     @Test
-    @Requirement("OLS-35")
+    @Requirement("OLS-60")
     void testCreateBooking_Success() throws Exception {
         // Setup authentication context
         Authentication auth = mock(Authentication.class);
@@ -239,7 +239,7 @@ class BookingControllerTest {
     }
 
     @Test
-    @Requirement("OLS-35")
+    @Requirement("OLS-60")
     void testCreateBooking_WithInvalidDates_ShouldReturnBadRequest() throws Exception {
         // Setup authentication context
         Authentication auth = mock(Authentication.class);
@@ -275,7 +275,7 @@ class BookingControllerTest {
     }
 
     @Test
-    @Requirement("OLS-35")
+    @Requirement("OLS-60")
     void testCreateBooking_WithUserNotFound_ShouldReturnBadRequest() throws Exception {
         // Setup authentication context with a user that doesn't exist in DB
         Authentication auth = mock(Authentication.class);
@@ -305,7 +305,7 @@ class BookingControllerTest {
     }
 
     @Test
-    @Requirement("OLS-35")
+    @Requirement("OLS-60")
     void testCreateBooking_WithNullAuthentication_ShouldReturnBadRequest() throws Exception {
         // Setup null authentication context
         SecurityContext securityContext = mock(SecurityContext.class);
@@ -329,7 +329,7 @@ class BookingControllerTest {
     }
 
     @Test
-    @Requirement("OLS-35")
+    @Requirement("OLS-60")
     void testCreateBooking_WithNonExistentItem_ShouldReturnBadRequest() throws Exception {
         // Setup authentication context
         Authentication auth = mock(Authentication.class);
@@ -365,7 +365,7 @@ class BookingControllerTest {
     }
 
     @Test
-    @Requirement("OLS-35")
+    @Requirement("OLS-60")
     void testListBookings_ShouldReturnAllBookings() throws Exception {
         java.util.List<Booking> bookings = java.util.Arrays.asList(booking);
         

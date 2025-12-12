@@ -86,7 +86,7 @@ class RenterReviewControllerTest {
     }
 
     @Test
-    @Requirement("OLS-43")
+    @Requirement("OLS-63")
     void testCreateRenterReview_WithValidData_ShouldReturnCreated() throws Exception {
         RenterReviewRequest request = new RenterReviewRequest(1L, 5, "Excellent renter!");
         
@@ -107,7 +107,7 @@ class RenterReviewControllerTest {
     }
 
     @Test
-    @Requirement("OLS-43")
+    @Requirement("OLS-63")
     void testCreateRenterReview_WithInvalidData_ShouldReturnBadRequest() throws Exception {
         RenterReviewRequest request = new RenterReviewRequest(1L, 6, "Invalid score");
         
@@ -124,7 +124,7 @@ class RenterReviewControllerTest {
     }
 
     @Test
-    @Requirement("OLS-43")
+    @Requirement("OLS-63")
     void testCreateRenterReview_WithBookingNotCompleted_ShouldReturnBadRequest() throws Exception {
         RenterReviewRequest request = new RenterReviewRequest(1L, 5, "Good renter");
         
@@ -141,7 +141,7 @@ class RenterReviewControllerTest {
     }
 
     @Test
-    @Requirement("OLS-43")
+    @Requirement("OLS-63")
     void testCreateRenterReview_WithAlreadyReviewed_ShouldReturnBadRequest() throws Exception {
         RenterReviewRequest request = new RenterReviewRequest(1L, 5, "Good renter");
         
@@ -158,7 +158,7 @@ class RenterReviewControllerTest {
     }
 
     @Test
-    @Requirement("OLS-43")
+    @Requirement("OLS-63")
     void testGetReviewsByRenterId_ShouldReturnReviewsList() throws Exception {
         List<RenterReviewResponse> reviews = Arrays.asList(renterReviewResponse1, renterReviewResponse2);
         
@@ -177,7 +177,7 @@ class RenterReviewControllerTest {
     }
 
     @Test
-    @Requirement("OLS-43")
+    @Requirement("OLS-63")
     void testGetReviewsByRenterId_WithNoReviews_ShouldReturnEmptyList() throws Exception {
         when(renterReviewService.getReviewsByRenterId(1L)).thenReturn(List.of());
 
@@ -190,7 +190,7 @@ class RenterReviewControllerTest {
     }
 
     @Test
-    @Requirement("OLS-43")
+    @Requirement("OLS-63")
     void testGetAverageScoreByRenterId_ShouldReturnAverage() throws Exception {
         when(renterReviewService.getAverageScoreByRenterId(1L)).thenReturn(4.5);
 
@@ -203,7 +203,7 @@ class RenterReviewControllerTest {
     }
 
     @Test
-    @Requirement("OLS-43")
+    @Requirement("OLS-63")
     void testGetAverageScoreByRenterId_WithNoReviews_ShouldReturnZero() throws Exception {
         when(renterReviewService.getAverageScoreByRenterId(1L)).thenReturn(0.0);
 
@@ -215,7 +215,7 @@ class RenterReviewControllerTest {
     }
 
     @Test
-    @Requirement("OLS-43")
+    @Requirement("OLS-63")
     void testGetRenterReviewByBookingId_WithExistingReview_ShouldReturnReview() throws Exception {
         when(renterReviewService.getRenterReviewByBookingId(1L)).thenReturn(renterReviewResponse1);
 
@@ -231,7 +231,7 @@ class RenterReviewControllerTest {
     }
 
     @Test
-    @Requirement("OLS-43")
+    @Requirement("OLS-63")
     void testGetRenterReviewByBookingId_WithNonExistentReview_ShouldReturnNotFound() throws Exception {
         when(renterReviewService.getRenterReviewByBookingId(999L))
             .thenThrow(new IllegalArgumentException("No review found"));
@@ -243,7 +243,7 @@ class RenterReviewControllerTest {
     }
 
     @Test
-    @Requirement("OLS-43")
+    @Requirement("OLS-63")
     void testCanReviewRenter_WhenAllowed_ShouldReturnTrue() throws Exception {
         when(renterReviewService.canReviewRenter(1L, 1L)).thenReturn(true);
 
@@ -258,7 +258,7 @@ class RenterReviewControllerTest {
     }
 
     @Test
-    @Requirement("OLS-43")
+    @Requirement("OLS-63")
     void testCanReviewRenter_WhenNotAllowed_ShouldReturnFalse() throws Exception {
         when(renterReviewService.canReviewRenter(1L, 1L)).thenReturn(false);
 
@@ -272,7 +272,7 @@ class RenterReviewControllerTest {
     }
 
     @Test
-    @Requirement("OLS-43")
+    @Requirement("OLS-63")
     void testCanReviewRenter_WithNonOwnerUser_ShouldReturnFalse() throws Exception {
         when(renterReviewService.canReviewRenter(1L, 2L)).thenReturn(false);
 

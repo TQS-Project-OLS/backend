@@ -63,7 +63,7 @@ class SheetBookingServiceTest {
     }
 
     @Test
-    @Requirement("OLS-36")
+    @Requirement("OLS-60")
     void whenCreateValidBooking_thenSuccess() {
         when(sheetRepository.findById(1L)).thenReturn(Optional.of(sheet));
         when(bookingRepository.findConflictingBookings(anyLong(), any(), any())).thenReturn(List.of());
@@ -79,7 +79,7 @@ class SheetBookingServiceTest {
     }
 
     @Test
-    @Requirement("OLS-36")
+    @Requirement("OLS-60")
     void whenCreateBookingForNonExistentSheet_thenThrowException() {
         when(sheetRepository.findById(999L)).thenReturn(Optional.empty());
 
@@ -89,7 +89,7 @@ class SheetBookingServiceTest {
     }
 
     @Test
-    @Requirement("OLS-36")
+    @Requirement("OLS-60")
     void whenCreateBookingWithConflict_thenThrowException() {
         when(sheetRepository.findById(1L)).thenReturn(Optional.of(sheet));
         when(bookingRepository.findConflictingBookings(anyLong(), any(), any())).thenReturn(List.of(booking));
@@ -100,7 +100,7 @@ class SheetBookingServiceTest {
     }
 
     @Test
-    @Requirement("OLS-36")
+    @Requirement("OLS-60")
     void whenGetBookingsByRenter_thenReturnBookings() {
         when(bookingRepository.findByRenterId(100L)).thenReturn(List.of(booking));
 
@@ -111,7 +111,7 @@ class SheetBookingServiceTest {
     }
 
     @Test
-    @Requirement("OLS-36")
+    @Requirement("OLS-60")
     void whenGetBookingById_thenReturnBooking() {
         when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
 
@@ -122,7 +122,7 @@ class SheetBookingServiceTest {
     }
 
     @Test
-    @Requirement("OLS-36")
+    @Requirement("OLS-60")
     void whenInvalidDateRange_thenThrowException() {
         assertThatThrownBy(() -> bookingService.createBooking(1L, 100L, LocalDate.now().plusDays(5), LocalDate.now().plusDays(2)))
             .isInstanceOf(IllegalArgumentException.class)
@@ -130,7 +130,7 @@ class SheetBookingServiceTest {
     }
 
     @Test
-    @Requirement("OLS-36")
+    @Requirement("OLS-60")
     void whenStartDateEqualsEndDate_thenThrowException() {
         LocalDate sameDate = LocalDate.now().plusDays(1);
         assertThatThrownBy(() -> bookingService.createBooking(1L, 100L, sameDate, sameDate))
@@ -139,7 +139,7 @@ class SheetBookingServiceTest {
     }
 
     @Test
-    @Requirement("OLS-36")
+    @Requirement("OLS-60")
     void whenGetAllBookings_thenReturnAllBookings() {
         User user2 = new User("tester2", "tester2@example.com", "Test User Two", "password123");
         SheetBooking booking2 = new SheetBooking(sheet, user2, LocalDate.now().plusDays(5), LocalDate.now().plusDays(7));
@@ -153,7 +153,7 @@ class SheetBookingServiceTest {
     }
 
     @Test
-    @Requirement("OLS-36")
+    @Requirement("OLS-60")
     void whenGetBookingsBySheet_thenReturnBookings() {
         when(sheetRepository.findById(1L)).thenReturn(Optional.of(sheet));
         when(bookingRepository.findByMusicSheet(sheet)).thenReturn(List.of(booking));
@@ -167,7 +167,7 @@ class SheetBookingServiceTest {
     }
 
     @Test
-    @Requirement("OLS-36")
+    @Requirement("OLS-60")
     void whenGetBookingsBySheetForNonExistentSheet_thenThrowException() {
         when(sheetRepository.findById(999L)).thenReturn(Optional.empty());
 
@@ -177,7 +177,7 @@ class SheetBookingServiceTest {
     }
 
     @Test
-    @Requirement("OLS-36")
+    @Requirement("OLS-60")
     void whenGetBookingByIdNotFound_thenReturnEmpty() {
         when(bookingRepository.findById(999L)).thenReturn(Optional.empty());
 
@@ -188,7 +188,7 @@ class SheetBookingServiceTest {
     }
 
     @Test
-    @Requirement("OLS-36")
+    @Requirement("OLS-60")
     void whenGetBookingsByRenterWithNoBookings_thenReturnEmptyList() {
         when(bookingRepository.findByRenterId(999L)).thenReturn(List.of());
 
