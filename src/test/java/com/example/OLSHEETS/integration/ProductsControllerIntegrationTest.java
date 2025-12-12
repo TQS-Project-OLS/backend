@@ -1,5 +1,12 @@
 package com.example.OLSHEETS.integration;
 
+import com.example.OLSHEETS.repository.PaymentRepository;
+import com.example.OLSHEETS.repository.BookingRepository;
+import com.example.OLSHEETS.repository.SheetBookingRepository;
+import com.example.OLSHEETS.repository.ReviewRepository;
+import com.example.OLSHEETS.repository.RenterReviewRepository;
+import com.example.OLSHEETS.repository.AvailabilityRepository;
+
 import com.example.OLSHEETS.data.Instrument;
 import com.example.OLSHEETS.data.InstrumentType;
 import com.example.OLSHEETS.data.InstrumentFamily;
@@ -51,6 +58,24 @@ class ProductsControllerIntegrationTest {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private PaymentRepository paymentRepository;
+
+    @Autowired
+    private BookingRepository bookingRepository;
+
+    @Autowired
+    private SheetBookingRepository sheetBookingRepository;
+
+    @Autowired
+    private ReviewRepository reviewRepository;
+
+    @Autowired
+    private RenterReviewRepository renterReviewRepository;
+
+    @Autowired
+    private AvailabilityRepository availabilityRepository;
+
     private User user;
     @BeforeEach
     @org.springframework.transaction.annotation.Transactional
@@ -66,7 +91,13 @@ class ProductsControllerIntegrationTest {
         when(securityContext.getAuthentication()).thenReturn(auth);
         SecurityContextHolder.setContext(securityContext);
         
-        // Clear items first (they reference users), then users
+        // Clear all tables in correct order (respect foreign key constraints)
+        paymentRepository.deleteAll();
+        reviewRepository.deleteAll();
+        renterReviewRepository.deleteAll();
+        sheetBookingRepository.deleteAll();
+        bookingRepository.deleteAll();
+        availabilityRepository.deleteAll();
         instrumentRepository.deleteAll();
         userRepository.deleteAll();
         user = new User();
@@ -116,6 +147,12 @@ class ProductsControllerIntegrationTest {
 
     @AfterEach
     void tearDown() {
+        paymentRepository.deleteAll();
+        reviewRepository.deleteAll();
+        renterReviewRepository.deleteAll();
+        sheetBookingRepository.deleteAll();
+        bookingRepository.deleteAll();
+        availabilityRepository.deleteAll();
         instrumentRepository.deleteAll();
         userRepository.deleteAll();
         SecurityContextHolder.clearContext();
