@@ -186,11 +186,20 @@
 				<version>${xray-maven-plugin.version}</version>
 				<configuration>
 					<cloud>true</cloud>
-					<projectKey>ST</projectKey>
+					<projectKey>OLS</projectKey>
 					<reportFormat>junit</reportFormat>
 					<reportFile>target/surefire-reports/TEST-*.xml</reportFile>
-				</configuration>
-			</plugin>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>import-results</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>import-results</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 
 			<!-- Maven Surefire Plugin with parallel execution -->
 			<plugin>
