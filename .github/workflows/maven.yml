@@ -2,9 +2,9 @@ name: CI with Maven
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "dev" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "dev" ]
     types: [opened, synchronize]
   workflow_dispatch:
 
@@ -32,7 +32,7 @@ jobs:
       run: mvn -B integration-test verify --file pom.xml
     - name: Add code coverage information to PR
       id: jacoco-pr
-      uses: madrapps/jacoco-report@v1.7.1
+      uses: madrapps/jacoco-report@50d3aff4548aa991e6753342d9ba291084e63848
       if: github.event_name == 'pull_request'
       with:
         paths: |
