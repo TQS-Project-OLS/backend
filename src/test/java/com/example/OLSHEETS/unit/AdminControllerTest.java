@@ -16,6 +16,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import com.example.OLSHEETS.security.JwtUtil;
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -76,7 +77,8 @@ class AdminControllerTest {
     }
 
     @Test
-    void testGetAllBookings_ShouldReturnAllBookings() throws Exception {
+    @Requirement("OLS-40")
+    void testGetAllBookings() throws Exception {
         when(adminService.getAllBookings()).thenReturn(Arrays.asList(booking1, booking2));
 
         mockMvc.perform(get("/api/admin/bookings"))
@@ -90,7 +92,8 @@ class AdminControllerTest {
     }
 
     @Test
-    void testGetBookingsByStatus_ShouldReturnFilteredBookings() throws Exception {
+    @Requirement("OLS-40")
+    void testGetBookingsByStatus() throws Exception {
         when(adminService.getBookingsByStatus(BookingStatus.PENDING))
                 .thenReturn(Arrays.asList(booking1));
 
@@ -104,7 +107,8 @@ class AdminControllerTest {
     }
 
     @Test
-    void testGetBookingsByRenter_ShouldReturnRenterBookings() throws Exception {
+    @Requirement("OLS-40")
+    void testGetBookingsByRenter() throws Exception {
         when(adminService.getBookingsByRenter(100L)).thenReturn(Arrays.asList(booking1));
 
         mockMvc.perform(get("/api/admin/bookings/renter/100"))
@@ -144,7 +148,8 @@ class AdminControllerTest {
     }
 
     @Test
-    void testGetBookingStatistics_ShouldReturnStats() throws Exception {
+    @Requirement("OLS-40")
+    void testGetBookingStatistics() throws Exception {
         Map<String, Long> stats = new HashMap<>();
         stats.put("total", 20L);
         stats.put("pending", 5L);
@@ -167,7 +172,8 @@ class AdminControllerTest {
     }
 
     @Test
-    void testGetRenterActivity_ShouldReturnActivityCount() throws Exception {
+    @Requirement("OLS-40")
+    void testGetRenterActivity() throws Exception {
         when(adminService.getRenterActivity(100L)).thenReturn(5L);
 
         mockMvc.perform(get("/api/admin/activity/renter/100"))
@@ -180,7 +186,8 @@ class AdminControllerTest {
     }
 
     @Test
-    void testGetOwnerActivity_ShouldReturnActivityCount() throws Exception {
+    @Requirement("OLS-40")
+    void testGetOwnerActivity() throws Exception {
         when(adminService.getOwnerActivity(10L)).thenReturn(3L);
 
         mockMvc.perform(get("/api/admin/activity/owner/10"))
@@ -193,7 +200,8 @@ class AdminControllerTest {
     }
 
     @Test
-    void testGetRevenueByOwner_ShouldReturnRevenue() throws Exception {
+    @Requirement("OLS-40")
+    void testGetRevenueByOwner() throws Exception {
         when(adminService.getRevenueByOwner(10L)).thenReturn(500.0);
 
         mockMvc.perform(get("/api/admin/revenue/owner/10"))
@@ -206,7 +214,8 @@ class AdminControllerTest {
     }
 
     @Test
-    void testGetTotalRevenue_ShouldReturnSystemRevenue() throws Exception {
+    @Requirement("OLS-40")
+    void testGetTotalRevenue() throws Exception {
         when(adminService.getTotalRevenue()).thenReturn(2500.0);
 
         mockMvc.perform(get("/api/admin/revenue/total"))

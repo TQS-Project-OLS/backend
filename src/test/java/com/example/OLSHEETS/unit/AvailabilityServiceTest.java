@@ -10,6 +10,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -40,6 +41,7 @@ class AvailabilityServiceTest {
     }
 
     @Test
+    @Requirement("OLS-33")
     void testCreateUnavailability_WithValidDates_ShouldCreateAndReturn() {
         Long instrumentId = 1L;
         LocalDate startDate = LocalDate.of(2025, 3, 1);
@@ -60,6 +62,7 @@ class AvailabilityServiceTest {
     }
 
     @Test
+    @Requirement("OLS-33")
     void testCreateUnavailability_WithNullStartDate_ShouldThrowException() {
         assertThatThrownBy(() ->
                 availabilityService.createUnavailability(1L, null, LocalDate.of(2025, 3, 5), AvailabilityReason.OWNER_USE)
@@ -70,6 +73,7 @@ class AvailabilityServiceTest {
     }
 
     @Test
+    @Requirement("OLS-33")
     void testCreateUnavailability_WithNullEndDate_ShouldThrowException() {
         assertThatThrownBy(() ->
                 availabilityService.createUnavailability(1L, LocalDate.of(2025, 3, 1), null, AvailabilityReason.OWNER_USE)
@@ -80,6 +84,7 @@ class AvailabilityServiceTest {
     }
 
     @Test
+    @Requirement("OLS-33")
     void testCreateUnavailability_WithStartDateAfterEndDate_ShouldThrowException() {
         assertThatThrownBy(() ->
                 availabilityService.createUnavailability(1L, LocalDate.of(2025, 3, 10), LocalDate.of(2025, 3, 5), AvailabilityReason.OWNER_USE)
@@ -90,6 +95,7 @@ class AvailabilityServiceTest {
     }
 
     @Test
+    @Requirement("OLS-33")
     void testCreateUnavailability_WithEqualDates_ShouldSucceed() {
         LocalDate sameDate = LocalDate.of(2025, 3, 15);
         Availability expected = new Availability(1L, sameDate, sameDate, AvailabilityReason.MAINTENANCE);
@@ -102,6 +108,7 @@ class AvailabilityServiceTest {
     }
 
     @Test
+    @Requirement("OLS-33")
     void testListAvailabilities_ShouldReturnAllAvailabilities() {
         List<Availability> expected = Arrays.asList(availability1, availability2);
         when(availabilityRepository.findAll()).thenReturn(expected);
@@ -114,6 +121,7 @@ class AvailabilityServiceTest {
     }
 
     @Test
+    @Requirement("OLS-33")
     void testListAvailabilities_WithNoData_ShouldReturnEmptyList() {
         when(availabilityRepository.findAll()).thenReturn(Collections.emptyList());
 
@@ -124,6 +132,7 @@ class AvailabilityServiceTest {
     }
 
     @Test
+    @Requirement("OLS-33")
     void testGetInstrumentAvailabilities_ShouldReturnAvailabilitiesForInstrument() {
         Long instrumentId = 1L;
         List<Availability> expected = Arrays.asList(availability1, availability2);
@@ -137,6 +146,7 @@ class AvailabilityServiceTest {
     }
 
     @Test
+    @Requirement("OLS-33")
     void testGetInstrumentAvailabilities_WithNoAvailabilities_ShouldReturnEmptyList() {
         Long instrumentId = 99L;
         when(availabilityRepository.findByInstrumentId(instrumentId)).thenReturn(Collections.emptyList());
@@ -148,6 +158,7 @@ class AvailabilityServiceTest {
     }
 
     @Test
+    @Requirement("OLS-33")
     void testIsAvailable_WithNoOverlap_ShouldReturnTrue() {
         Long instrumentId = 1L;
         LocalDate startDate = LocalDate.of(2025, 3, 1);
@@ -162,6 +173,7 @@ class AvailabilityServiceTest {
     }
 
     @Test
+    @Requirement("OLS-33")
     void testIsAvailable_WithOverlap_ShouldReturnFalse() {
         Long instrumentId = 1L;
         LocalDate startDate = LocalDate.of(2025, 2, 12);
@@ -177,6 +189,7 @@ class AvailabilityServiceTest {
     }
 
     @Test
+    @Requirement("OLS-33")
     void testIsAvailable_WithMultipleOverlaps_ShouldReturnFalse() {
         Long instrumentId = 1L;
         LocalDate startDate = LocalDate.of(2025, 2, 10);
@@ -192,6 +205,7 @@ class AvailabilityServiceTest {
     }
 
     @Test
+    @Requirement("OLS-33")
     void testDeleteUnavailability_ShouldCallRepository() {
         Long availabilityId = 1L;
 
@@ -201,6 +215,7 @@ class AvailabilityServiceTest {
     }
 
     @Test
+    @Requirement("OLS-33")
     void testCreateUnavailability_WithOwnerUseReason_ShouldSucceed() {
         Availability expected = new Availability(5L, LocalDate.of(2025, 4, 1), LocalDate.of(2025, 4, 10), AvailabilityReason.OWNER_USE);
         when(availabilityRepository.save(any(Availability.class))).thenReturn(expected);
@@ -212,6 +227,7 @@ class AvailabilityServiceTest {
     }
 
     @Test
+    @Requirement("OLS-33")
     void testCreateUnavailability_WithMaintenanceReason_ShouldSucceed() {
         Availability expected = new Availability(3L, LocalDate.of(2025, 5, 1), LocalDate.of(2025, 5, 5), AvailabilityReason.MAINTENANCE);
         when(availabilityRepository.save(any(Availability.class))).thenReturn(expected);
@@ -222,3 +238,4 @@ class AvailabilityServiceTest {
         verify(availabilityRepository, times(1)).save(any(Availability.class));
     }
 }
+

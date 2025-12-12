@@ -8,18 +8,21 @@ import com.example.OLSHEETS.data.User;
 import com.example.OLSHEETS.data.Instrument;
 import com.example.OLSHEETS.repository.UserRepository;
 import com.example.OLSHEETS.service.BookingService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import com.example.OLSHEETS.security.JwtUtil;
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -76,7 +79,8 @@ class BookingControllerTest {
     }
 
     @Test
-    void testApproveBooking_WithValidOwner_ShouldReturnApprovedBooking() throws Exception {
+    @Requirement("OLS-37")
+    void testApproveBooking_Success() throws Exception {
         booking.setStatus(BookingStatus.APPROVED);
         when(bookingService.approveBooking(1L, 10)).thenReturn(booking);
 
@@ -92,7 +96,8 @@ class BookingControllerTest {
     }
 
     @Test
-    void testApproveBooking_WithUnauthorizedOwner_ShouldReturnBadRequest() throws Exception {
+    @Requirement("OLS-37")
+    void testApproveBooking_NotAuthorized() throws Exception {
         when(bookingService.approveBooking(1L, 999))
                 .thenThrow(new IllegalArgumentException("You are not authorized to approve this booking"));
 
@@ -106,6 +111,7 @@ class BookingControllerTest {
     }
 
     @Test
+    @Requirement("OLS-37")
     void testApproveBooking_WhenAlreadyApproved_ShouldReturnConflict() throws Exception {
         when(bookingService.approveBooking(1L, 10))
                 .thenThrow(new IllegalStateException("Booking has already been approved"));
@@ -120,7 +126,8 @@ class BookingControllerTest {
     }
 
     @Test
-    void testApproveBooking_WhenBookingNotFound_ShouldReturnBadRequest() throws Exception {
+    @Requirement("OLS-37")
+    void testApproveBooking_NotFound() throws Exception {
         when(bookingService.approveBooking(999L, 10))
                 .thenThrow(new IllegalArgumentException("Booking not found with id: 999"));
 
@@ -134,7 +141,8 @@ class BookingControllerTest {
     }
 
     @Test
-    void testRejectBooking_WithValidOwner_ShouldReturnRejectedBooking() throws Exception {
+    @Requirement("OLS-37")
+    void testRejectBooking_Success() throws Exception {
         booking.setStatus(BookingStatus.REJECTED);
         when(bookingService.rejectBooking(1L, 10)).thenReturn(booking);
 
@@ -150,7 +158,8 @@ class BookingControllerTest {
     }
 
     @Test
-    void testRejectBooking_WithUnauthorizedOwner_ShouldReturnBadRequest() throws Exception {
+    @Requirement("OLS-37")
+    void testRejectBooking_NotAuthorized() throws Exception {
         when(bookingService.rejectBooking(1L, 999))
                 .thenThrow(new IllegalArgumentException("You are not authorized to reject this booking"));
 
@@ -164,6 +173,7 @@ class BookingControllerTest {
     }
 
     @Test
+    @Requirement("OLS-37")
     void testRejectBooking_WhenAlreadyRejected_ShouldReturnConflict() throws Exception {
         when(bookingService.rejectBooking(1L, 10))
                 .thenThrow(new IllegalStateException("Booking has already been rejected"));
@@ -178,7 +188,8 @@ class BookingControllerTest {
     }
 
     @Test
-    void testRejectBooking_WhenBookingNotFound_ShouldReturnBadRequest() throws Exception {
+    @Requirement("OLS-37")
+    void testRejectBooking_NotFound() throws Exception {
         when(bookingService.rejectBooking(999L, 10))
                 .thenThrow(new IllegalArgumentException("Booking not found with id: 999"));
 
@@ -192,7 +203,8 @@ class BookingControllerTest {
     }
 
     @Test
-    void testCreateBooking_WithValidData_ShouldReturnCreatedBooking() throws Exception {
+    @Requirement("OLS-35")
+    void testCreateBooking_Success() throws Exception {
         // Setup authentication context
         Authentication auth = mock(Authentication.class);
         when(auth.getName()).thenReturn("testuser");
@@ -227,6 +239,7 @@ class BookingControllerTest {
     }
 
     @Test
+    @Requirement("OLS-35")
     void testCreateBooking_WithInvalidDates_ShouldReturnBadRequest() throws Exception {
         // Setup authentication context
         Authentication auth = mock(Authentication.class);
@@ -262,6 +275,7 @@ class BookingControllerTest {
     }
 
     @Test
+    @Requirement("OLS-35")
     void testCreateBooking_WithUserNotFound_ShouldReturnBadRequest() throws Exception {
         // Setup authentication context with a user that doesn't exist in DB
         Authentication auth = mock(Authentication.class);
@@ -291,6 +305,7 @@ class BookingControllerTest {
     }
 
     @Test
+    @Requirement("OLS-35")
     void testCreateBooking_WithNullAuthentication_ShouldReturnBadRequest() throws Exception {
         // Setup null authentication context
         SecurityContext securityContext = mock(SecurityContext.class);
@@ -314,6 +329,7 @@ class BookingControllerTest {
     }
 
     @Test
+    @Requirement("OLS-35")
     void testCreateBooking_WithNonExistentItem_ShouldReturnBadRequest() throws Exception {
         // Setup authentication context
         Authentication auth = mock(Authentication.class);
@@ -349,6 +365,7 @@ class BookingControllerTest {
     }
 
     @Test
+    @Requirement("OLS-35")
     void testListBookings_ShouldReturnAllBookings() throws Exception {
         java.util.List<Booking> bookings = java.util.Arrays.asList(booking);
         
@@ -363,3 +380,4 @@ class BookingControllerTest {
         verify(bookingService, times(1)).listBookings();
     }
 }
+

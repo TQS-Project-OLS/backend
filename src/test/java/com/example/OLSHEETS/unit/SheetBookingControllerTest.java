@@ -15,6 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import com.example.OLSHEETS.security.JwtUtil;
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -67,6 +68,7 @@ class SheetBookingControllerTest {
     }
 
     @Test
+    @Requirement("OLS-36")
     void whenCreateBooking_thenReturn201() throws Exception {
         when(bookingService.createBooking(anyLong(), anyLong(), any(LocalDate.class), any(LocalDate.class)))
             .thenReturn(booking);
@@ -83,6 +85,7 @@ class SheetBookingControllerTest {
     }
 
     @Test
+    @Requirement("OLS-36")
     void whenGetBookingsByRenter_thenReturn200() throws Exception {
         when(bookingService.getBookingsByRenter(100L)).thenReturn(List.of(booking));
 
@@ -92,6 +95,7 @@ class SheetBookingControllerTest {
     }
 
     @Test
+    @Requirement("OLS-36")
     void whenGetBookingById_thenReturn200() throws Exception {
         when(bookingService.getBookingById(1L)).thenReturn(Optional.of(booking));
 
@@ -109,6 +113,7 @@ class SheetBookingControllerTest {
     }
 
     @Test
+    @Requirement("OLS-36")
     void whenCreateBookingWithInvalidData_thenReturn400() throws Exception {
         when(bookingService.createBooking(anyLong(), anyLong(), any(LocalDate.class), any(LocalDate.class)))
             .thenThrow(new IllegalArgumentException("Start date must be before end date"));
@@ -122,4 +127,5 @@ class SheetBookingControllerTest {
             .andExpect(status().isBadRequest());
     }
 }
+
 

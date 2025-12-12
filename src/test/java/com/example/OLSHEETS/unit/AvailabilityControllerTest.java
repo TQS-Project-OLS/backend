@@ -4,12 +4,15 @@ import com.example.OLSHEETS.boundary.AvailabilityController;
 import com.example.OLSHEETS.data.Availability;
 import com.example.OLSHEETS.data.AvailabilityReason;
 import com.example.OLSHEETS.service.AvailabilityService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
+import com.example.OLSHEETS.security.JwtUtil;
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -55,6 +58,7 @@ class AvailabilityControllerTest {
     }
 
     @Test
+    @Requirement("OLS-33")
     void testCreateUnavailability() throws Exception {
         when(availabilityService.createUnavailability(anyLong(), any(LocalDate.class), any(LocalDate.class), any(AvailabilityReason.class)))
                 .thenReturn(availability);
@@ -70,6 +74,7 @@ class AvailabilityControllerTest {
     }
 
     @Test
+    @Requirement("OLS-33")
     void testListAvailabilities() throws Exception {
         List<Availability> availabilities = Arrays.asList(availability);
         when(availabilityService.listAvailabilities()).thenReturn(availabilities);
@@ -81,7 +86,8 @@ class AvailabilityControllerTest {
     }
 
     @Test
-    void testGetInstrumentAvailabilities() throws Exception {
+    @Requirement("OLS-33")
+    void testGetAvailabilitiesByInstrument() throws Exception {
         List<Availability> availabilities = Arrays.asList(availability);
         when(availabilityService.getInstrumentAvailabilities(1L)).thenReturn(availabilities);
 
@@ -92,6 +98,7 @@ class AvailabilityControllerTest {
     }
 
     @Test
+    @Requirement("OLS-33")
     void testCheckAvailability_Available() throws Exception {
         when(availabilityService.isAvailable(1L, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3)))
                 .thenReturn(true);
@@ -105,6 +112,7 @@ class AvailabilityControllerTest {
     }
 
     @Test
+    @Requirement("OLS-33")
     void testCheckAvailability_NotAvailable() throws Exception {
         when(availabilityService.isAvailable(1L, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3)))
                 .thenReturn(false);
@@ -118,9 +126,10 @@ class AvailabilityControllerTest {
     }
 
     @Test
+    @Requirement("OLS-33")
     void testDeleteUnavailability() throws Exception {
         mockMvc.perform(delete("/api/availability/1"))
                 .andExpect(status().isNoContent());
     }
-}
 
+}

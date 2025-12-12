@@ -3,7 +3,6 @@ package com.example.OLSHEETS.unit;
 import com.example.OLSHEETS.boundary.ReviewController;
 import com.example.OLSHEETS.dto.ReviewRequest;
 import com.example.OLSHEETS.dto.ReviewResponse;
-import com.example.OLSHEETS.security.JwtUtil;
 import com.example.OLSHEETS.service.ReviewService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +14,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import com.example.OLSHEETS.security.JwtUtil;
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -71,6 +72,7 @@ class ReviewControllerTest {
     }
 
     @Test
+    @Requirement("OLS-42")
     void testCreateReview_WithValidData_ShouldReturnCreated() throws Exception {
         ReviewRequest request = new ReviewRequest(1L, 5, "Great experience!");
         
@@ -90,6 +92,7 @@ class ReviewControllerTest {
     }
 
     @Test
+    @Requirement("OLS-42")
     void testCreateReview_WithInvalidData_ShouldReturnBadRequest() throws Exception {
         ReviewRequest request = new ReviewRequest(1L, 6, "Invalid score");
         
@@ -106,6 +109,7 @@ class ReviewControllerTest {
     }
 
     @Test
+    @Requirement("OLS-42")
     void testGetReviewsByItem_ShouldReturnReviewsList() throws Exception {
         List<ReviewResponse> reviews = Arrays.asList(reviewResponse1, reviewResponse2);
         
@@ -124,6 +128,7 @@ class ReviewControllerTest {
     }
 
     @Test
+    @Requirement("OLS-42")
     void testGetReviewsByItem_WithNoReviews_ShouldReturnEmptyList() throws Exception {
         when(reviewService.getReviewsByItemId(1L)).thenReturn(List.of());
 
@@ -135,6 +140,7 @@ class ReviewControllerTest {
     }
 
     @Test
+    @Requirement("OLS-42")
     void testGetAverageScore_ShouldReturnAverage() throws Exception {
         when(reviewService.getAverageScoreByItemId(1L)).thenReturn(4.5);
 
@@ -147,6 +153,7 @@ class ReviewControllerTest {
     }
 
     @Test
+    @Requirement("OLS-42")
     void testGetAverageScore_WithNoReviews_ShouldReturnZero() throws Exception {
         when(reviewService.getAverageScoreByItemId(1L)).thenReturn(0.0);
 
@@ -158,6 +165,7 @@ class ReviewControllerTest {
     }
 
     @Test
+    @Requirement("OLS-42")
     void testGetReviewByBooking_WithExistingReview_ShouldReturnReview() throws Exception {
         when(reviewService.getReviewByBookingId(1L)).thenReturn(reviewResponse1);
 
@@ -172,6 +180,7 @@ class ReviewControllerTest {
     }
 
     @Test
+    @Requirement("OLS-42")
     void testGetReviewByBooking_WithNonExistentReview_ShouldReturnNotFound() throws Exception {
         when(reviewService.getReviewByBookingId(999L))
             .thenThrow(new IllegalArgumentException("No review found"));
@@ -183,6 +192,7 @@ class ReviewControllerTest {
     }
 
     @Test
+    @Requirement("OLS-42")
     void testCanReview_WhenAllowed_ShouldReturnTrue() throws Exception {
         when(reviewService.canReviewBooking(1L, 1L)).thenReturn(true);
 
@@ -196,6 +206,7 @@ class ReviewControllerTest {
     }
 
     @Test
+    @Requirement("OLS-42")
     void testCanReview_WhenNotAllowed_ShouldReturnFalse() throws Exception {
         when(reviewService.canReviewBooking(1L, 1L)).thenReturn(false);
 

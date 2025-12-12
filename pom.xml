@@ -27,10 +27,12 @@
 		<url/>
 	</scm>
 	<properties>
-    <java.version>21</java.version>
-    <sonar.organization>tqs-project-ols</sonar.organization>
-    <jacoco.version>0.8.11</jacoco.version>
-    <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+		<java.version>21</java.version>
+		<sonar.organization>tqs-project-ols</sonar.organization>
+		<jacoco.version>0.8.11</jacoco.version>
+		<sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+		<xray-junit-extensions.version>1.0.0</xray-junit-extensions.version>
+		<xray-maven-plugin.version>0.10.0</xray-maven-plugin.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -129,7 +131,18 @@
 			<version>4.15.0</version>
 			<scope>test</scope>
 		</dependency>
-
+		<!-- https://mvnrepository.com/artifact/app.getxray/xray-junit-extensions -->
+		<dependency>
+			<groupId>app.getxray</groupId>
+			<artifactId>xray-junit-extensions</artifactId>
+			<version>${xray-junit-extensions.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>app.getxray</groupId>
+			<artifactId>xray-maven-plugin</artifactId>
+			<version>${xray-maven-plugin.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>io.github.bonigarcia</groupId>
 			<artifactId>webdrivermanager</artifactId>
@@ -164,6 +177,17 @@
 						</goals>
 					</execution>
 				</executions>
+			</plugin>
+			<plugin>
+				<groupId>app.getxray</groupId>
+				<artifactId>xray-maven-plugin</artifactId>
+				<version>${xray-maven-plugin.version}</version>
+				<configuration>
+					<cloud>true</cloud>
+					<projectKey>ST</projectKey>
+					<reportFormat>junit</reportFormat>
+					<reportFile>reports/TEST-junit-jupiter.xml</reportFile>
+				</configuration>
 			</plugin>
 
 			<!-- Maven Surefire Plugin with parallel execution -->

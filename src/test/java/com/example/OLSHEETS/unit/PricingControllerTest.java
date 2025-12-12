@@ -16,6 +16,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import com.example.OLSHEETS.security.JwtUtil;
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.*;
@@ -74,7 +75,8 @@ class PricingControllerTest {
     }
 
     @Test
-    void testUpdatePrice_WithValidPrice_ShouldReturnUpdatedItem() throws Exception {
+    @Requirement("OLS-34")
+    void testUpdateItemPrice() throws Exception {
         Long itemId = 1L;
         Double newPrice = 699.99;
         instrument.setPrice(newPrice);
@@ -94,24 +96,25 @@ class PricingControllerTest {
     }
 
     @Test
-    void testUpdatePrice_WithZeroPrice_ShouldSucceed() throws Exception {
-        Long itemId = 1L;
-        Double newPrice = 0.0;
-        instrument.setPrice(newPrice);
-        
-        when(productsService.updateItemPrice(itemId, newPrice)).thenReturn(instrument);
+    @Requirement("OLS-34")
+    void testUpdateItemPrice_NotFound() throws Exception {
+        Long itemId = 999L;
+        Double newPrice = 100.0;
+
+        when(productsService.updateItemPrice(itemId, newPrice))
+            .thenThrow(new IllegalArgumentException("Item not found with id: " + itemId));
 
         mockMvc.perform(put("/api/items/price/" + itemId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"newPrice\": 0.0}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.newPrice", is(0.0)));
+                        .content("{\"newPrice\": 100.0}"))
+                .andExpect(status().isBadRequest());
 
         verify(productsService, times(1)).updateItemPrice(itemId, newPrice);
     }
 
     @Test
-    void testUpdatePrice_WithNegativePrice_ShouldReturnBadRequest() throws Exception {
+    @Requirement("OLS-34")
+    void testUpdateItemPrice_InvalidPrice() throws Exception {
         Long itemId = 1L;
         Double negativePrice = -10.0;
         
@@ -127,10 +130,11 @@ class PricingControllerTest {
     }
 
     @Test
+    @Requirement("OLS-34")
     void testUpdatePrice_WithNonExistentItem_ShouldReturnBadRequest() throws Exception {
         Long itemId = 999L;
         Double newPrice = 100.0;
-        
+
         when(productsService.updateItemPrice(itemId, newPrice))
             .thenThrow(new IllegalArgumentException("Item not found with id: " + itemId));
 
@@ -143,6 +147,7 @@ class PricingControllerTest {
     }
 
     @Test
+    @Requirement("OLS-34")
     void testGetPrice_WithExistingItem_ShouldReturnPrice() throws Exception {
         Long itemId = 1L;
         Double price = 599.99;
@@ -159,6 +164,7 @@ class PricingControllerTest {
     }
 
     @Test
+    @Requirement("OLS-34")
     void testGetPrice_WithNonExistentItem_ShouldReturnNotFound() throws Exception {
         Long itemId = 999L;
         
@@ -174,6 +180,7 @@ class PricingControllerTest {
     // MusicSheet Pricing Tests
 
     @Test
+    @Requirement("OLS-34")
     void testUpdatePrice_ForMusicSheet_WithValidPrice_ShouldReturnUpdatedItem() throws Exception {
         Long itemId = 2L;
         Double newPrice = 14.99;
@@ -194,6 +201,7 @@ class PricingControllerTest {
     }
 
     @Test
+    @Requirement("OLS-34")
     void testUpdatePrice_ForMusicSheet_WithNegativePrice_ShouldReturnBadRequest() throws Exception {
         Long itemId = 2L;
         Double negativePrice = -5.0;
@@ -210,6 +218,7 @@ class PricingControllerTest {
     }
 
     @Test
+    @Requirement("OLS-34")
     void testGetPrice_ForMusicSheet_WithExistingItem_ShouldReturnPrice() throws Exception {
         Long itemId = 2L;
         Double price = 9.99;

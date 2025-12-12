@@ -4,15 +4,18 @@ import com.example.OLSHEETS.boundary.SheetsController;
 import com.example.OLSHEETS.data.MusicSheet;
 import com.example.OLSHEETS.data.User;
 import com.example.OLSHEETS.service.ProductsService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import com.example.OLSHEETS.security.JwtUtil;
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -22,6 +25,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(controllers = SheetsController.class, excludeAutoConfiguration = {
@@ -74,7 +78,8 @@ class SheetsControllerTest {
     }
 
     @Test
-    void testSearchSheets_WithMatchingResults_ShouldReturnSheetsList() throws Exception {
+    @Requirement("OLS-28")
+    void testSearchMusicSheets() throws Exception {
         List<MusicSheet> sheets = Collections.singletonList(sheet1);
         when(productsService.searchMusicSheetsByName("Moonlight")).thenReturn(sheets);
 
@@ -93,6 +98,7 @@ class SheetsControllerTest {
     }
 
     @Test
+    @Requirement("OLS-28")
     void testSearchSheets_WithNoResults_ShouldReturnEmptyList() throws Exception {
         when(productsService.searchMusicSheetsByName("Symphony")).thenReturn(Collections.emptyList());
 
@@ -106,6 +112,7 @@ class SheetsControllerTest {
     }
 
     @Test
+    @Requirement("OLS-28")
     void testSearchSheets_WithMultipleResults_ShouldReturnAllSheets() throws Exception {
         List<MusicSheet> sheets = Arrays.asList(sheet1, sheet2);
         when(productsService.searchMusicSheetsByName("a")).thenReturn(sheets);
@@ -120,7 +127,8 @@ class SheetsControllerTest {
     }
 
     @Test
-    void testFilterByCategory_WithMatchingResults_ShouldReturnSheetsList() throws Exception {
+    @Requirement("OLS-28")
+    void testFilterMusicSheetsByCategory() throws Exception {
         List<MusicSheet> sheets = Collections.singletonList(sheet1);
         when(productsService.filterMusicSheetsByCategory("CLASSICAL")).thenReturn(sheets);
 
@@ -137,6 +145,7 @@ class SheetsControllerTest {
     }
 
     @Test
+    @Requirement("OLS-28")
     void testFilterByCategory_WithNoResults_ShouldReturnEmptyList() throws Exception {
         when(productsService.filterMusicSheetsByCategory("JAZZ")).thenReturn(Collections.emptyList());
 
@@ -150,6 +159,7 @@ class SheetsControllerTest {
     }
 
     @Test
+    @Requirement("OLS-28")
     void testFilterByCategory_WithRockCategory_ShouldReturnRockSheets() throws Exception {
         List<MusicSheet> sheets = Collections.singletonList(sheet2);
         when(productsService.filterMusicSheetsByCategory("ROCK")).thenReturn(sheets);
@@ -167,6 +177,7 @@ class SheetsControllerTest {
     }
 
     @Test
+    @Requirement("OLS-28")
     void testSearchSheets_VerifyAllFieldsReturned() throws Exception {
         List<MusicSheet> sheets = Collections.singletonList(sheet1);
         when(productsService.searchMusicSheetsByName("Sonata")).thenReturn(sheets);
@@ -183,3 +194,4 @@ class SheetsControllerTest {
                 .andExpect(jsonPath("$[0].owner.id", is(1)));
     }
 }
+

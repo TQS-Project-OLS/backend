@@ -12,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -65,6 +66,7 @@ class RenterReviewServiceTest {
     }
 
     @Test
+    @Requirement("OLS-43")
     void testCreateRenterReview_WithValidData_ShouldSucceed() {
         RenterReviewRequest request = new RenterReviewRequest(1L, 5, "Great renter!");
         
@@ -160,6 +162,7 @@ class RenterReviewServiceTest {
     }
 
     @Test
+    @Requirement("OLS-43")
     void testGetReviewsByRenterId_ShouldReturnReviews() {
         RenterReview review2 = new RenterReview(booking, 4, "Good!");
         review2.setId(2L);
@@ -174,6 +177,7 @@ class RenterReviewServiceTest {
     }
 
     @Test
+    @Requirement("OLS-43")
     void testGetAverageScoreByRenterId_ShouldReturnAverage() {
         when(renterReviewRepository.getAverageScoreByRenterId(2L)).thenReturn(4.5);
 

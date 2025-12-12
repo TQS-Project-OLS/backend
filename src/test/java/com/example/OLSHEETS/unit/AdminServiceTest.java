@@ -13,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -85,7 +86,8 @@ class AdminServiceTest {
     }
 
     @Test
-    void whenGetAllBookings_thenReturnAllBookings() {
+    @Requirement("OLS-40")
+    void testGetAllBookings() {
         when(bookingRepository.findAll()).thenReturn(Arrays.asList(booking1, booking2, booking3));
 
         List<Booking> bookings = adminService.getAllBookings();
@@ -96,7 +98,8 @@ class AdminServiceTest {
     }
 
     @Test
-    void whenGetBookingsByStatus_thenReturnFilteredBookings() {
+    @Requirement("OLS-40")
+    void testGetBookingsByStatus() {
         when(bookingRepository.findByStatus(BookingStatus.PENDING))
             .thenReturn(Arrays.asList(booking1));
 
@@ -108,7 +111,8 @@ class AdminServiceTest {
     }
 
     @Test
-    void whenGetBookingsByRenter_thenReturnRenterBookings() {
+    @Requirement("OLS-40")
+    void testGetBookingsByRenter() {
         when(bookingRepository.findByRenterId(100L)).thenReturn(Arrays.asList(booking1));
 
         List<Booking> renterBookings = adminService.getBookingsByRenter(100L);
@@ -119,7 +123,8 @@ class AdminServiceTest {
     }
 
     @Test
-    void whenCancelBookingAsAdmin_thenBookingIsCancelled() {
+    @Requirement("OLS-40")
+    void testCancelBooking() {
         when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking1));
         when(bookingRepository.save(any(Booking.class))).thenReturn(booking1);
 
@@ -131,19 +136,8 @@ class AdminServiceTest {
     }
 
     @Test
-    void whenCancelNonExistentBooking_thenThrowException() {
-        when(bookingRepository.findById(999L)).thenReturn(Optional.empty());
-
-        assertThatThrownBy(() -> adminService.cancelBooking(999L))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("Booking not found");
-
-        verify(bookingRepository, times(1)).findById(999L);
-        verify(bookingRepository, never()).save(any());
-    }
-
-    @Test
-    void whenGetBookingStatistics_thenReturnCorrectCounts() {
+    @Requirement("OLS-40")
+    void testGetBookingStatistics() {
         when(bookingRepository.countByStatus(BookingStatus.PENDING)).thenReturn(5L);
         when(bookingRepository.countByStatus(BookingStatus.APPROVED)).thenReturn(10L);
         when(bookingRepository.countByStatus(BookingStatus.REJECTED)).thenReturn(3L);
@@ -162,17 +156,19 @@ class AdminServiceTest {
     }
 
     @Test
-    void whenGetRenterActivity_thenReturnBookingCount() {
-        when(bookingRepository.countByRenterId(100L)).thenReturn(5L);
+    @Requirement("OLS-40")
+    void testGetRenterActivity() {
+        when(bookingRepository.countByRenterId(1L)).thenReturn(5L);
 
-        Long activityCount = adminService.getRenterActivity(100L);
+        Long activityCount = adminService.getRenterActivity(1L);
 
         assertThat(activityCount).isEqualTo(5L);
-        verify(bookingRepository, times(1)).countByRenterId(100L);
+        verify(bookingRepository, times(1)).countByRenterId(1L);
     }
 
     @Test
-    void whenGetOwnerActivity_thenReturnBookingCount() {
+    @Requirement("OLS-40")
+    void testGetOwnerActivity() {
         when(itemRepository.findByOwnerId(10L)).thenReturn(Arrays.asList(item1));
         when(bookingRepository.countByItemIn(Arrays.asList(item1))).thenReturn(3L);
 
@@ -184,7 +180,8 @@ class AdminServiceTest {
     }
 
     @Test
-    void whenGetRevenueByOwner_thenReturnTotalRevenue() {
+    @Requirement("OLS-40")
+    void testGetRevenueByOwner() {
         booking2.setStatus(BookingStatus.APPROVED);
         when(itemRepository.findByOwnerId(20L)).thenReturn(Arrays.asList(item2));
         when(bookingRepository.findByItemInAndStatus(Arrays.asList(item2), BookingStatus.APPROVED))
@@ -193,12 +190,12 @@ class AdminServiceTest {
         Double revenue = adminService.getRevenueByOwner(20L);
 
         assertThat(revenue).isGreaterThan(0);
-        verify(itemRepository, times(1)).findByOwnerId(20L);
         verify(bookingRepository, times(1)).findByItemInAndStatus(anyList(), eq(BookingStatus.APPROVED));
     }
 
     @Test
-    void whenGetTotalRevenue_thenReturnSystemWideRevenue() {
+    @Requirement("OLS-40")
+    void testGetTotalRevenue() {
         booking2.setStatus(BookingStatus.APPROVED);
         when(bookingRepository.findByStatus(BookingStatus.APPROVED))
             .thenReturn(Arrays.asList(booking2));

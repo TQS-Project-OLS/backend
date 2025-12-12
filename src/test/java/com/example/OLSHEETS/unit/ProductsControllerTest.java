@@ -22,6 +22,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import com.example.OLSHEETS.security.JwtUtil;
 import com.example.OLSHEETS.data.User;
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 import java.util.Optional;
 
 import java.util.Arrays;
@@ -92,6 +93,7 @@ class ProductsControllerTest {
     }
 
     @Test
+    @Requirement("OLS-25")
     void testSearchInstruments_WithMatchingResults_ShouldReturnInstrumentsList() throws Exception {
         // Amock service method
         List<Instrument> instruments = Arrays.asList(instrument1, instrument2);
@@ -113,6 +115,7 @@ class ProductsControllerTest {
     }
 
     @Test
+    @Requirement("OLS-25")
     void testSearchInstruments_WithNoResults_ShouldReturnEmptyList() throws Exception {
         when(productsService.searchInstrumentsByName("Gibson")).thenReturn(Collections.emptyList());
 
@@ -126,6 +129,7 @@ class ProductsControllerTest {
     }
 
     @Test
+    @Requirement("OLS-25")
     void testSearchInstruments_WithSingleResult_ShouldReturnOneInstrument() throws Exception {
         List<Instrument> instruments = Collections.singletonList(instrument1);
         when(productsService.searchInstrumentsByName("Yamaha P-125")).thenReturn(instruments);
@@ -143,6 +147,7 @@ class ProductsControllerTest {
     }
 
     @Test
+    @Requirement("OLS-25")
     void testSearchInstruments_CaseInsensitive_ShouldWork() throws Exception {
         List<Instrument> instruments = Arrays.asList(instrument1, instrument2);
         when(productsService.searchInstrumentsByName("yamaha")).thenReturn(instruments);
@@ -156,6 +161,7 @@ class ProductsControllerTest {
     }
 
     @Test
+    @Requirement("OLS-25")
     void testSearchInstruments_WithAllFieldsReturned() throws Exception {
         List<Instrument> instruments = Collections.singletonList(instrument1);
         when(productsService.searchInstrumentsByName("Piano")).thenReturn(instruments);
@@ -174,6 +180,7 @@ class ProductsControllerTest {
     }
 
     @Test
+    @Requirement("OLS-26")
     void testFilterByFamily_WithMatchingResults_ShouldReturnInstruments() throws Exception {
         List<Instrument> instruments = Collections.singletonList(instrument1);
         when(productsService.filterInstrumentsByFamily(InstrumentFamily.KEYBOARD)).thenReturn(instruments);
@@ -189,6 +196,7 @@ class ProductsControllerTest {
     }
 
     @Test
+    @Requirement("OLS-26")
     void testFilterByFamily_WithNoResults_ShouldReturnEmptyList() throws Exception {
         when(productsService.filterInstrumentsByFamily(InstrumentFamily.BRASS)).thenReturn(Collections.emptyList());
 
@@ -202,6 +210,7 @@ class ProductsControllerTest {
     }
 
     @Test
+    @Requirement("OLS-27")
     void testFilterByType_WithMatchingResults_ShouldReturnInstrumentsList() throws Exception {
         Instrument electricGuitar = new Instrument();
         electricGuitar.setId(3L);
@@ -234,6 +243,7 @@ class ProductsControllerTest {
     }
 
     @Test
+    @Requirement("OLS-27")
     void testFilterByType_WithNoResults_ShouldReturnEmptyList() throws Exception {
         when(productsService.filterInstrumentsByType(InstrumentType.SYNTHESIZER)).thenReturn(Collections.emptyList());
 
@@ -247,6 +257,7 @@ class ProductsControllerTest {
     }
 
     @Test
+    @Requirement("OLS-27")
     void testFilterByType_WithSingleResult_ShouldReturnOneInstrument() throws Exception {
         instrument1.setType(InstrumentType.ACOUSTIC);
         List<Instrument> instruments = Collections.singletonList(instrument1);
@@ -264,6 +275,7 @@ class ProductsControllerTest {
     }
     
     @Test
+    @Requirement("OLS-31")
     void testRegisterInstrument_WithValidData_ShouldReturnCreatedInstrument() throws Exception {
         // Mock authentication
         Authentication auth = org.mockito.Mockito.mock(Authentication.class);
