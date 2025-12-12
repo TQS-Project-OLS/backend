@@ -82,7 +82,7 @@
             grid.innerHTML = '<div class="text-center" style="padding: var(--space-xl); color: var(--text-muted);">Loading...</div>';
 
             try {
-                const response = await fetch('/api/admin/bookings');
+                const response = await authenticatedFetch('/api/admin/bookings');
                 const bookings = await response.json();
                 displayBookings(bookings);
             } catch (error) {
@@ -197,7 +197,7 @@
 
         async function loadStatistics() {
             try {
-                const response = await fetch('/api/admin/statistics/bookings');
+                const response = await authenticatedFetch('/api/admin/statistics/bookings');
                 const stats = await response.json();
                 displayStatistics(stats);
             } catch (error) {
