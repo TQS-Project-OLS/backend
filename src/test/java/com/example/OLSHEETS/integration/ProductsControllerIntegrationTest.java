@@ -66,7 +66,8 @@ class ProductsControllerIntegrationTest {
         when(securityContext.getAuthentication()).thenReturn(auth);
         SecurityContextHolder.setContext(securityContext);
         
-        // Clear and create fresh test user - use a unique email to avoid conflicts
+        // Clear items first (they reference users), then users
+        instrumentRepository.deleteAll();
         userRepository.deleteAll();
         user = new User();
         user.setUsername("testuser");
@@ -81,8 +82,6 @@ class ProductsControllerIntegrationTest {
         if (foundUser.isEmpty()) {
             throw new RuntimeException("User not found after save");
         }
-        
-        instrumentRepository.deleteAll();
 
         Instrument yamahaPiano = new Instrument();
         yamahaPiano.setName("Yamaha P-125");
