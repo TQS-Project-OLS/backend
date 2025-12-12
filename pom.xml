@@ -178,6 +178,8 @@
 					</execution>
 				</executions>
 			</plugin>
+
+			<!-- Xray Maven Plugin -->
 			<plugin>
 				<groupId>app.getxray</groupId>
 				<artifactId>xray-maven-plugin</artifactId>
@@ -186,7 +188,7 @@
 					<cloud>true</cloud>
 					<projectKey>ST</projectKey>
 					<reportFormat>junit</reportFormat>
-					<reportFile>reports/TEST-junit-jupiter.xml</reportFile>
+					<reportFile>target/surefire-reports/TEST-*.xml</reportFile>
 				</configuration>
 			</plugin>
 
@@ -201,8 +203,35 @@
 					<reuseForks>true</reuseForks>
 					<excludes>
 						<exclude>**/RunCucumberTest.java</exclude>
+						<exclude>**/*IT.java</exclude>
+					</excludes>
+					<statelessTestsetReporter implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5Xml30StatelessReporter">
+						<disable>true</disable>
+					</statelessTestsetReporter>
+					<useFile>false</useFile>
+				</configuration>
+			</plugin>
+
+			<!-- Maven Failsafe Plugin for Integration Tests -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<configuration>
+					<includes>
+						<include>**/*IT.java</include>
+					</includes>
+					<excludes>
+						<exclude>**/*Test.java</exclude>
 					</excludes>
 				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>integration-test</goal>
+							<goal>verify</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
