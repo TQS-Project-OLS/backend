@@ -36,6 +36,8 @@ public class SecurityConfig {
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/*.html").permitAll() // Allow all HTML pages
                         .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
+                        // Actuator endpoints for monitoring (consider restricting in production)
+                        .requestMatchers("/actuator/**").permitAll()
                         // Only API endpoints require authentication
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().permitAll() // Allow other static resources

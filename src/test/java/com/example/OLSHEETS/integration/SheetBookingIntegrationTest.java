@@ -5,6 +5,7 @@ import com.example.OLSHEETS.data.MusicSheet;
 import com.example.OLSHEETS.data.SheetBooking;
 import com.example.OLSHEETS.repository.MusicSheetRepository;
 import com.example.OLSHEETS.repository.SheetBookingRepository;
+import com.example.OLSHEETS.repository.PaymentRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,9 @@ class SheetBookingIntegrationTest {
     private SheetBookingRepository bookingRepository;
 
     @Autowired
+    private PaymentRepository paymentRepository;
+
+    @Autowired
     private com.example.OLSHEETS.repository.UserRepository userRepository;
 
     private String baseUrl;
@@ -46,7 +50,12 @@ class SheetBookingIntegrationTest {
     @BeforeEach
     void setUp() {
         baseUrl = "http://localhost:" + port + "/api/sheets/bookings";
+        // Delete in correct order to avoid FK constraint errors
+        // First delete payments that reference bookings
+        paymentRepository.deleteAll();
+        // Then delete bookings
         bookingRepository.deleteAll();
+        // Then delete sheets
         sheetRepository.deleteAll();
     }
 

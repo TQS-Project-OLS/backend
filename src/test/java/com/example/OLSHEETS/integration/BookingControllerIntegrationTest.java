@@ -11,6 +11,7 @@ import com.example.OLSHEETS.data.InstrumentType;
 import com.example.OLSHEETS.data.User;
 import com.example.OLSHEETS.repository.ItemRepository;
 import com.example.OLSHEETS.repository.MusicSheetRepository;
+import com.example.OLSHEETS.repository.PaymentRepository;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,16 +54,28 @@ class BookingControllerIntegrationTest {
     @Autowired
     private com.example.OLSHEETS.repository.UserRepository userRepository;
 
+    @Autowired
+    private PaymentRepository paymentRepository;
+
     private Instrument instrument;
     private com.example.OLSHEETS.data.User owner;
 
     @BeforeEach
     void cleanup() {
-        sheetBookingRepository.deleteAll();
+        // Delete in correct order to avoid FK constraint errors
+        // First delete payments that reference bookings
+        paymentRepository.deleteAll();
+        // Then delete bookings
         bookingRepository.deleteAll();
+        // Then delete sheet bookings
+        sheetBookingRepository.deleteAll();
+        // Then delete availability
         availabilityRepository.deleteAll();
+        // Then delete music sheets
         musicSheetRepository.deleteAll();
+        // Then delete items
         itemRepository.deleteAll();
+        // Finally delete users
         userRepository.deleteAll();
         
         instrument = new Instrument();
