@@ -115,6 +115,20 @@
             <version>1.15.2</version>
         </dependency>
 
+		<!-- Logback appender for Loki -->
+		<dependency>
+			<groupId>com.github.loki4j</groupId>
+			<artifactId>loki-logback-appender</artifactId>
+			<version>1.5.1</version>
+		</dependency>
+		
+		<!-- Logstash encoder for JSON logging -->
+		<dependency>
+			<groupId>net.logstash.logback</groupId>
+			<artifactId>logstash-logback-encoder</artifactId>
+			<version>7.4</version>
+		</dependency>
+
 		<dependency>
 			<groupId>io.cucumber</groupId>
 			<artifactId>cucumber-spring</artifactId>

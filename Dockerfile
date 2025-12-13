@@ -7,8 +7,14 @@ RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 # Copy everything
 COPY . .
 
+# Build the application
+RUN mvn clean package -DskipTests
+
+# Create logs directory for Promtail
+RUN mkdir -p /app/logs
+
 # Expose your Spring Boot port
 EXPOSE 8080
 
-# Run Spring Boot using Maven
-CMD ["mvn", "spring-boot:run", "-Dspring-boot.run.profiles=postgres"]
+# Run the application with docker profile to enable Loki logging
+CMD ["java", "-jar", "target/OLSHEETS-0.0.1-SNAPSHOT.jar", "--spring.profiles.active=docker,postgres"]

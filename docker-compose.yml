@@ -33,6 +33,9 @@ services:
       - DATABASE_URL=jdbc:postgresql://postgresdb:5432/${POSTGRES_DB}
       - DB_POSTGRES_USERNAME=${POSTGRES_USER}
       - DB_POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - SPRING_PROFILES_ACTIVE=docker,postgres
+    volumes:
+      - ./logs:/app/logs
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
       interval: 30s
@@ -49,10 +52,13 @@ services:
       - '3000:3000'
     volumes:
       - grafana-storage:/var/lib/grafana
+      - ./observability/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./observability/grafana/datasources:/etc/grafana/provisioning/datasources:ro
     networks:
       - ols-network
     depends_on:
       - prometheus
+      - loki
 
   prometheus:
     image: prom/prometheus:latest
@@ -69,6 +75,35 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  # Loki for log aggregation
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - loki-data:/loki
+      - ./observability/loki-config.yml:/etc/loki/local-config.yaml
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - ols-network
+    restart: unless-stopped
+
+  # Promtail to collect logs and send to Loki
+  promtail:
+    image: grafana/promtail:latest
+    container_name: promtail
+    volumes:
+      - ./observability/promtail.yml:/etc/promtail/config.yml:ro
+      - /var/log:/var/log:ro
+      - ./logs:/app/logs:ro
+    command: -config.file=/etc/promtail/config.yml
+    networks:
+      - ols-network
+    depends_on:
+      - loki
+    restart: unless-stopped
+
 networks:
   ols-network:
     driver: bridge
@@ -77,3 +112,4 @@ volumes:
   postgres_data:
   grafana-storage:
   prometheus-data:
+  loki-data:

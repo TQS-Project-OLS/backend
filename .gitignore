@@ -17,3 +17,7 @@ buildNumber.properties
 .classpath
 .settings
 .env
+
+# Logs
+logs/
+*.log
