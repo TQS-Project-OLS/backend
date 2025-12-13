@@ -20,7 +20,9 @@ class MusicSheetTest {
         musicSheet1.setTitle("Moonlight Sonata");
         musicSheet1.setCategory("Classical");
         musicSheet1.setComposer("Beethoven");
-        musicSheet1.setOwnerId(100L);
+        com.example.OLSHEETS.data.User owner100 = new com.example.OLSHEETS.data.User("owner100", "owner100@example.com", "owner100");
+        owner100.setId(100L);
+        musicSheet1.setOwner(owner100);
         musicSheet1.setDescription("Beautiful piece");
         musicSheet1.setPrice(15.99);
         musicSheet1.setInstrumentation("Piano");
@@ -31,7 +33,9 @@ class MusicSheetTest {
         musicSheet2.setTitle("Moonlight Sonata");
         musicSheet2.setCategory("Classical");
         musicSheet2.setComposer("Beethoven");
-        musicSheet2.setOwnerId(100L);
+        com.example.OLSHEETS.data.User owner100b = new com.example.OLSHEETS.data.User("owner100", "owner100@example.com", "owner100");
+        owner100b.setId(100L);
+        musicSheet2.setOwner(owner100b);
         musicSheet2.setDescription("Beautiful piece");
         musicSheet2.setPrice(15.99);
         musicSheet2.setInstrumentation("Piano");
@@ -50,13 +54,15 @@ class MusicSheetTest {
 
     @Test
     void testParameterizedConstructor() {
-        MusicSheet sheet = new MusicSheet("Fur Elise", "Classical", "Beethoven", 200L);
+        com.example.OLSHEETS.data.User owner200 = new com.example.OLSHEETS.data.User("owner200", "owner200@example.com", "owner200");
+        owner200.setId(200L);
+        MusicSheet sheet = new MusicSheet("Fur Elise", "Classical", "Beethoven", owner200);
         
         assertThat(sheet.getTitle()).isEqualTo("Fur Elise");
         assertThat(sheet.getName()).isEqualTo("Fur Elise");
         assertThat(sheet.getCategory()).isEqualTo("Classical");
         assertThat(sheet.getComposer()).isEqualTo("Beethoven");
-        assertThat(sheet.getOwnerId()).isEqualTo(200);
+        assertThat(sheet.getOwner().getId()).isEqualTo(200L);
     }
 
     @Test
@@ -98,8 +104,10 @@ class MusicSheetTest {
     @Test
     void testOwnerIdSetterWithLong() {
         MusicSheet sheet = new MusicSheet();
-        sheet.setOwnerId(500L);
-        assertThat(sheet.getOwnerId()).isEqualTo(500);
+        com.example.OLSHEETS.data.User owner500 = new com.example.OLSHEETS.data.User("owner500", "owner500@example.com", "owner500");
+        owner500.setId(500L);
+        sheet.setOwner(owner500);
+        assertThat(sheet.getOwner().getId()).isEqualTo(500L);
     }
 
     @Test

@@ -40,6 +40,9 @@ public class ManageAvailabilitySteps {
     @Autowired
     private AvailabilityService availabilityService;
 
+    @Autowired
+    private com.example.OLSHEETS.repository.UserRepository userRepository;
+
     private ResponseEntity<?> lastAvailabilityResponse;
     private Availability lastCreatedAvailability;
     private List<Availability> retrievedAvailabilities;
@@ -67,7 +70,9 @@ public class ManageAvailabilitySteps {
             instrument.setFamily(InstrumentFamily.valueOf(row.get("family")));
             instrument.setAge(Integer.parseInt(row.get("age")));
             instrument.setPrice(Double.parseDouble(row.get("price")));
-            instrument.setOwnerId(Integer.parseInt(row.get("ownerId")));
+            com.example.OLSHEETS.data.User owner = new com.example.OLSHEETS.data.User("owner" + row.get("ownerId"), "owner" + row.get("ownerId") + "@a.com", "123");
+            owner = userRepository.save(owner);
+            instrument.setOwner(owner);
             instrument.setDescription("Test instrument");
 
             Instrument saved = instrumentRepository.save(instrument);

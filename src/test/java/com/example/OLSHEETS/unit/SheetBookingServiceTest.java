@@ -2,6 +2,7 @@ package com.example.OLSHEETS.unit;
 
 import com.example.OLSHEETS.data.MusicSheet;
 import com.example.OLSHEETS.data.SheetBooking;
+import com.example.OLSHEETS.data.User;
 import com.example.OLSHEETS.data.BookingStatus;
 import com.example.OLSHEETS.repository.MusicSheetRepository;
 import com.example.OLSHEETS.repository.SheetBookingRepository;
@@ -31,23 +32,32 @@ class SheetBookingServiceTest {
     @Mock
     private MusicSheetRepository sheetRepository;
 
+    @Mock
+    private com.example.OLSHEETS.repository.UserRepository userRepository;
+
     @InjectMocks
     private SheetBookingService bookingService;
 
     private MusicSheet sheet;
     private SheetBooking booking;
+    private com.example.OLSHEETS.data.User testUser;
 
     @BeforeEach
     void setUp() {
+        User owner = new User("owner1", "owner1@example.com", "Owner One", "password123");
+        owner.setId(1L);
         sheet = new MusicSheet();
         sheet.setTitle("Moonlight Sonata");
         sheet.setCategory("classical");
         sheet.setComposer("Beautiful piece");
         sheet.setPrice(5.00);
-        sheet.setOwnerId(1L);
+        sheet.setOwner(owner);
         sheet.setId(1L);
 
-        booking = new SheetBooking(sheet, 100L, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
+        testUser = new com.example.OLSHEETS.data.User("tester", "tester@example.com", "Test User");
+        testUser.setId(100L);
+
+        booking = new SheetBooking(sheet, testUser, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
         booking.setId(1L);
     }
 
@@ -55,12 +65,13 @@ class SheetBookingServiceTest {
     void whenCreateValidBooking_thenSuccess() {
         when(sheetRepository.findById(1L)).thenReturn(Optional.of(sheet));
         when(bookingRepository.findConflictingBookings(anyLong(), any(), any())).thenReturn(List.of());
+        when(userRepository.findById(100L)).thenReturn(Optional.of(testUser));
         when(bookingRepository.save(any(SheetBooking.class))).thenReturn(booking);
 
         SheetBooking created = bookingService.createBooking(1L, 100L, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
 
         assertThat(created).isNotNull();
-        assertThat(created.getRenterId()).isEqualTo(100L);
+        assertThat(created.getRenter().getId()).isEqualTo(100L);
         assertThat(created.getStatus()).isEqualTo(BookingStatus.PENDING);
         verify(bookingRepository, times(1)).save(any(SheetBooking.class));
     }
@@ -91,7 +102,7 @@ class SheetBookingServiceTest {
         List<SheetBooking> bookings = bookingService.getBookingsByRenter(100L);
 
         assertThat(bookings).hasSize(1);
-        assertThat(bookings.get(0).getRenterId()).isEqualTo(100L);
+        assertThat(bookings.get(0).getRenter().getId()).isEqualTo(100L);
     }
 
     @Test
@@ -121,7 +132,8 @@ class SheetBookingServiceTest {
 
     @Test
     void whenGetAllBookings_thenReturnAllBookings() {
-        SheetBooking booking2 = new SheetBooking(sheet, 101L, LocalDate.now().plusDays(5), LocalDate.now().plusDays(7));
+        User user2 = new User("tester2", "tester2@example.com", "Test User Two", "password123");
+        SheetBooking booking2 = new SheetBooking(sheet, user2, LocalDate.now().plusDays(5), LocalDate.now().plusDays(7));
         when(bookingRepository.findAll()).thenReturn(List.of(booking, booking2));
 
         List<SheetBooking> bookings = bookingService.getAllBookings();

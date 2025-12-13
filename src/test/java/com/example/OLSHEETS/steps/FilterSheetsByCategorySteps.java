@@ -38,6 +38,9 @@ public class FilterSheetsByCategorySteps {
 
     @Autowired
     private SheetBookingRepository sheetBookingRepository;
+    
+    @Autowired
+    private com.example.OLSHEETS.repository.UserRepository userRepository;
 
     private WebDriver driver;
     private WebDriverWait wait;
@@ -72,7 +75,9 @@ public class FilterSheetsByCategorySteps {
             sheet.setCategory(row.get("category"));
             sheet.setPrice(Double.parseDouble(row.get("price")));
             sheet.setDescription(row.get("description"));
-            sheet.setOwnerId(1); // Default owner for test data
+            com.example.OLSHEETS.data.User owner = new com.example.OLSHEETS.data.User("owner1", "owner1@example.com", "owner1");
+            owner = userRepository.save(owner);
+            sheet.setOwner(owner); // Default owner for test data
 
             musicSheetRepository.save(sheet);
         }

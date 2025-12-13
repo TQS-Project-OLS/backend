@@ -23,7 +23,9 @@ class ItemTest {
         musicSheet1.setId(1L);
         musicSheet1.setName("Test Sheet");
         musicSheet1.setDescription("A test music sheet");
-        musicSheet1.setOwnerId(100);
+        com.example.OLSHEETS.data.User owner100 = new com.example.OLSHEETS.data.User("owner100", "owner100@example.com", "owner100");
+        owner100.setId(100L);
+        musicSheet1.setOwner(owner100);
         musicSheet1.setPrice(10.0);
         musicSheet1.setComposer("Composer 1");
 
@@ -31,7 +33,9 @@ class ItemTest {
         musicSheet2.setId(1L);
         musicSheet2.setName("Test Sheet");
         musicSheet2.setDescription("A test music sheet");
-        musicSheet2.setOwnerId(100);
+        com.example.OLSHEETS.data.User owner100b = new com.example.OLSHEETS.data.User("owner100", "owner100@example.com", "owner100");
+        owner100b.setId(100L);
+        musicSheet2.setOwner(owner100b);
         musicSheet2.setPrice(10.0);
         musicSheet2.setComposer("Composer 1");
 
@@ -39,7 +43,9 @@ class ItemTest {
         instrument1.setId(2L);
         instrument1.setName("Test Instrument");
         instrument1.setDescription("A test instrument");
-        instrument1.setOwnerId(200);
+        com.example.OLSHEETS.data.User owner200 = new com.example.OLSHEETS.data.User("owner200", "owner200@example.com", "owner200");
+        owner200.setId(200L);
+        instrument1.setOwner(owner200);
         instrument1.setPrice(500.0);
         instrument1.setAge(5);
         instrument1.setType(InstrumentType.ACOUSTIC);
@@ -49,7 +55,9 @@ class ItemTest {
         instrument2.setId(2L);
         instrument2.setName("Test Instrument");
         instrument2.setDescription("A test instrument");
-        instrument2.setOwnerId(200);
+        com.example.OLSHEETS.data.User owner200b = new com.example.OLSHEETS.data.User("owner200", "owner200@example.com", "owner200");
+        owner200b.setId(200L);
+        instrument2.setOwner(owner200b);
         instrument2.setPrice(500.0);
         instrument2.setAge(5);
         instrument2.setType(InstrumentType.ACOUSTIC);
@@ -69,8 +77,10 @@ class ItemTest {
         item.setDescription("Item Description");
         assertThat(item.getDescription()).isEqualTo("Item Description");
         
-        item.setOwnerId(99);
-        assertThat(item.getOwnerId()).isEqualTo(99);
+        com.example.OLSHEETS.data.User owner99 = new com.example.OLSHEETS.data.User("owner99", "owner99@example.com", "owner99");
+        owner99.setId(99L);
+        item.setOwner(owner99);
+        assertThat(item.getOwner().getId()).isEqualTo(99L);
         
         item.setPrice(99.99);
         assertThat(item.getPrice()).isEqualTo(99.99);
@@ -111,7 +121,9 @@ class ItemTest {
 
     @Test
     void testEqualsWithDifferentOwnerIds() {
-        musicSheet2.setOwnerId(999);
+        com.example.OLSHEETS.data.User owner999 = new com.example.OLSHEETS.data.User("owner999", "owner999@example.com", "owner999");
+        owner999.setId(999L);
+        musicSheet2.setOwner(owner999);
         assertThat(musicSheet1.equals(musicSheet2)).isFalse();
     }
 
@@ -164,11 +176,86 @@ class ItemTest {
     @Test
     void testEqualsWithNullHandling() {
         MusicSheet sheet1 = new MusicSheet();
+        sheet1.setName("Name");
+        com.example.OLSHEETS.data.User owner1 = new com.example.OLSHEETS.data.User("owner1", "owner1@example.com", "owner1");
+        owner1.setId(1L);
+        sheet1.setOwner(owner1);
+        sheet1.setPrice(10.0);
+        
         MusicSheet sheet2 = new MusicSheet();
+        sheet2.setName("Name");
+        com.example.OLSHEETS.data.User owner1b = new com.example.OLSHEETS.data.User("owner1", "owner1@example.com", "owner1");
+        owner1b.setId(1L);
+        sheet2.setOwner(owner1b);
+        sheet2.setPrice(10.0);
+        
         assertThat(sheet1.equals(sheet2)).isTrue();
         
         // Test one null vs non-null
         sheet1.setId(1L);
+        com.example.OLSHEETS.data.User owner1c = new com.example.OLSHEETS.data.User("owner1", "owner1@example.com", "owner1");
+        owner1c.setId(1L);
+        sheet1.setOwner(owner1c);
+        sheet1.setPrice(10.0);
+        
+        sheet2.setId(1L);
+        com.example.OLSHEETS.data.User owner1d = new com.example.OLSHEETS.data.User("owner1", "owner1@example.com", "owner1");
+        owner1d.setId(1L);
+        sheet2.setOwner(owner1d);
+        sheet2.setPrice(10.0);
+        
+        assertThat(sheet1.equals(sheet2)).isTrue();
+    }
+
+    @Test
+    void testEqualsWithNullDescriptionBothObjects() {
+        MusicSheet sheet1 = new MusicSheet();
+        sheet1.setId(1L);
+        sheet1.setName("Name");
+        com.example.OLSHEETS.data.User owner1e = new com.example.OLSHEETS.data.User("owner1", "owner1@example.com", "owner1");
+        owner1e.setId(1L);
+        sheet1.setOwner(owner1e);
+        sheet1.setPrice(10.0);
+        
+        MusicSheet sheet2 = new MusicSheet();
+        sheet2.setId(1L);
+        sheet2.setName("Name");
+        com.example.OLSHEETS.data.User owner1f = new com.example.OLSHEETS.data.User("owner1", "owner1@example.com", "owner1");
+        owner1f.setId(1L);
+        sheet2.setOwner(owner1f);
+        sheet2.setPrice(10.0);
+        
+        assertThat(sheet1.equals(sheet2)).isTrue();
+    }
+
+    @Test
+    void testEqualsWithNullPriceBothObjects() {
+        MusicSheet sheet1 = new MusicSheet();
+        sheet1.setId(1L);
+        sheet1.setName("Name");
+        com.example.OLSHEETS.data.User owner1a = new com.example.OLSHEETS.data.User("owner1", "owner1@example.com", "owner1");
+        owner1a.setId(1L);
+        sheet1.setOwner(owner1a);
+        
+        MusicSheet sheet2 = new MusicSheet();
+        sheet2.setId(1L);
+        sheet2.setName("Name");
+        com.example.OLSHEETS.data.User owner1b = new com.example.OLSHEETS.data.User("owner1", "owner1@example.com", "owner1");
+        owner1b.setId(1L);
+        sheet2.setOwner(owner1b);
+        
+        assertThat(sheet1.equals(sheet2)).isTrue();
+    }
+
+    @Test
+    void testEqualsWithOneNullIdAndOneNonNull() {
+        MusicSheet sheet1 = new MusicSheet();
+        sheet1.setName("Name");
+        
+        MusicSheet sheet2 = new MusicSheet();
+        sheet2.setId(1L);
+        sheet2.setName("Name");
+        
         assertThat(sheet1.equals(sheet2)).isFalse();
         
         sheet2.setId(1L);
@@ -181,15 +268,97 @@ class ItemTest {
         MusicSheet sheet = new MusicSheet();
         sheet.setId(1L);
         sheet.setName("Test");
-        sheet.setOwnerId(1);
+        com.example.OLSHEETS.data.User ownerX = new com.example.OLSHEETS.data.User("owner1", "owner1@example.com", "owner1");
+        ownerX.setId(1L);
+        sheet.setOwner(ownerX);
         sheet.setPrice(10.0);
         
         Instrument instrument = new Instrument();
         instrument.setId(1L);
         instrument.setName("Test");
-        instrument.setOwnerId(1);
+        com.example.OLSHEETS.data.User ownerY = new com.example.OLSHEETS.data.User("owner1", "owner1@example.com", "owner1");
+        ownerY.setId(1L);
+        instrument.setOwner(ownerY);
         instrument.setPrice(10.0);
         
         assertThat(sheet).isNotEqualTo(instrument);
+    }
+
+    @Test
+    void testItemConstructor() {
+        MusicSheet sheet = new MusicSheet();
+        assertThat(sheet).isNotNull();
+    }
+
+    @Test
+    void testPriceNullInFirstObjectButNotInSecond() {
+        Instrument instr1 = new Instrument();
+        instr1.setId(1L);
+        instr1.setName("Name");
+        com.example.OLSHEETS.data.User ownerA = new com.example.OLSHEETS.data.User("owner1", "owner1@example.com", "owner1");
+        ownerA.setId(1L);
+        instr1.setOwner(ownerA);
+        instr1.setPrice(null);
+        
+        Instrument instr2 = new Instrument();
+        instr2.setId(1L);
+        instr2.setName("Name");
+        com.example.OLSHEETS.data.User ownerB = new com.example.OLSHEETS.data.User("owner1", "owner1@example.com", "owner1");
+        ownerB.setId(1L);
+        instr2.setOwner(ownerB);
+        instr2.setPrice(10.0);
+        
+        assertThat(instr1).isNotEqualTo(instr2);
+    }
+
+    @Test
+    void testDescriptionNullInSecondObjectButNotInFirst() {
+        Instrument instr1 = new Instrument();
+        instr1.setId(1L);
+        instr1.setName("Name");
+        com.example.OLSHEETS.data.User ownerC = new com.example.OLSHEETS.data.User("owner1", "owner1@example.com", "owner1");
+        ownerC.setId(1L);
+        instr1.setOwner(ownerC);
+        instr1.setDescription("Description");
+        
+        Instrument instr2 = new Instrument();
+        instr2.setId(1L);
+        instr2.setName("Name");
+        com.example.OLSHEETS.data.User ownerD = new com.example.OLSHEETS.data.User("owner1", "owner1@example.com", "owner1");
+        ownerD.setId(1L);
+        instr2.setOwner(ownerD);
+        instr2.setDescription(null);
+        
+        assertThat(instr1).isNotEqualTo(instr2);
+    }
+
+    @Test
+    void testIdNullInSecondObjectButNotInFirst() {
+        Instrument instr1 = new Instrument();
+        instr1.setId(1L);
+        instr1.setName("Name");
+        
+        Instrument instr2 = new Instrument();
+        instr1.setId(1L);
+        instr1.setName("Name");
+        com.example.OLSHEETS.data.User ownerE = new com.example.OLSHEETS.data.User("owner1", "owner1@example.com", "owner1");
+        ownerE.setId(1L);
+        instr1.setOwner(ownerE);
+        assertThat(instr1).isNotEqualTo(instr2);
+    }
+
+    @Test
+    void testNameNullInSecondObjectButNotInFirst() {
+        Instrument instr1 = new Instrument();
+        instr1.setId(null);
+        instr1.setName("Name");
+        com.example.OLSHEETS.data.User ownerF = new com.example.OLSHEETS.data.User("owner1", "owner1@example.com", "owner1");
+        ownerF.setId(1L);
+        instr1.setOwner(ownerF);
+        Instrument instr2 = new Instrument();
+        instr2.setId(1L);
+        instr2.setName(null);
+        
+        assertThat(instr1).isNotEqualTo(instr2);
     }
 }

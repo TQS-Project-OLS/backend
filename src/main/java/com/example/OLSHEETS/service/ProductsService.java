@@ -5,10 +5,14 @@ import com.example.OLSHEETS.data.Instrument;
 import com.example.OLSHEETS.data.InstrumentType;
 import com.example.OLSHEETS.data.InstrumentFamily;
 import com.example.OLSHEETS.data.MusicSheet;
+import com.example.OLSHEETS.data.User;
 import com.example.OLSHEETS.data.Item;
 import com.example.OLSHEETS.dto.InstrumentRegistrationRequest;
 import com.example.OLSHEETS.repository.InstrumentRepository;
 import com.example.OLSHEETS.repository.MusicSheetRepository;
+import io.micrometer.core.instrument.Counter;
+import com.example.OLSHEETS.repository.UserRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +28,11 @@ public class ProductsService {
 
     @Autowired
     private MusicSheetRepository musicSheetRepository;
+
+    @Autowired(required = false)
+    private Counter instrumentsRegisteredCounter;
+    @Autowired
+    private UserRepository userRepository;
 
     public List<Instrument> searchInstrumentsByName(String name) {
         return instrumentRepository.findByNameContainingIgnoreCase(name);
@@ -60,16 +69,16 @@ public class ProductsService {
 
         Item item = findItemById(itemId)
             .orElseThrow(() -> new IllegalArgumentException("Item not found with id: " + itemId));
-        
+
         item.setPrice(newPrice);
-        
+
         // Save based on item type
         if (item instanceof Instrument instrument) {
             return instrumentRepository.save(instrument);
         } else if (item instanceof MusicSheet musicSheet) {
             return musicSheetRepository.save(musicSheet);
         }
-        
+
         throw new IllegalStateException("Unknown item type");
     }
 
@@ -84,7 +93,9 @@ public class ProductsService {
         instrument.setName(request.getName());
         instrument.setDescription(request.getDescription());
         instrument.setPrice(request.getPrice());
-        instrument.setOwnerId(request.getOwnerId());
+        User owner = userRepository.findById(request.getOwnerId())
+            .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + request.getOwnerId()));
+        instrument.setOwner(owner);
         instrument.setAge(request.getAge());
         instrument.setType(request.getType());
         instrument.setFamily(request.getFamily());
@@ -99,6 +110,10 @@ public class ProductsService {
             instrument.setFileReferences(fileReferences);
         }
 
-        return instrumentRepository.save(instrument);
+        Instrument saved = instrumentRepository.save(instrument);
+        if (instrumentsRegisteredCounter != null) {
+            instrumentsRegisteredCounter.increment();
+        }
+        return saved;
     }
 }

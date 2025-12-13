@@ -82,7 +82,7 @@ public class AdminController {
      * Get activity for a specific owner
      */
     @GetMapping("/activity/owner/{ownerId}")
-    public Map<String, Object> getOwnerActivity(@PathVariable int ownerId) {
+    public Map<String, Object> getOwnerActivity(@PathVariable Long ownerId) {
         Long bookingCount = adminService.getOwnerActivity(ownerId);
         Map<String, Object> response = new HashMap<>();
         response.put("ownerId", ownerId);
@@ -94,7 +94,7 @@ public class AdminController {
      * Get revenue for a specific owner
      */
     @GetMapping("/revenue/owner/{ownerId}")
-    public Map<String, Object> getRevenueByOwner(@PathVariable int ownerId) {
+    public Map<String, Object> getRevenueByOwner(@PathVariable Long ownerId) {
         Double revenue = adminService.getRevenueByOwner(ownerId);
         Map<String, Object> response = new HashMap<>();
         response.put("ownerId", ownerId);

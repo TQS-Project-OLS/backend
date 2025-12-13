@@ -59,7 +59,7 @@ public class ProductsController {
                     .orElseThrow(() -> new UserNotFoundException("User not found"));
 
             // Set ownerId from authenticated user
-            request.setOwnerId(user.getId().intValue());
+            request.setOwnerId(user.getId());
 
             Instrument registeredInstrument = productsService.registerInstrument(request);
             return ResponseEntity.status(HttpStatus.CREATED).body(registeredInstrument);
