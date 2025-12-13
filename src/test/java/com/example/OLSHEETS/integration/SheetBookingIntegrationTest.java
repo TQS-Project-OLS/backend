@@ -5,6 +5,7 @@ import com.example.OLSHEETS.data.MusicSheet;
 import com.example.OLSHEETS.data.SheetBooking;
 import com.example.OLSHEETS.repository.MusicSheetRepository;
 import com.example.OLSHEETS.repository.SheetBookingRepository;
+import com.example.OLSHEETS.repository.PaymentRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,12 +39,23 @@ class SheetBookingIntegrationTest {
     @Autowired
     private SheetBookingRepository bookingRepository;
 
+    @Autowired
+    private PaymentRepository paymentRepository;
+
+    @Autowired
+    private com.example.OLSHEETS.repository.UserRepository userRepository;
+
     private String baseUrl;
 
     @BeforeEach
     void setUp() {
         baseUrl = "http://localhost:" + port + "/api/sheets/bookings";
+        // Delete in correct order to avoid FK constraint errors
+        // First delete payments that reference bookings
+        paymentRepository.deleteAll();
+        // Then delete bookings
         bookingRepository.deleteAll();
+        // Then delete sheets
         sheetRepository.deleteAll();
     }
 
@@ -53,13 +65,18 @@ class SheetBookingIntegrationTest {
         sheet.setTitle("Fur Elise");
         sheet.setCategory("classical");
         sheet.setComposer("Beethoven");
-        sheet.setOwnerId(1L);
+        com.example.OLSHEETS.data.User owner1 = new com.example.OLSHEETS.data.User("owner1", "owner1@example.com", "owner1", "123");
+        owner1 = userRepository.save(owner1);
+        sheet.setOwner(owner1);
         sheet.setPrice(3.50);
         sheet = sheetRepository.save(sheet);
 
+        com.example.OLSHEETS.data.User renter = new com.example.OLSHEETS.data.User("renter200", "renter200@example.com", "renter200", "123");
+        renter = userRepository.save(renter);
+
         Map<String, Object> request = new HashMap<>();
         request.put("sheetId", sheet.getId());
-        request.put("renterId", 200L);
+        request.put("renterId", renter.getId());
         request.put("startDate", LocalDate.now().plusDays(1).toString());
         request.put("endDate", LocalDate.now().plusDays(3).toString());
 
@@ -67,7 +84,7 @@ class SheetBookingIntegrationTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getRenterId()).isEqualTo(200L);
+        assertThat(response.getBody().getRenter().getId()).isEqualTo(renter.getId());
         assertThat(response.getBody().getStatus()).isEqualTo(BookingStatus.PENDING);
     }
 
@@ -77,19 +94,24 @@ class SheetBookingIntegrationTest {
         sheet.setTitle("Canon in D");
         sheet.setCategory("classical");
         sheet.setComposer("Pachelbel");
-        sheet.setOwnerId(1L);
+        com.example.OLSHEETS.data.User owner1b = new com.example.OLSHEETS.data.User("owner11", "owner11@example.com", "owner1", "123");
+        owner1b = userRepository.save(owner1b);
+        sheet.setOwner(owner1b);
         sheet.setPrice(4.00);
         sheet = sheetRepository.save(sheet);
 
-        SheetBooking booking = new SheetBooking(sheet, 300L, LocalDate.now().plusDays(1), LocalDate.now().plusDays(2));
+        com.example.OLSHEETS.data.User renter = new com.example.OLSHEETS.data.User("renter300", "renter300@example.com", "renter300", "123");
+        renter = userRepository.save(renter);
+
+        SheetBooking booking = new SheetBooking(sheet, renter, LocalDate.now().plusDays(1), LocalDate.now().plusDays(2));
         bookingRepository.save(booking);
 
-        ResponseEntity<SheetBooking[]> response = restTemplate.getForEntity(baseUrl + "/renter/300", SheetBooking[].class);
+        ResponseEntity<SheetBooking[]> response = restTemplate.getForEntity(baseUrl + "/renter/" + renter.getId(), SheetBooking[].class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody()).hasSize(1);
-        assertThat(response.getBody()[0].getRenterId()).isEqualTo(300L);
+        assertThat(response.getBody()[0].getRenter().getId()).isEqualTo(renter.getId());
     }
 }
 

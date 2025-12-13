@@ -2,6 +2,7 @@ package com.example.OLSHEETS.unit;
 
 import com.example.OLSHEETS.boundary.SheetsController;
 import com.example.OLSHEETS.data.MusicSheet;
+import com.example.OLSHEETS.data.User;
 import com.example.OLSHEETS.service.ProductsService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -49,6 +50,8 @@ class SheetsControllerTest {
 
     @BeforeEach
     void setUp() {
+        User owner1 = new User("owner1", "owner1@example.com", "Owner One", "password123");
+        owner1.setId(1L);
         sheet1 = new MusicSheet();
         sheet1.setId(1L);
         sheet1.setName("Moonlight Sonata");
@@ -56,8 +59,10 @@ class SheetsControllerTest {
         sheet1.setCategory("CLASSICAL");
         sheet1.setDescription("Piano Sonata No. 14");
         sheet1.setPrice(9.99);
-        sheet1.setOwnerId(1);
+        sheet1.setOwner(owner1);
 
+        User owner2 = new User("owner2", "owner2@example.com", "Owner Two", "password123");
+        owner2.setId(2L);
         sheet2 = new MusicSheet();
         sheet2.setId(2L);
         sheet2.setName("Bohemian Rhapsody");
@@ -65,7 +70,7 @@ class SheetsControllerTest {
         sheet2.setCategory("ROCK");
         sheet2.setDescription("Queen masterpiece");
         sheet2.setPrice(12.99);
-        sheet2.setOwnerId(1);
+        sheet2.setOwner(owner2);
     }
 
     @Test
@@ -175,6 +180,6 @@ class SheetsControllerTest {
                 .andExpect(jsonPath("$[0].category", is("CLASSICAL")))
                 .andExpect(jsonPath("$[0].description", is("Piano Sonata No. 14")))
                 .andExpect(jsonPath("$[0].price", is(9.99)))
-                .andExpect(jsonPath("$[0].ownerId", is(1)));
+                .andExpect(jsonPath("$[0].owner.id", is(1)));
     }
 }

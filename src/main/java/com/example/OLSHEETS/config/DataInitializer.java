@@ -48,14 +48,14 @@ public class DataInitializer {
 
     private void createUsers() {
         User[] users = {
-                new User("john_doe", "john@example.com", "John Doe"),
-                new User("jane_smith", "jane@example.com", "Jane Smith"),
-                new User("mike_wilson", "mike@example.com", "Mike Wilson"),
-                new User("sarah_jones", "sarah@example.com", "Sarah Jones"),
-                new User("david_brown", "david@example.com", "David Brown"),
-                new User("emily_davis", "emily@example.com", "Emily Davis"),
-                new User("chris_miller", "chris@example.com", "Chris Miller"),
-                new User("lisa_garcia", "lisa@example.com", "Lisa Garcia")
+                new User("john_doe", "john@example.com", "John Doe", "password123"),
+                new User("jane_smith", "jane@example.com", "Jane Smith", "password123"),
+                new User("mike_wilson", "mike@example.com", "Mike Wilson", "password123"),
+                new User("sarah_jones", "sarah@example.com", "Sarah Jones", "password123"),
+                new User("david_brown", "david@example.com", "David Brown", "password123"),
+                new User("emily_davis", "emily@example.com", "Emily Davis", "password123"),
+                new User("chris_miller", "chris@example.com", "Chris Miller", "password123"),
+                new User("lisa_garcia", "lisa@example.com", "Lisa Garcia", "password123")
         };
 
         userRepository.saveAll(Arrays.asList(users));
@@ -110,7 +110,12 @@ public class DataInitializer {
         instrument.setType(type);
         instrument.setFamily(family);
         instrument.setAge(age);
-        instrument.setOwnerId(ownerId);
+        
+        // Find and set the owner by ID
+        User owner = userRepository.findById((long) ownerId)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + ownerId));
+        instrument.setOwner(owner);
+        
         return instrument;
     }
 
@@ -161,7 +166,12 @@ public class DataInitializer {
         sheet.setPrice(price);
         sheet.setInstrumentation(instrumentation);
         sheet.setDuration(duration);
-        sheet.setOwnerId(ownerId);
+        
+        // Find and set the owner by ID
+        User owner = userRepository.findById((long) ownerId)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + ownerId));
+        sheet.setOwner(owner);
+        
         return sheet;
     }
 }

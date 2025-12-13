@@ -38,6 +38,15 @@ public class SearchMusicSheetsSteps {
     @Autowired
     private SheetBookingRepository sheetBookingRepository;
 
+    @Autowired
+    private com.example.OLSHEETS.repository.UserRepository userRepository;
+
+    @Autowired
+    private com.example.OLSHEETS.repository.ReviewRepository reviewRepository;
+
+    @Autowired
+    private com.example.OLSHEETS.repository.RenterReviewRepository renterReviewRepository;
+
     private WebDriver driver;
     private WebDriverWait wait;
     private static final String FRONTEND_URL = "http://localhost:8080";
@@ -60,6 +69,9 @@ public class SearchMusicSheetsSteps {
 
     @Given("the following music sheets exist:")
     public void theFollowingMusicSheetsExist(DataTable dataTable) {
+        // Delete in correct order to avoid foreign key violations
+        reviewRepository.deleteAll();
+        renterReviewRepository.deleteAll();
         sheetBookingRepository.deleteAll();
         musicSheetRepository.deleteAll();
 
@@ -71,7 +83,9 @@ public class SearchMusicSheetsSteps {
             sheet.setCategory(row.get("category"));
             sheet.setPrice(Double.parseDouble(row.get("price")));
             sheet.setDescription(row.get("description"));
-            sheet.setOwnerId(1); // Default owner for test data
+            com.example.OLSHEETS.data.User owner = new com.example.OLSHEETS.data.User("owner1", "owner1@example.com", "owner1");
+            owner = userRepository.save(owner);
+            sheet.setOwner(owner); // Default owner for test data
 
             musicSheetRepository.save(sheet);
         }

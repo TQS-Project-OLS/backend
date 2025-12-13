@@ -2,13 +2,15 @@ package com.example.OLSHEETS.dto;
 
 import com.example.OLSHEETS.data.InstrumentFamily;
 import com.example.OLSHEETS.data.InstrumentType;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class InstrumentRegistrationRequest {
@@ -16,7 +18,7 @@ public class InstrumentRegistrationRequest {
     private String name;
     private String description;
     private Double price;
-    private Integer ownerId;
+    private Long ownerId;
     private Integer age;
     private InstrumentType type;
     private InstrumentFamily family;

@@ -47,11 +47,16 @@ public class AdminOversightSteps {
     @Autowired
     private SheetBookingRepository sheetBookingRepository;
 
+    @Autowired
+    private com.example.OLSHEETS.repository.UserRepository userRepository;
+
     private WebDriver driver;
     private WebDriverWait wait;
     private static final String FRONTEND_URL = "http://localhost:8080";
 
     private Map<Long, Instrument> instrumentMap = new HashMap<>();
+    private Map<Long, com.example.OLSHEETS.data.User> renterMap = new HashMap<>();
+    private Map<Long, com.example.OLSHEETS.data.User> ownerMap = new HashMap<>();
     private int visibleBookingCount = 0;
     private Map<String, String> statistics = new HashMap<>();
 
@@ -77,6 +82,8 @@ public class AdminOversightSteps {
         sheetBookingRepository.deleteAll();
         itemRepository.deleteAll();
         instrumentMap.clear();
+        renterMap.clear();
+        ownerMap.clear();
 
         List<Map<String, String>> rows = dataTable.asMaps(String.class, String.class);
         for (Map<String, String> row : rows) {
@@ -88,7 +95,13 @@ public class AdminOversightSteps {
             instrument.setPrice(Double.parseDouble(row.get("price")));
             instrument.setDescription(row.get("description"));
             try {
-                instrument.setOwnerId(Integer.parseInt(row.get("ownerId")));
+                Long scenarioOwnerId = Long.parseLong(row.get("ownerId"));
+                com.example.OLSHEETS.data.User owner = ownerMap.get(scenarioOwnerId);
+                if (owner == null) {
+                    owner = userRepository.save(new com.example.OLSHEETS.data.User("owner" + scenarioOwnerId, "owner" + scenarioOwnerId + "@a.com", "owner" + scenarioOwnerId, "123"));
+                    ownerMap.put(scenarioOwnerId, owner);
+                }
+                instrument.setOwner(owner);
             } catch (NumberFormatException e) {
                 fail("Invalid ownerId value: '" + row.get("ownerId") + "' in instrument row: " + row + ". Error: "
                         + e.getMessage());
@@ -109,9 +122,16 @@ public class AdminOversightSteps {
                     .findFirst()
                     .orElseThrow(() -> new IllegalStateException("Instrument not found: " + itemName));
 
+            Long scenarioRenterId = Long.parseLong(row.get("renterId"));
+            com.example.OLSHEETS.data.User renter = renterMap.get(scenarioRenterId);
+            if (renter == null) {
+                renter = userRepository.save(new com.example.OLSHEETS.data.User("owner" + scenarioRenterId, "owner" + scenarioRenterId + "@a.com", "owner" + scenarioRenterId, "123"));
+                renterMap.put(scenarioRenterId, renter);
+            }
+
             Booking booking = new Booking();
             booking.setItem(instrument);
-            booking.setRenterId(Long.parseLong(row.get("renterId")));
+            booking.setRenter(renter);
             booking.setStartDate(LocalDate.parse(row.get("startDate")));
             booking.setEndDate(LocalDate.parse(row.get("endDate")));
             booking.setStatus(BookingStatus.valueOf(row.get("status").toUpperCase()));
@@ -150,12 +170,20 @@ public class AdminOversightSteps {
     }
 
     @When("the admin views bookings for renter {long}")
-    public void theAdminViewsBookingsForRenter(Long renterId) {
+    public void theAdminViewsBookingsForRenter(Long scenarioRenterId) {
+        // Get the actual saved renter ID from our map
+        com.example.OLSHEETS.data.User renter = renterMap.get(scenarioRenterId);
+        if (renter == null) {
+            visibleBookingCount = 0;
+            return;
+        }
+        Long actualRenterId = renter.getId();
+        
         // Count bookings for specific renter from database
         List<Booking> allBookings = bookingRepository.findAll();
         visibleBookingCount = (int) allBookings.stream()
-                .filter(b -> b.getRenterId().equals(renterId))
-                .count();
+            .filter(b -> b.getRenter().getId().equals(actualRenterId))
+            .count();
     }
 
     @When("the admin cancels the booking for {string}")
@@ -194,19 +222,32 @@ public class AdminOversightSteps {
     }
 
     @When("the admin checks activity for renter {long}")
-    public void theAdminChecksActivityForRenter(Long renterId) {
+    public void theAdminChecksActivityForRenter(Long scenarioRenterId) {
+        // Get the actual saved renter ID from our map
+        com.example.OLSHEETS.data.User renter = renterMap.get(scenarioRenterId);
+        if (renter == null) {
+            visibleBookingCount = 0;
+            return;
+        }
+        Long actualRenterId = renter.getId();
+        
         List<Booking> allBookings = bookingRepository.findAll();
         visibleBookingCount = (int) allBookings.stream()
-                .filter(b -> b.getRenterId().equals(renterId))
-                .count();
+            .filter(b -> b.getRenter().getId().equals(actualRenterId))
+            .count();
     }
 
     @When("the admin checks activity for owner {int}")
     public void theAdminChecksActivityForOwner(int ownerId) {
+        com.example.OLSHEETS.data.User owner = ownerMap.get((long) ownerId);
+        if (owner == null) {
+            visibleBookingCount = 0;
+            return;
+        }
         List<Booking> allBookings = bookingRepository.findAll();
         visibleBookingCount = (int) allBookings.stream()
-                .filter(b -> b.getItem().getOwnerId() == ownerId)
-                .count();
+            .filter(b -> b.getItem().getOwner().getId().equals(owner.getId()))
+            .count();
     }
 
     @When("the admin checks revenue for owner {int}")

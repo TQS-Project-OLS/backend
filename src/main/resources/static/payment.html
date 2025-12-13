@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment - OLSHEETS</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="js/theme.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/nav.js"></script>
+</head>
+
+<body>
+    <script>
+        requireAuth();
+    </script>
+
+    <div class="container" style="max-width: 600px;">
+        <div class="page-header" style="margin-bottom: var(--space-xl);">
+            <h1>Secure Payment</h1>
+            <p style="color: var(--text-muted);">Complete your rental payment securely</p>
+        </div>
+
+        <div id="loading-state" class="card text-center" style="padding: var(--space-xl);">
+            <p style="color: var(--text-muted);">Loading booking details...</p>
+        </div>
+
+        <div id="error-state" class="card hidden" style="padding: var(--space-xl);">
+            <div class="text-center">
+                <h3 style="color: var(--error);">Error</h3>
+                <p id="error-message" style="color: var(--text-muted);"></p>
+                <a href="my-bookings.html" class="btn btn-secondary" style="margin-top: var(--space-md);">Back to Bookings</a>
+            </div>
+        </div>
+
+        <div id="already-paid-state" class="card hidden" style="padding: var(--space-xl);">
+            <div class="text-center">
+                <div style="font-size: 4rem; margin-bottom: var(--space-md);">✓</div>
+                <h3 style="color: var(--success);">Already Paid</h3>
+                <p style="color: var(--text-muted);">This booking has already been paid.</p>
+                <a href="my-bookings.html" class="btn btn-primary" style="margin-top: var(--space-md);">Back to Bookings</a>
+            </div>
+        </div>
+
+        <div id="payment-form-container" class="card hidden">
+            <h2 style="margin-bottom: var(--space-lg);">Payment Details</h2>
+
+            <div id="payment-message" class="hidden"
+                style="padding: var(--space-md); border-radius: var(--radius-md); margin-bottom: var(--space-lg); text-align: center;">
+            </div>
+
+            <div class="booking-summary"
+                style="background: rgba(99, 102, 241, 0.1); padding: var(--space-md); border-radius: var(--radius-md); margin-bottom: var(--space-lg); border: 1px solid rgba(99, 102, 241, 0.2);">
+                <h4 style="margin-bottom: var(--space-sm); color: var(--primary-light);">Booking Summary</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-sm); font-size: 0.9rem;">
+                    <div style="color: var(--text-muted);">Item:</div>
+                    <div id="summary-item" style="color: var(--text-main); font-weight: 500;">-</div>
+                    <div style="color: var(--text-muted);">Rental Period:</div>
+                    <div id="summary-dates" style="color: var(--text-main);">-</div>
+                    <div style="color: var(--text-muted);">Duration:</div>
+                    <div id="summary-duration" style="color: var(--text-main);">-</div>
+                    <div style="color: var(--text-muted);">Price per Day:</div>
+                    <div id="summary-price-per-day" style="color: var(--text-main);">-</div>
+                </div>
+                <hr style="border: none; border-top: 1px solid rgba(99, 102, 241, 0.2); margin: var(--space-md) 0;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 1.1rem; font-weight: 600; color: var(--text-main);">Total Amount:</span>
+                    <span id="summary-total" class="price" style="font-size: 1.5rem;">€0.00</span>
+                </div>
+            </div>
+
+            <form id="payment-form">
+                <input type="hidden" id="bookingId" name="bookingId">
+
+                <div class="form-group">
+                    <label class="form-label" for="paymentMethod">Payment Method</label>
+                    <select class="form-control" id="paymentMethod" name="paymentMethod" required>
+                        <option value="CREDIT_CARD">Credit Card</option>
+                        <option value="DEBIT_CARD">Debit Card</option>
+                        <option value="MBWAY">MB Way</option>
+                    </select>
+                </div>
+
+                <div id="card-fields">
+                    <div class="form-group">
+                        <label class="form-label" for="cardNumber">Card Number</label>
+                        <input type="text" class="form-control" id="cardNumber" name="cardNumber" 
+                            placeholder="4242 4242 4242 4242" maxlength="19" required
+                            pattern="[0-9\s]{13,19}">
+                        <small style="color: var(--text-muted); font-size: 0.8rem;">
+                            Test cards: 4242424242424242 (success) | 4000000000000002 (decline)
+                        </small>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
+                        <div class="form-group">
+                            <label class="form-label" for="expiry">Expiry Date</label>
+                            <input type="text" class="form-control" id="expiry" name="expiry" 
+                                placeholder="MM/YY" maxlength="5" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="cvv">CVV</label>
+                            <input type="text" class="form-control" id="cvv" name="cvv" 
+                                placeholder="123" maxlength="4" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="cardholderName">Cardholder Name</label>
+                        <input type="text" class="form-control" id="cardholderName" name="cardholderName" 
+                            placeholder="John Doe" required>
+                    </div>
+                </div>
+
+                <div style="background: rgba(16, 185, 129, 0.1); padding: var(--space-md); border-radius: var(--radius-md); margin-bottom: var(--space-lg); border: 1px solid rgba(16, 185, 129, 0.2);">
+                    <div style="display: flex; align-items: center; gap: var(--space-sm);">
+                        <span style="font-size: 1.2rem;">🔒</span>
+                        <span style="color: var(--success); font-size: 0.9rem;">Your payment is secure and encrypted</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%;" id="submit-payment-btn">
+                    Pay Now
+                </button>
+
+                <a href="my-bookings.html" class="btn btn-secondary" style="width: 100%; margin-top: var(--space-sm); text-align: center; display: block;">
+                    Cancel
+                </a>
+            </form>
+        </div>
+
+        <div id="success-state" class="card hidden" style="padding: var(--space-xl);">
+            <div class="text-center">
+                <div style="font-size: 4rem; margin-bottom: var(--space-md);">🎉</div>
+                <h3 style="color: var(--success);">Payment Successful!</h3>
+                <p id="success-transaction" style="color: var(--text-muted); margin-top: var(--space-sm);">Transaction ID: -</p>
+                <p style="color: var(--text-muted); margin-top: var(--space-md);">Your rental has been confirmed. Enjoy your instrument!</p>
+                <a href="my-bookings.html" class="btn btn-primary" style="margin-top: var(--space-lg);">View My Bookings</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let bookingData = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const bookingId = urlParams.get('bookingId');
+
+            if (!bookingId) {
+                showError('No booking ID provided');
+                return;
+            }
+
+            document.getElementById('bookingId').value = bookingId;
+
+            try {
+                const isPaidResponse = await authenticatedFetch(`/api/payments/check/${bookingId}`);
+                const isPaidData = await isPaidResponse.json();
+
+                if (isPaidData.isPaid) {
+                    showAlreadyPaid();
+                    return;
+                }
+
+                const bookingsResponse = await authenticatedFetch('/api/admin/bookings');
+                const bookings = await bookingsResponse.json();
+                bookingData = bookings.find(b => b.id == bookingId);
+
+                if (!bookingData) {
+                    showError('Booking not found');
+                    return;
+                }
+
+                if (bookingData.status !== 'APPROVED') {
+                    showError(`This booking cannot be paid. Status: ${bookingData.status}. Only approved bookings can be paid.`);
+                    return;
+                }
+
+                displayBookingSummary(bookingData);
+                showPaymentForm();
+
+            } catch (error) {
+                console.error('Error loading booking:', error);
+                showError('Failed to load booking details: ' + error.message);
+            }
+        });
+
+        function showError(message) {
+            document.getElementById('loading-state').classList.add('hidden');
+            document.getElementById('error-message').textContent = message;
+            document.getElementById('error-state').classList.remove('hidden');
+        }
+
+        function showAlreadyPaid() {
+            document.getElementById('loading-state').classList.add('hidden');
+            document.getElementById('already-paid-state').classList.remove('hidden');
+        }
+
+        function showPaymentForm() {
+            document.getElementById('loading-state').classList.add('hidden');
+            document.getElementById('payment-form-container').classList.remove('hidden');
+        }
+
+        function showSuccess(transactionId) {
+            document.getElementById('payment-form-container').classList.add('hidden');
+            document.getElementById('success-transaction').textContent = `Transaction ID: ${transactionId}`;
+            document.getElementById('success-state').classList.remove('hidden');
+        }
+
+        function displayBookingSummary(booking) {
+            const item = booking.item;
+            const startDate = new Date(booking.startDate);
+            const endDate = new Date(booking.endDate);
+            const diffTime = Math.abs(endDate - startDate);
+            const days = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+            const pricePerDay = item ? item.price : 0;
+            const total = pricePerDay * days;
+
+            document.getElementById('summary-item').textContent = item ? item.name : 'Unknown Item';
+            document.getElementById('summary-dates').textContent = `${booking.startDate} to ${booking.endDate}`;
+            document.getElementById('summary-duration').textContent = `${days} day(s)`;
+            document.getElementById('summary-price-per-day').textContent = `€${pricePerDay.toFixed(2)}`;
+            document.getElementById('summary-total').textContent = `€${total.toFixed(2)}`;
+        }
+
+        document.getElementById('cardNumber').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\s/g, '').replace(/\D/g, '');
+            let formatted = value.match(/.{1,4}/g)?.join(' ') || value;
+            e.target.value = formatted;
+        });
+
+        document.getElementById('expiry').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length >= 2) {
+                value = value.substring(0, 2) + '/' + value.substring(2);
+            }
+            e.target.value = value.substring(0, 5);
+        });
+
+        document.getElementById('cvv').addEventListener('input', function(e) {
+            e.target.value = e.target.value.replace(/\D/g, '').substring(0, 4);
+        });
+
+        document.getElementById('paymentMethod').addEventListener('change', function(e) {
+            const cardFields = document.getElementById('card-fields');
+            if (e.target.value === 'MBWAY') {
+                cardFields.style.display = 'none';
+                document.getElementById('cardNumber').required = false;
+                document.getElementById('expiry').required = false;
+                document.getElementById('cvv').required = false;
+                document.getElementById('cardholderName').required = false;
+            } else {
+                cardFields.style.display = 'block';
+                document.getElementById('cardNumber').required = true;
+                document.getElementById('expiry').required = true;
+                document.getElementById('cvv').required = true;
+                document.getElementById('cardholderName').required = true;
+            }
+        });
+
+        document.getElementById('payment-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const messageDiv = document.getElementById('payment-message');
+            messageDiv.classList.add('hidden');
+
+            const btn = document.getElementById('submit-payment-btn');
+            const originalText = btn.textContent;
+            btn.textContent = 'Processing...';
+            btn.disabled = true;
+
+            const bookingId = document.getElementById('bookingId').value;
+            const paymentMethod = document.getElementById('paymentMethod').value;
+            const cardNumber = document.getElementById('cardNumber').value.replace(/\s/g, '');
+
+            try {
+                const response = await authenticatedFetch('/api/payments', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        bookingId: parseInt(bookingId),
+                        paymentMethod: paymentMethod,
+                        cardNumber: cardNumber
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    if (data.status === 'COMPLETED') {
+                        showSuccess(data.transactionId);
+                    } else if (data.status === 'FAILED') {
+                        messageDiv.innerHTML = `<strong>Payment Failed:</strong> ${data.failureReason || 'Card was declined'}`;
+                        messageDiv.style.backgroundColor = 'rgba(239, 68, 68, 0.2)';
+                        messageDiv.style.color = '#f87171';
+                        messageDiv.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+                        messageDiv.classList.remove('hidden');
+                    }
+                } else {
+                    messageDiv.innerHTML = `<strong>Error:</strong> ${data.error || 'Payment processing failed'}`;
+                    messageDiv.style.backgroundColor = 'rgba(239, 68, 68, 0.2)';
+                    messageDiv.style.color = '#f87171';
+                    messageDiv.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+                    messageDiv.classList.remove('hidden');
+                }
+            } catch (error) {
+                messageDiv.innerHTML = `<strong>Error:</strong> ${error.message}`;
+                messageDiv.style.backgroundColor = 'rgba(239, 68, 68, 0.2)';
+                messageDiv.style.color = '#f87171';
+                messageDiv.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+                messageDiv.classList.remove('hidden');
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+
+</html>

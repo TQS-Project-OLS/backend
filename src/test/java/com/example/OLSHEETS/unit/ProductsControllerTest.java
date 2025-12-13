@@ -73,7 +73,9 @@ class ProductsControllerTest {
         instrument1.setName("Yamaha P-125");
         instrument1.setDescription("Digital Piano");
         instrument1.setPrice(599.99);
-        instrument1.setOwnerId(1);
+        com.example.OLSHEETS.data.User owner = new com.example.OLSHEETS.data.User("owner1", "owner1@example.com", "owner1");
+        owner.setId(1L);
+        instrument1.setOwner(owner);
         instrument1.setAge(2);
         instrument1.setType(InstrumentType.DIGITAL);
         instrument1.setFamily(InstrumentFamily.KEYBOARD);
@@ -83,7 +85,7 @@ class ProductsControllerTest {
         instrument2.setName("Yamaha YAS-280");
         instrument2.setDescription("Alto Sax");
         instrument2.setPrice(1299.99);
-        instrument2.setOwnerId(1);
+        instrument2.setOwner(owner);
         instrument2.setAge(1);
         instrument2.setType(InstrumentType.WIND);
         instrument2.setFamily(InstrumentFamily.WOODWIND);
@@ -165,7 +167,7 @@ class ProductsControllerTest {
                 .andExpect(jsonPath("$[0].name", is("Yamaha P-125")))
                 .andExpect(jsonPath("$[0].description", is("Digital Piano")))
                 .andExpect(jsonPath("$[0].price", is(599.99)))
-                .andExpect(jsonPath("$[0].ownerId", is(1)))
+                .andExpect(jsonPath("$[0].owner.id", is(1)))
                 .andExpect(jsonPath("$[0].age", is(2)))
                 .andExpect(jsonPath("$[0].type", is("DIGITAL")))
                 .andExpect(jsonPath("$[0].family", is("KEYBOARD")));
@@ -279,7 +281,7 @@ class ProductsControllerTest {
         request.setName("Gibson Les Paul");
         request.setDescription("Classic electric guitar in excellent condition");
         request.setPrice(1499.99);
-        request.setOwnerId(5);
+        request.setOwnerId(5L);
         request.setAge(3);
         request.setType(InstrumentType.ELECTRIC);
         request.setFamily(InstrumentFamily.GUITAR);
@@ -290,7 +292,9 @@ class ProductsControllerTest {
         savedInstrument.setName(request.getName());
         savedInstrument.setDescription(request.getDescription());
         savedInstrument.setPrice(request.getPrice());
-        savedInstrument.setOwnerId(5); // Will be set from authenticated user
+        com.example.OLSHEETS.data.User ownerUser = new com.example.OLSHEETS.data.User("owner" + request.getOwnerId(), "owner" +request.getOwnerId() + "@a.com", "owner" + request.getOwnerId());
+        ownerUser.setId((long) request.getOwnerId());
+        savedInstrument.setOwner(ownerUser);
         savedInstrument.setAge(request.getAge());
         savedInstrument.setType(request.getType());
         savedInstrument.setFamily(request.getFamily());
@@ -306,7 +310,7 @@ class ProductsControllerTest {
                 .andExpect(jsonPath("$.name", is("Gibson Les Paul")))
                 .andExpect(jsonPath("$.description", is("Classic electric guitar in excellent condition")))
                 .andExpect(jsonPath("$.price", is(1499.99)))
-                .andExpect(jsonPath("$.ownerId", is(5)))
+                .andExpect(jsonPath("$.owner.id", is(5)))
                 .andExpect(jsonPath("$.age", is(3)))
                 .andExpect(jsonPath("$.type", is("ELECTRIC")))
                 .andExpect(jsonPath("$.family", is("GUITAR")));
@@ -333,7 +337,7 @@ class ProductsControllerTest {
         request.setName("Fender Jazz Bass");
         request.setDescription("Professional bass guitar");
         request.setPrice(999.99);
-        request.setOwnerId(3);
+        request.setOwnerId(3L);
         request.setAge(2);
         request.setType(InstrumentType.BASS);
         request.setFamily(InstrumentFamily.GUITAR);
@@ -344,7 +348,9 @@ class ProductsControllerTest {
         savedInstrument.setName(request.getName());
         savedInstrument.setDescription(request.getDescription());
         savedInstrument.setPrice(request.getPrice());
-        savedInstrument.setOwnerId(request.getOwnerId());
+        com.example.OLSHEETS.data.User ownerUser2 = new com.example.OLSHEETS.data.User("owner" + request.getOwnerId(), "owner" +request.getOwnerId() + "@a.com", "owner" + request.getOwnerId());
+        ownerUser2.setId((long) request.getOwnerId());
+        savedInstrument.setOwner(ownerUser2);
         savedInstrument.setAge(request.getAge());
         savedInstrument.setType(request.getType());
         savedInstrument.setFamily(request.getFamily());
@@ -381,7 +387,7 @@ class ProductsControllerTest {
         request.setName("Roland TD-17");
         request.setDescription("Electronic drum kit");
         request.setPrice(1299.99);
-        request.setOwnerId(7);
+        request.setOwnerId(7L);
         request.setAge(1);
         request.setType(InstrumentType.DRUMS);
         request.setFamily(InstrumentFamily.PERCUSSION);
@@ -392,7 +398,9 @@ class ProductsControllerTest {
         savedInstrument.setName(request.getName());
         savedInstrument.setDescription(request.getDescription());
         savedInstrument.setPrice(request.getPrice());
-        savedInstrument.setOwnerId(request.getOwnerId());
+        com.example.OLSHEETS.data.User ownerUser3 = new com.example.OLSHEETS.data.User("owner" + request.getOwnerId(), "owner" +request.getOwnerId() + "@a.com", "owner" + request.getOwnerId());
+        ownerUser3.setId((long) request.getOwnerId());
+        savedInstrument.setOwner(ownerUser3);
         savedInstrument.setAge(request.getAge());
         savedInstrument.setType(request.getType());
         savedInstrument.setFamily(request.getFamily());
@@ -428,7 +436,7 @@ class ProductsControllerTest {
         request.setName("Taylor 814ce");
         request.setDescription("Premium acoustic guitar");
         request.setPrice(3299.99);
-        request.setOwnerId(4);
+        request.setOwnerId(4L);
         request.setAge(0);
         request.setType(InstrumentType.ACOUSTIC);
         request.setFamily(InstrumentFamily.GUITAR);
@@ -439,7 +447,9 @@ class ProductsControllerTest {
         savedInstrument.setName(request.getName());
         savedInstrument.setDescription(request.getDescription());
         savedInstrument.setPrice(request.getPrice());
-        savedInstrument.setOwnerId(request.getOwnerId());
+        com.example.OLSHEETS.data.User ownerUser4 = new com.example.OLSHEETS.data.User("owner" + request.getOwnerId(), "owner" +request.getOwnerId() + "@a.com", "owner" + request.getOwnerId());
+        ownerUser4.setId((long) request.getOwnerId());
+        savedInstrument.setOwner(ownerUser4);
         savedInstrument.setAge(request.getAge());
         savedInstrument.setType(request.getType());
         savedInstrument.setFamily(request.getFamily());
@@ -454,7 +464,7 @@ class ProductsControllerTest {
                 .andExpect(jsonPath("$.name", is("Taylor 814ce")))
                 .andExpect(jsonPath("$.description", is("Premium acoustic guitar")))
                 .andExpect(jsonPath("$.price", is(3299.99)))
-                .andExpect(jsonPath("$.ownerId", is(4)))
+                .andExpect(jsonPath("$.owner.id", is(4)))
                 .andExpect(jsonPath("$.age", is(0)))
                 .andExpect(jsonPath("$.type", is("ACOUSTIC")))
                 .andExpect(jsonPath("$.family", is("GUITAR")));
