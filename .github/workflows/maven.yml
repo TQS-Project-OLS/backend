@@ -53,5 +53,6 @@ jobs:
             -Dxray.testEnvironment=$TEST_ENVIRONMENT \
             -Dxray.testPlanKey=$XRAYCLOUD_TEST_PLAN_KEY \
             -Dxray.revision=$REVISION_SAFE \
+            -Dxray.verbose=true \
             xray:import-results
 
