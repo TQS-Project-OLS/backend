@@ -10,10 +10,16 @@ import com.example.OLSHEETS.repository.ItemRepository;
 import com.example.OLSHEETS.repository.SheetBookingRepository;
 import com.example.OLSHEETS.repository.PaymentRepository;
 import com.example.OLSHEETS.service.AdminService;
+
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.PostgreSQLContainer;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -26,6 +32,27 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
     "spring.main.lazy-initialization=true"
 })
 class AdminServiceIntegrationTest {
+
+    static PostgreSQLContainer<?> myPostgreSQLContainer =
+            new PostgreSQLContainer<>("postgres:16-alpine");
+
+    @DynamicPropertySource
+    static void configureProperties(DynamicPropertyRegistry registry){
+        registry.add("spring.datasource.url",myPostgreSQLContainer::getJdbcUrl);
+        registry.add("spring.datasource.username",myPostgreSQLContainer::getUsername);
+        registry.add("spring.datasource.password",myPostgreSQLContainer::getPassword);
+
+    }
+
+    @BeforeAll
+    static void beforeAll(){
+        myPostgreSQLContainer.start();
+    }
+
+    @AfterAll
+    static void afterAll(){
+        myPostgreSQLContainer.stop();
+    }
 
     @Autowired
     AdminService adminService;
@@ -50,7 +77,7 @@ class AdminServiceIntegrationTest {
     private Booking booking1;
     private Booking booking2;
     private Booking booking3;
-    
+
     private com.example.OLSHEETS.data.User testOwner10;
     private com.example.OLSHEETS.data.User testOwner20;
 
@@ -67,7 +94,7 @@ class AdminServiceIntegrationTest {
         itemRepository.deleteAll();
         // Finally delete users
         userRepository.deleteAll();
-        
+
         instrument1 = new Instrument();
         instrument1.setName("Guitar");
         instrument1.setDescription("Electric Guitar");
@@ -96,9 +123,9 @@ class AdminServiceIntegrationTest {
         com.example.OLSHEETS.data.User u100 = userRepository.save(new com.example.OLSHEETS.data.User("u100", "u100@example.com", "u100", "123"));
         com.example.OLSHEETS.data.User u200 = userRepository.save(new com.example.OLSHEETS.data.User("u200", "u200@example.com", "u200", "123"));
 
-        booking1 = bookingRepository.save(new Booking(instrument1, u100, 
+        booking1 = bookingRepository.save(new Booking(instrument1, u100,
             LocalDate.of(2025, 12, 1), LocalDate.of(2025, 12, 5)));
-        booking2 = bookingRepository.save(new Booking(instrument2, u200, 
+        booking2 = bookingRepository.save(new Booking(instrument2, u200,
             LocalDate.of(2025, 12, 10), LocalDate.of(2025, 12, 15)));
 
         List<Booking> bookings = adminService.getAllBookings();
@@ -136,11 +163,11 @@ class AdminServiceIntegrationTest {
         com.example.OLSHEETS.data.User u100 = userRepository.save(new com.example.OLSHEETS.data.User("u100", "u100@example.com", "u100", "123"));
         com.example.OLSHEETS.data.User u200 = userRepository.save(new com.example.OLSHEETS.data.User("u200", "u200@example.com", "u200", "123"));
 
-        booking1 = bookingRepository.save(new Booking(instrument1, u100, 
+        booking1 = bookingRepository.save(new Booking(instrument1, u100,
             LocalDate.of(2025, 12, 1), LocalDate.of(2025, 12, 5)));
-        booking2 = bookingRepository.save(new Booking(instrument2, u100, 
+        booking2 = bookingRepository.save(new Booking(instrument2, u100,
             LocalDate.of(2025, 12, 10), LocalDate.of(2025, 12, 15)));
-        booking3 = bookingRepository.save(new Booking(instrument1, u200, 
+        booking3 = bookingRepository.save(new Booking(instrument1, u200,
             LocalDate.of(2025, 12, 20), LocalDate.of(2025, 12, 25)));
 
         List<Booking> renter100Bookings = adminService.getBookingsByRenter(u100.getId());
@@ -153,13 +180,13 @@ class AdminServiceIntegrationTest {
     void shouldCancelBookingAsAdmin() {
         com.example.OLSHEETS.data.User u100 = userRepository.save(new com.example.OLSHEETS.data.User("u100", "u100@example.com", "u100", "123"));
 
-        booking1 = bookingRepository.save(new Booking(instrument1, u100, 
+        booking1 = bookingRepository.save(new Booking(instrument1, u100,
             LocalDate.of(2025, 12, 1), LocalDate.of(2025, 12, 5)));
 
         Booking cancelled = adminService.cancelBooking(booking1.getId());
 
         assertThat(cancelled.getStatus()).isEqualTo(BookingStatus.CANCELLED);
-        
+
         Booking fromDb = bookingRepository.findById(booking1.getId()).orElseThrow();
         assertThat(fromDb.getStatus()).isEqualTo(BookingStatus.CANCELLED);
     }
@@ -203,11 +230,11 @@ class AdminServiceIntegrationTest {
         com.example.OLSHEETS.data.User u100 = userRepository.save(new com.example.OLSHEETS.data.User("u100", "u100@example.com", "u100", "123"));
         com.example.OLSHEETS.data.User u200 = userRepository.save(new com.example.OLSHEETS.data.User("u200", "u200@example.com", "u200", "123"));
 
-        booking1 = bookingRepository.save(new Booking(instrument1, u100, 
+        booking1 = bookingRepository.save(new Booking(instrument1, u100,
             LocalDate.of(2025, 12, 1), LocalDate.of(2025, 12, 5)));
-        booking2 = bookingRepository.save(new Booking(instrument2, u100, 
+        booking2 = bookingRepository.save(new Booking(instrument2, u100,
             LocalDate.of(2025, 12, 10), LocalDate.of(2025, 12, 15)));
-        booking3 = bookingRepository.save(new Booking(instrument1, u200, 
+        booking3 = bookingRepository.save(new Booking(instrument1, u200,
             LocalDate.of(2025, 12, 20), LocalDate.of(2025, 12, 25)));
 
         Long activityRenter100 = adminService.getRenterActivity(u100.getId());
@@ -223,11 +250,11 @@ class AdminServiceIntegrationTest {
         com.example.OLSHEETS.data.User u200 = userRepository.save(new com.example.OLSHEETS.data.User("u200", "u200@example.com", "u200", "123"));
         com.example.OLSHEETS.data.User u300 = userRepository.save(new com.example.OLSHEETS.data.User("u300", "u300@example.com", "u300", "123"));
 
-        booking1 = bookingRepository.save(new Booking(instrument1, u100, 
+        booking1 = bookingRepository.save(new Booking(instrument1, u100,
             LocalDate.of(2025, 12, 1), LocalDate.of(2025, 12, 5)));
-        booking2 = bookingRepository.save(new Booking(instrument1, u200, 
+        booking2 = bookingRepository.save(new Booking(instrument1, u200,
             LocalDate.of(2025, 12, 10), LocalDate.of(2025, 12, 15)));
-        booking3 = bookingRepository.save(new Booking(instrument2, u300, 
+        booking3 = bookingRepository.save(new Booking(instrument2, u300,
             LocalDate.of(2025, 12, 20), LocalDate.of(2025, 12, 25)));
 
         Long activityOwner10 = adminService.getOwnerActivity(testOwner10.getId());
