@@ -26,10 +26,8 @@ jobs:
         java-version: ${{ matrix.java }}
         distribution: 'temurin'
         cache: maven
-    - name: Build and run unit tests
-      run: mvn -B package --file pom.xml
-    - name: Run integration tests
-      run: mvn -B integration-test verify --file pom.xml
+    - name: Build, unit tests, integration tests
+      run: mvn -B verify
     - name: Add code coverage information to PR
       id: jacoco-pr
       uses: madrapps/jacoco-report@50d3aff4548aa991e6753342d9ba291084e63848
@@ -48,5 +46,7 @@ jobs:
         XRAYCLOUD_TEST_PLAN_KEY: ${{ vars.XRAYCLOUD_TEST_PLAN_KEY }}
         REVISION: ${{ github.ref_name }}
         TEST_ENVIRONMENT: java${{ matrix.java }}
-        testPaths: "backend/target/*-reports/*.xml"
+        testPaths: |
+          target/surefire-reports/TEST-*.xml
+          target/failsafe-reports/TEST-*.xml
       run: mvn -Dxray.clientId=${{ env.XRAYCLOUD_CLIENT_ID }} -Dxray.clientSecret=${{ env.XRAYCLOUD_CLIENT_SECRET }} -Dxray.testEnvironment=${{ env.TEST_ENVIRONMENT }} -Dxray.testPlanKey=${{ env.XRAYCLOUD_TEST_PLAN_KEY }} -Dxray.revision=${{ env.REVISION }} xray:import-results
