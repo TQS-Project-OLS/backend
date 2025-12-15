@@ -4,6 +4,7 @@ import com.example.OLSHEETS.data.Instrument;
 import com.example.OLSHEETS.data.InstrumentType;
 import com.example.OLSHEETS.data.InstrumentFamily;
 import com.example.OLSHEETS.data.User;
+import com.example.OLSHEETS.dto.ErrorResponse;
 import com.example.OLSHEETS.dto.InstrumentRegistrationRequest;
 import com.example.OLSHEETS.exception.UserNotFoundException;
 import com.example.OLSHEETS.repository.UserRepository;
@@ -16,7 +17,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/instruments")
@@ -29,12 +29,12 @@ public class ProductsController {
     private UserRepository userRepository;
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getInstrumentById(@PathVariable Long id) {
+    public ResponseEntity<Object> getInstrumentById(@PathVariable Long id) {
         try {
             Instrument instrument = productsService.getInstrumentById(id);
             return ResponseEntity.ok(instrument);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         }
     }
 
@@ -58,7 +58,7 @@ public class ProductsController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerInstrument(@RequestBody InstrumentRegistrationRequest request) {
+    public ResponseEntity<Object> registerInstrument(@RequestBody InstrumentRegistrationRequest request) {
         try {
             // Extract username from JWT token
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -74,7 +74,7 @@ public class ProductsController {
             Instrument registeredInstrument = productsService.registerInstrument(request);
             return ResponseEntity.status(HttpStatus.CREATED).body(registeredInstrument);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         }
     }
 }

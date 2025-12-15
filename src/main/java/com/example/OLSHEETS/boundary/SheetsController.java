@@ -2,6 +2,7 @@ package com.example.OLSHEETS.boundary;
 
 import com.example.OLSHEETS.data.MusicSheet;
 import com.example.OLSHEETS.data.User;
+import com.example.OLSHEETS.dto.ErrorResponse;
 import com.example.OLSHEETS.dto.MusicSheetRegistrationRequest;
 import com.example.OLSHEETS.exception.UserNotFoundException;
 import com.example.OLSHEETS.repository.UserRepository;
@@ -14,7 +15,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/sheets")
@@ -39,7 +39,7 @@ public class SheetsController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerMusicSheet(@RequestBody MusicSheetRegistrationRequest request) {
+    public ResponseEntity<Object> registerMusicSheet(@RequestBody MusicSheetRegistrationRequest request) {
         try {
             // If ownerId is not already set in request, extract from authentication
             if (request.getOwnerId() == null) {
@@ -58,7 +58,7 @@ public class SheetsController {
             MusicSheet registeredMusicSheet = productsService.registerMusicSheet(request);
             return ResponseEntity.status(HttpStatus.CREATED).body(registeredMusicSheet);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         }
     }
 }
