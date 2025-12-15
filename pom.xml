@@ -257,15 +257,24 @@
 
 			<!-- Xray Maven Plugin -->
             <plugin>
-                <groupId>app.getxray</groupId>
-                <artifactId>xray-maven-plugin</artifactId>
-                <version>${xray-maven-plugin.version}</version>
-                <configuration>
-                    <cloud>true</cloud>
-                    <projectKey>OLS</projectKey>
-                    <reportFormat>junit</reportFormat>
-                    <reportFile>target/surefire-reports/TEST-*.xml,target/failsafe-reports/TEST-*.xml</reportFile>
-                </configuration>
+            <groupId>app.getxray</groupId>
+            <artifactId>xray-maven-plugin</artifactId>
+            <version>${xray-maven-plugin.version}</version>
+            <configuration>
+                <cloud>true</cloud>
+                <projectKey>OLS</projectKey>
+                <reportFormat>junit</reportFormat>
+                <reportFile>target/surefire-reports/TEST-*.xml</reportFile>
+            </configuration>
+            <executions>
+                <execution>
+                <id>xray-import</id>
+                <phase>verify</phase>
+                <goals>
+                    <goal>import-results</goal>
+                </goals>
+                </execution>
+            </executions>
             </plugin>
 
 			<!-- Maven Surefire Plugin with parallel execution -->
