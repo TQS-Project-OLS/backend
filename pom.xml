@@ -262,12 +262,7 @@
             <version>${xray-maven-plugin.version}</version>
             <configuration>
                 <cloud>true</cloud>
-                <clientId>${xray.clientId}</clientId>
-                <clientSecret>${xray.clientSecret}</clientSecret>
                 <projectKey>OLS</projectKey>
-                <testPlanKey>${xray.testPlanKey}</testPlanKey>
-                <testEnvironment>${xray.testEnvironment}</testEnvironment>
-                <revision>${xray.revision}</revision>
                 <reportFormat>junit</reportFormat>
                 <reportFile>target/*-reports/*.xml</reportFile>
                 <verbose>${xray.verbose}</verbose>
