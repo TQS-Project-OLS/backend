@@ -277,11 +277,11 @@
                     <threadCount>4</threadCount>
                     <forkCount>1</forkCount>
                     <reuseForks>true</reuseForks>
-                    <excludes>
+                <!-- <excludes>
                     <exclude>**/*IntegrationTest.java</exclude>
                     <exclude>**/*IT.java</exclude>
                     <exclude>**/RunCucumberTest.java</exclude>
-                    </excludes>
+                </excludes> -->
                 </configuration>
             </plugin>
 
