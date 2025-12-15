@@ -21,7 +21,13 @@ document.addEventListener('DOMContentLoaded', () => {
             <a href="index.html" class="nav-brand">🎸 OLSHEETS</a>
             <div class="nav-links">
                 <a href="index.html" class="nav-link">Discover</a>
-                <a href="rent-up.html" class="nav-link">Rent Up</a>
+                <div class="nav-dropdown">
+                    <span class="nav-link nav-dropdown-trigger">Upload ▾</span>
+                    <div class="nav-dropdown-menu">
+                        <a href="rent-up.html" class="nav-dropdown-item">Instrument</a>
+                        <a href="upload-sheet.html" class="nav-dropdown-item">Music Sheet</a>
+                    </div>
+                </div>
                 <a href="my-bookings.html" class="nav-link">My Bookings</a>
                 <a href="manage.html" class="nav-link">Manage</a>
                 <button id="theme-toggle" class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">☀️</button>
@@ -38,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Set active link
     const currentPath = window.location.pathname.split('/').pop() || 'index.html';
-    const links = document.querySelectorAll('.nav-link');
+    const links = document.querySelectorAll('.nav-link, .nav-dropdown-item');
     links.forEach(link => {
         if (link.getAttribute('href') === currentPath) {
             link.classList.add('active');
