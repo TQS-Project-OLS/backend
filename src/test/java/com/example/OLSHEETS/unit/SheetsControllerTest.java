@@ -3,13 +3,20 @@ package com.example.OLSHEETS.unit;
 import com.example.OLSHEETS.boundary.SheetsController;
 import com.example.OLSHEETS.data.MusicSheet;
 import com.example.OLSHEETS.data.User;
+import com.example.OLSHEETS.dto.MusicSheetRegistrationRequest;
+import com.example.OLSHEETS.repository.UserRepository;
 import com.example.OLSHEETS.service.ProductsService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import com.example.OLSHEETS.security.JwtUtil;
@@ -17,11 +24,14 @@ import com.example.OLSHEETS.security.JwtUtil;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(controllers = SheetsController.class, excludeAutoConfiguration = {
@@ -42,15 +52,22 @@ class SheetsControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     @MockitoBean
     private ProductsService productsService;
 
+    @MockitoBean
+    private UserRepository userRepository;
+
     private MusicSheet sheet1;
     private MusicSheet sheet2;
+    private User owner1;
 
     @BeforeEach
     void setUp() {
-        User owner1 = new User("owner1", "owner1@example.com", "Owner One", "password123");
+        owner1 = new User("owner1", "owner1@example.com", "Owner One", "password123");
         owner1.setId(1L);
         sheet1 = new MusicSheet();
         sheet1.setId(1L);
@@ -71,6 +88,13 @@ class SheetsControllerTest {
         sheet2.setDescription("Queen masterpiece");
         sheet2.setPrice(12.99);
         sheet2.setOwner(owner2);
+
+        // Setup authentication
+        Authentication auth = mock(Authentication.class);
+        when(auth.getName()).thenReturn("owner1");
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(securityContext);
     }
 
     @Test
@@ -181,5 +205,119 @@ class SheetsControllerTest {
                 .andExpect(jsonPath("$[0].description", is("Piano Sonata No. 14")))
                 .andExpect(jsonPath("$[0].price", is(9.99)))
                 .andExpect(jsonPath("$[0].owner.id", is(1)));
+    }
+
+    @Test
+    void testRegisterMusicSheet_WithValidData_ShouldReturnCreatedMusicSheet() throws Exception {
+        MusicSheetRegistrationRequest request = new MusicSheetRegistrationRequest();
+        request.setName("Für Elise");
+        request.setDescription("Famous Beethoven composition for piano");
+        request.setPrice(7.99);
+        request.setCategory("CLASSICAL");
+        request.setComposer("Ludwig van Beethoven");
+        request.setInstrumentation("Piano");
+        request.setDuration(3.5f);
+        request.setPhotoPaths(Arrays.asList("/photos/sheet1.jpg", "/photos/sheet2.jpg"));
+
+        MusicSheet savedMusicSheet = new MusicSheet();
+        savedMusicSheet.setId(10L);
+        savedMusicSheet.setName(request.getName());
+        savedMusicSheet.setDescription(request.getDescription());
+        savedMusicSheet.setPrice(request.getPrice());
+        savedMusicSheet.setOwner(owner1);
+        savedMusicSheet.setCategory(request.getCategory());
+        savedMusicSheet.setComposer(request.getComposer());
+        savedMusicSheet.setInstrumentation(request.getInstrumentation());
+        savedMusicSheet.setDuration(request.getDuration());
+
+        when(userRepository.findByUsername("owner1")).thenReturn(Optional.of(owner1));
+        when(productsService.registerMusicSheet(any(MusicSheetRegistrationRequest.class))).thenReturn(savedMusicSheet);
+
+        mockMvc.perform(post("/api/sheets/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id", is(10)))
+                .andExpect(jsonPath("$.name", is("Für Elise")))
+                .andExpect(jsonPath("$.description", is("Famous Beethoven composition for piano")))
+                .andExpect(jsonPath("$.price", is(7.99)))
+                .andExpect(jsonPath("$.category", is("CLASSICAL")))
+                .andExpect(jsonPath("$.composer", is("Ludwig van Beethoven")))
+                .andExpect(jsonPath("$.instrumentation", is("Piano")));
+
+        verify(productsService, times(1)).registerMusicSheet(any(MusicSheetRegistrationRequest.class));
+    }
+
+    @Test
+    void testRegisterMusicSheet_WithoutPhotos_ShouldReturnCreatedMusicSheet() throws Exception {
+        MusicSheetRegistrationRequest request = new MusicSheetRegistrationRequest();
+        request.setName("Claire de Lune");
+        request.setDescription("Debussy piano piece");
+        request.setPrice(8.99);
+        request.setCategory("IMPRESSIONIST");
+        request.setComposer("Claude Debussy");
+        request.setInstrumentation("Piano");
+        request.setDuration(4.5f);
+
+        MusicSheet savedMusicSheet = new MusicSheet();
+        savedMusicSheet.setId(11L);
+        savedMusicSheet.setName(request.getName());
+        savedMusicSheet.setDescription(request.getDescription());
+        savedMusicSheet.setPrice(request.getPrice());
+        savedMusicSheet.setOwner(owner1);
+        savedMusicSheet.setCategory(request.getCategory());
+        savedMusicSheet.setComposer(request.getComposer());
+
+        when(userRepository.findByUsername("owner1")).thenReturn(Optional.of(owner1));
+        when(productsService.registerMusicSheet(any(MusicSheetRegistrationRequest.class))).thenReturn(savedMusicSheet);
+
+        mockMvc.perform(post("/api/sheets/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id", is(11)))
+                .andExpect(jsonPath("$.name", is("Claire de Lune")));
+
+        verify(productsService, times(1)).registerMusicSheet(any(MusicSheetRegistrationRequest.class));
+    }
+
+    @Test
+    void testRegisterMusicSheet_WhenUserNotFound_ShouldReturnBadRequest() throws Exception {
+        MusicSheetRegistrationRequest request = new MusicSheetRegistrationRequest();
+        request.setName("Test Sheet");
+        request.setDescription("Test Description");
+        request.setPrice(5.99);
+        request.setCategory("CLASSICAL");
+        request.setComposer("Test Composer");
+        request.setInstrumentation("Piano");
+
+        when(userRepository.findByUsername("owner1")).thenReturn(Optional.empty());
+
+        mockMvc.perform(post("/api/sheets/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").exists());
+    }
+
+    @Test
+    void testRegisterMusicSheet_WhenServiceThrowsException_ShouldReturnBadRequest() throws Exception {
+        MusicSheetRegistrationRequest request = new MusicSheetRegistrationRequest();
+        request.setName("Test Sheet");
+        request.setDescription("Test Description");
+        request.setPrice(5.99);
+        request.setCategory("CLASSICAL");
+        request.setComposer("Test Composer");
+        request.setInstrumentation("Piano");
+
+        when(userRepository.findByUsername("owner1")).thenReturn(Optional.of(owner1));
+        when(productsService.registerMusicSheet(any(MusicSheetRegistrationRequest.class)))
+                .thenThrow(new IllegalArgumentException("Registration failed"));
+
+        mockMvc.perform(post("/api/sheets/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error", is("Registration failed")));
     }
 }

@@ -61,6 +61,10 @@ public class MusicSheet extends Item {
         setName(title);
     }
 
+    public Long getOwnerId() {
+        return getOwner() != null ? getOwner().getId() : null;
+    }
+
 
     @Override
     public boolean equals(Object o) {
