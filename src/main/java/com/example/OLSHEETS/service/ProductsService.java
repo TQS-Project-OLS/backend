@@ -35,6 +35,11 @@ public class ProductsService {
     @Autowired
     private UserRepository userRepository;
 
+    public Instrument getInstrumentById(Long id) {
+        return instrumentRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Instrument not found with id: " + id));
+    }
+
     public List<Instrument> searchInstrumentsByName(String name) {
         return instrumentRepository.findByNameContainingIgnoreCase(name);
     }

@@ -28,6 +28,12 @@ public class ProductsController {
     @Autowired
     private UserRepository userRepository;
 
+    @GetMapping("/{id}")
+    public ResponseEntity<Instrument> getInstrumentById(@PathVariable Long id) {
+        Instrument instrument = productsService.getInstrumentById(id);
+        return ResponseEntity.ok(instrument);
+    }
+
     @GetMapping("/search")
     public ResponseEntity<List<Instrument>> searchInstruments(@RequestParam String name) {
         List<Instrument> instruments = productsService.searchInstrumentsByName(name);
