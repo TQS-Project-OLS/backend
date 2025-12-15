@@ -17,6 +17,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -31,6 +32,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @SpringBootTest(properties = {
     "spring.main.lazy-initialization=true"
 })
+@ActiveProfiles("test")
 class AdminServiceIntegrationTest {
 
     static PostgreSQLContainer<?> myPostgreSQLContainer =
@@ -41,6 +43,8 @@ class AdminServiceIntegrationTest {
         registry.add("spring.datasource.url",myPostgreSQLContainer::getJdbcUrl);
         registry.add("spring.datasource.username",myPostgreSQLContainer::getUsername);
         registry.add("spring.datasource.password",myPostgreSQLContainer::getPassword);
+        registry.add("spring.jpa.database-platform", () -> "org.hibernate.dialect.PostgreSQLDialect");
+        registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
 
     }
 
