@@ -269,7 +269,7 @@
                 <testEnvironment>${xray.testEnvironment}</testEnvironment>
                 <revision>${xray.revision}</revision>
                 <reportFormat>junit</reportFormat>
-                <reportFile>${project.build.directory}/failsafe-reports/**/*.xml</reportFile>
+                <reportFile>${project.build.directory}/failsafe-reports/*.xml</reportFile>
                 <verbose>${xray.verbose}</verbose>
             </configuration>
             </plugin>
