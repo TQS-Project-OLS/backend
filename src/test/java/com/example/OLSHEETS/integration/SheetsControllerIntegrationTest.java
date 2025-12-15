@@ -3,6 +3,7 @@ package com.example.OLSHEETS.integration;
 import com.example.OLSHEETS.data.MusicSheet;
 import com.example.OLSHEETS.repository.MusicSheetRepository;
 import com.example.OLSHEETS.repository.SheetBookingRepository;
+import com.example.OLSHEETS.repository.PaymentRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,8 +36,11 @@ class SheetsControllerIntegrationTest {
     @Autowired
     private SheetBookingRepository sheetBookingRepository;
 
-        @Autowired
-        private com.example.OLSHEETS.repository.InstrumentRepository instrumentRepository;
+    @Autowired
+    private PaymentRepository paymentRepository;
+
+    @Autowired
+    private com.example.OLSHEETS.repository.InstrumentRepository instrumentRepository;
 
     @Autowired
     private com.example.OLSHEETS.repository.BookingRepository bookingRepository;
@@ -48,13 +52,19 @@ class SheetsControllerIntegrationTest {
 
     @BeforeEach
     void setUp() {
-                // Delete children before parents to avoid FK constraint issues
-                bookingRepository.deleteAll();
-                sheetBookingRepository.deleteAll();
-                musicSheetRepository.deleteAll();
-                // Also remove any instruments (other Item subtypes) to avoid FK references to users
-                instrumentRepository.deleteAll();
-                userRepository.deleteAll();
+        // Delete children before parents to avoid FK constraint issues
+        // First delete payments that reference bookings
+        paymentRepository.deleteAll();
+        // Then delete bookings that reference items
+        bookingRepository.deleteAll();
+        // Then delete sheet bookings
+        sheetBookingRepository.deleteAll();
+        // Then delete music sheets
+        musicSheetRepository.deleteAll();
+        // Also remove any instruments (other Item subtypes) to avoid FK references to users
+        instrumentRepository.deleteAll();
+        // Finally delete users
+        userRepository.deleteAll();
 
                 MusicSheet moonlightSonata = new MusicSheet();
         moonlightSonata.setName("Moonlight Sonata");
@@ -89,6 +99,7 @@ class SheetsControllerIntegrationTest {
 
     @AfterEach
     void tearDown() {
+        paymentRepository.deleteAll();
         sheetBookingRepository.deleteAll();
         musicSheetRepository.deleteAll();
     }

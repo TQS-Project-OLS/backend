@@ -7,6 +7,7 @@ import com.example.OLSHEETS.data.Instrument;
 import com.example.OLSHEETS.data.InstrumentFamily;
 import com.example.OLSHEETS.data.InstrumentType;
 import com.example.OLSHEETS.repository.ItemRepository;
+import com.example.OLSHEETS.repository.PaymentRepository;
 import com.example.OLSHEETS.repository.SheetBookingRepository;
 import com.example.OLSHEETS.service.BookingService;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,6 +37,9 @@ class BookingServiceIntegrationTest {
     @Autowired
     SheetBookingRepository sheetBookingRepository;
 
+    @Autowired
+    PaymentRepository paymentRepository;
+
         @Autowired
         private com.example.OLSHEETS.repository.UserRepository userRepository;
 
@@ -48,6 +52,7 @@ class BookingServiceIntegrationTest {
 
     @BeforeEach
     void cleanup(){
+        paymentRepository.deleteAll();
         sheetBookingRepository.deleteAll();
         bookingRepository.deleteAll();
         itemRepository.deleteAll();

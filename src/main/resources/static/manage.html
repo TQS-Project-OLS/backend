@@ -107,7 +107,7 @@
             try {
                 // Fetch all (hacky way: search with empty string or common letter)
                 // Real app would have /api/instruments/owner/{id}
-                const response = await fetch('/api/instruments/search?name=');
+                const response = await authenticatedFetch('/api/instruments/search?name=');
                 const allInstruments = await response.json();
 
                 // Filter client side for now since backend might not strictly support owner filter on search
