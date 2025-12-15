@@ -8,6 +8,7 @@ import com.example.OLSHEETS.data.MusicSheet;
 import com.example.OLSHEETS.data.User;
 import com.example.OLSHEETS.data.Item;
 import com.example.OLSHEETS.dto.InstrumentRegistrationRequest;
+import com.example.OLSHEETS.dto.MusicSheetRegistrationRequest;
 import com.example.OLSHEETS.repository.InstrumentRepository;
 import com.example.OLSHEETS.repository.MusicSheetRepository;
 import io.micrometer.core.instrument.Counter;
@@ -115,5 +116,31 @@ public class ProductsService {
             instrumentsRegisteredCounter.increment();
         }
         return saved;
+    }
+
+    public MusicSheet registerMusicSheet(MusicSheetRegistrationRequest request) {
+        MusicSheet musicSheet = new MusicSheet();
+        musicSheet.setName(request.getName());
+        musicSheet.setDescription(request.getDescription());
+        musicSheet.setPrice(request.getPrice());
+        User owner = userRepository.findById(request.getOwnerId())
+            .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + request.getOwnerId()));
+        musicSheet.setOwner(owner);
+        musicSheet.setCategory(request.getCategory());
+        musicSheet.setComposer(request.getComposer());
+        musicSheet.setInstrumentation(request.getInstrumentation());
+        musicSheet.setDuration(request.getDuration());
+
+        // Create file references for photos if provided
+        if (request.getPhotoPaths() != null && !request.getPhotoPaths().isEmpty()) {
+            List<FileReference> fileReferences = new ArrayList<>();
+            for (String photoPath : request.getPhotoPaths()) {
+                FileReference fileRef = new FileReference("photo", photoPath, musicSheet);
+                fileReferences.add(fileRef);
+            }
+            musicSheet.setFileReferences(fileReferences);
+        }
+
+        return musicSheetRepository.save(musicSheet);
     }
 }

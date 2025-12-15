@@ -1,9 +1,11 @@
 package com.example.OLSHEETS.integration;
 
 import com.example.OLSHEETS.data.MusicSheet;
+import com.example.OLSHEETS.dto.MusicSheetRegistrationRequest;
 import com.example.OLSHEETS.repository.MusicSheetRepository;
 import com.example.OLSHEETS.repository.SheetBookingRepository;
 import com.example.OLSHEETS.repository.PaymentRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,12 +15,21 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.Arrays;
+import java.util.List;
+
 import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, properties = {
     "spring.main.lazy-initialization=true"
@@ -29,6 +40,9 @@ class SheetsControllerIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Autowired
     private MusicSheetRepository musicSheetRepository;
@@ -51,7 +65,19 @@ class SheetsControllerIntegrationTest {
     private com.example.OLSHEETS.data.User testOwner1;
 
     @BeforeEach
+    @org.springframework.transaction.annotation.Transactional
+    @org.springframework.test.annotation.Commit
     void setUp() {
+        // Make SecurityContext inheritable by child threads (needed for MockMvc)
+        SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
+        
+        // Setup authentication FIRST
+        Authentication auth = mock(Authentication.class);
+        when(auth.getName()).thenReturn("testuser");
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(securityContext);
+
         // Delete children before parents to avoid FK constraint issues
         // First delete payments that reference bookings
         paymentRepository.deleteAll();
@@ -66,13 +92,16 @@ class SheetsControllerIntegrationTest {
         // Finally delete users
         userRepository.deleteAll();
 
-                MusicSheet moonlightSonata = new MusicSheet();
+        // Create a testuser for authentication
+        testOwner1 = userRepository.save(new com.example.OLSHEETS.data.User("testuser", "testuser@example.com", "Test User", "password123"));
+        userRepository.flush();
+
+        MusicSheet moonlightSonata = new MusicSheet();
         moonlightSonata.setName("Moonlight Sonata");
         moonlightSonata.setComposer("Beethoven");
         moonlightSonata.setCategory("CLASSICAL");
         moonlightSonata.setDescription("Piano Sonata No. 14");
-                testOwner1 = userRepository.save(new com.example.OLSHEETS.data.User("owner1", "owner1@example.com", "owner1", "123"));
-                moonlightSonata.setOwner(testOwner1);
+        moonlightSonata.setOwner(testOwner1);
         moonlightSonata.setPrice(9.99);
         musicSheetRepository.save(moonlightSonata);
 
@@ -102,6 +131,7 @@ class SheetsControllerIntegrationTest {
         paymentRepository.deleteAll();
         sheetBookingRepository.deleteAll();
         musicSheetRepository.deleteAll();
+        SecurityContextHolder.clearContext();
     }
 
     @Test
@@ -341,5 +371,177 @@ class SheetsControllerIntegrationTest {
 
         mockMvc.perform(get("/api/items/price/" + nonExistentId))
                 .andExpect(status().isNotFound());
+    }
+
+    // Music Sheet Registration Integration Tests
+
+    @Test
+    void testRegisterMusicSheet_WithValidData_ShouldCreateAndPersist() throws Exception {
+        MusicSheetRegistrationRequest request = new MusicSheetRegistrationRequest();
+        request.setName("The Four Seasons");
+        request.setDescription("Vivaldi's famous concertos");
+        request.setPrice(15.99);
+        request.setOwnerId(testOwner1.getId());
+        request.setCategory("BAROQUE");
+        request.setComposer("Antonio Vivaldi");
+        request.setInstrumentation("Violin and Orchestra");
+        request.setDuration(40.0f);
+        request.setPhotoPaths(Arrays.asList("/photos/vivaldi.jpg"));
+
+        long countBefore = musicSheetRepository.count();
+
+        mockMvc.perform(post("/api/sheets/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id", notNullValue()))
+                .andExpect(jsonPath("$.name", is("The Four Seasons")))
+                .andExpect(jsonPath("$.description", is("Vivaldi's famous concertos")))
+                .andExpect(jsonPath("$.price", is(15.99)))
+                .andExpect(jsonPath("$.category", is("BAROQUE")))
+                .andExpect(jsonPath("$.composer", is("Antonio Vivaldi")))
+                .andExpect(jsonPath("$.instrumentation", is("Violin and Orchestra")))
+                .andExpect(jsonPath("$.duration", is(40.0)));
+
+        // Verify persisted in database
+        long countAfter = musicSheetRepository.count();
+        assertEquals(countBefore + 1, countAfter);
+
+        // Verify the sheet can be found by search
+        List<MusicSheet> sheets = musicSheetRepository.findByNameContainingIgnoreCase("Four Seasons");
+        assertEquals(1, sheets.size());
+        assertEquals("The Four Seasons", sheets.get(0).getName());
+    }
+
+    @Test
+    void testRegisterMusicSheet_WithPhotos_ShouldCreateFileReferences() throws Exception {
+        MusicSheetRegistrationRequest request = new MusicSheetRegistrationRequest();
+        request.setName("Für Elise");
+        request.setDescription("Famous Beethoven composition for piano");
+        request.setPrice(7.99);
+        request.setOwnerId(testOwner1.getId());
+        request.setCategory("CLASSICAL");
+        request.setComposer("Ludwig van Beethoven");
+        request.setInstrumentation("Piano");
+        request.setDuration(3.5f);
+        request.setPhotoPaths(Arrays.asList("/photos/sheet1.jpg", "/photos/sheet2.jpg"));
+
+        mockMvc.perform(post("/api/sheets/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.fileReferences", hasSize(2)));
+    }
+
+    @Test
+    void testRegisterMusicSheet_WithoutPhotos_ShouldSucceed() throws Exception {
+        MusicSheetRegistrationRequest request = new MusicSheetRegistrationRequest();
+        request.setName("Claire de Lune");
+        request.setDescription("Debussy piano piece");
+        request.setPrice(8.99);
+        request.setOwnerId(testOwner1.getId());
+        request.setCategory("IMPRESSIONIST");
+        request.setComposer("Claude Debussy");
+        request.setInstrumentation("Piano");
+        request.setDuration(4.5f);
+
+        mockMvc.perform(post("/api/sheets/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.name", is("Claire de Lune")))
+                .andExpect(jsonPath("$.description", is("Debussy piano piece")));
+    }
+
+    @Test
+    void testRegisterMusicSheet_ThenSearchByName_ShouldFindSheet() throws Exception {
+        MusicSheetRegistrationRequest request = new MusicSheetRegistrationRequest();
+        request.setName("Canon in D Major");
+        request.setDescription("Pachelbel's Canon");
+        request.setPrice(6.99);
+        request.setOwnerId(testOwner1.getId());
+        request.setCategory("BAROQUE");
+        request.setComposer("Johann Pachelbel");
+        request.setInstrumentation("String Quartet");
+        request.setDuration(5.0f);
+
+        // Register the sheet
+        mockMvc.perform(post("/api/sheets/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated());
+
+        // Search for it
+        mockMvc.perform(get("/api/sheets/search")
+                        .param("name", "Canon"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].name", is("Canon in D Major")))
+                .andExpect(jsonPath("$[0].composer", is("Johann Pachelbel")));
+    }
+
+    @Test
+    void testRegisterMusicSheet_ThenFilterByCategory_ShouldFindSheet() throws Exception {
+        MusicSheetRegistrationRequest request = new MusicSheetRegistrationRequest();
+        request.setName("Blue Rondo à la Turk");
+        request.setDescription("Dave Brubeck jazz piece");
+        request.setPrice(11.99);
+        request.setOwnerId(testOwner1.getId());
+        request.setCategory("BEBOP");
+        request.setComposer("Dave Brubeck");
+        request.setInstrumentation("Piano");
+        request.setDuration(6.5f);
+
+        // Register the sheet
+        mockMvc.perform(post("/api/sheets/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated());
+
+        // Filter by category
+        mockMvc.perform(get("/api/sheets/filter/category")
+                        .param("category", "BEBOP"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].name", is("Blue Rondo à la Turk")));
+    }
+
+    @Test
+    void testRegisterMultipleMusicSheets_ShouldAllPersist() throws Exception {
+        long countBefore = musicSheetRepository.count();
+
+        // Register first sheet
+        MusicSheetRegistrationRequest request1 = new MusicSheetRegistrationRequest();
+        request1.setName("Gymnopédie No. 1");
+        request1.setDescription("Erik Satie piano piece");
+        request1.setPrice(5.99);
+        request1.setOwnerId(testOwner1.getId());
+        request1.setCategory("IMPRESSIONIST");
+        request1.setComposer("Erik Satie");
+        request1.setInstrumentation("Piano");
+
+        mockMvc.perform(post("/api/sheets/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request1)))
+                .andExpect(status().isCreated());
+
+        // Register second sheet
+        MusicSheetRegistrationRequest request2 = new MusicSheetRegistrationRequest();
+        request2.setName("Prelude in C Major");
+        request2.setDescription("Bach Well-Tempered Clavier");
+        request2.setPrice(6.99);
+        request2.setOwnerId(testOwner1.getId());
+        request2.setCategory("BAROQUE");
+        request2.setComposer("J.S. Bach");
+        request2.setInstrumentation("Piano");
+
+        mockMvc.perform(post("/api/sheets/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request2)))
+                .andExpect(status().isCreated());
+
+        // Verify both persisted
+        long countAfter = musicSheetRepository.count();
+        assertEquals(countBefore + 2, countAfter);
     }
 }

@@ -7,6 +7,7 @@ import com.example.OLSHEETS.data.MusicSheet;
 import com.example.OLSHEETS.data.User;
 import com.example.OLSHEETS.data.Item;
 import com.example.OLSHEETS.dto.InstrumentRegistrationRequest;
+import com.example.OLSHEETS.dto.MusicSheetRegistrationRequest;
 import com.example.OLSHEETS.repository.InstrumentRepository;
 import com.example.OLSHEETS.repository.MusicSheetRepository;
 import com.example.OLSHEETS.service.ProductsService;
@@ -597,5 +598,198 @@ class ProductsServiceTest {
         assertEquals("photo", result.getFileReferences().get(0).getType());
         assertEquals("/photos/taylor.jpg", result.getFileReferences().get(0).getPath());
         verify(instrumentRepository, times(1)).save(any(Instrument.class));
+    }
+
+    @Test
+    void testRegisterMusicSheet_WithValidData_ShouldReturnSavedMusicSheet() {
+        MusicSheetRegistrationRequest request = new MusicSheetRegistrationRequest();
+        request.setName("Für Elise");
+        request.setDescription("Famous Beethoven composition for piano");
+        request.setPrice(7.99);
+        request.setOwnerId(5L);
+        request.setCategory("CLASSICAL");
+        request.setComposer("Ludwig van Beethoven");
+        request.setInstrumentation("Piano");
+        request.setDuration(3.5f);
+        request.setPhotoPaths(Arrays.asList("/photos/sheet1.jpg", "/photos/sheet2.jpg"));
+
+        MusicSheet savedMusicSheet = new MusicSheet();
+        savedMusicSheet.setId(20L);
+        savedMusicSheet.setName(request.getName());
+        savedMusicSheet.setDescription(request.getDescription());
+        savedMusicSheet.setPrice(request.getPrice());
+        User ownerUser = new User("owner5", "owner5@a.com", "owner5");
+        ownerUser.setId(5L);
+        when(userRepository.findById(5L)).thenReturn(Optional.of(ownerUser));
+        savedMusicSheet.setOwner(ownerUser);
+        savedMusicSheet.setCategory(request.getCategory());
+        savedMusicSheet.setComposer(request.getComposer());
+        savedMusicSheet.setInstrumentation(request.getInstrumentation());
+        savedMusicSheet.setDuration(request.getDuration());
+
+        when(musicSheetRepository.save(any(MusicSheet.class))).thenReturn(savedMusicSheet);
+
+        MusicSheet result = productsService.registerMusicSheet(request);
+
+        assertNotNull(result);
+        assertEquals(20L, result.getId());
+        assertEquals("Für Elise", result.getName());
+        assertEquals("Famous Beethoven composition for piano", result.getDescription());
+        assertEquals(7.99, result.getPrice());
+        assertEquals(5L, result.getOwner().getId());
+        assertEquals("CLASSICAL", result.getCategory());
+        assertEquals("Ludwig van Beethoven", result.getComposer());
+        assertEquals("Piano", result.getInstrumentation());
+        assertEquals(3.5f, result.getDuration());
+        verify(musicSheetRepository, times(1)).save(any(MusicSheet.class));
+    }
+
+    @Test
+    void testRegisterMusicSheet_WithPhotos_ShouldCreateFileReferences() {
+        MusicSheetRegistrationRequest request = new MusicSheetRegistrationRequest();
+        request.setName("Moonlight Sonata");
+        request.setDescription("Piano Sonata No. 14");
+        request.setPrice(9.99);
+        request.setOwnerId(3L);
+        request.setCategory("CLASSICAL");
+        request.setComposer("Beethoven");
+        request.setInstrumentation("Piano");
+        request.setPhotoPaths(Arrays.asList("/photos/moon1.jpg", "/photos/moon2.jpg", "/photos/moon3.jpg"));
+
+        User ownerUser = new User("owner3", "owner3@a.com", "owner3");
+        ownerUser.setId(3L);
+        when(userRepository.findById(3L)).thenReturn(Optional.of(ownerUser));
+
+        when(musicSheetRepository.save(any(MusicSheet.class))).thenAnswer(invocation -> {
+            MusicSheet arg = invocation.getArgument(0);
+            arg.setId(21L);
+            return arg;
+        });
+
+        MusicSheet result = productsService.registerMusicSheet(request);
+
+        assertNotNull(result);
+        assertNotNull(result.getFileReferences());
+        assertEquals(3, result.getFileReferences().size());
+        verify(musicSheetRepository, times(1)).save(any(MusicSheet.class));
+    }
+
+    @Test
+    void testRegisterMusicSheet_WithoutPhotos_ShouldSaveMusicSheet() {
+        MusicSheetRegistrationRequest request = new MusicSheetRegistrationRequest();
+        request.setName("Claire de Lune");
+        request.setDescription("Debussy piano piece");
+        request.setPrice(8.99);
+        request.setOwnerId(7L);
+        request.setCategory("IMPRESSIONIST");
+        request.setComposer("Claude Debussy");
+        request.setInstrumentation("Piano");
+        request.setDuration(4.5f);
+        request.setPhotoPaths(null);
+
+        MusicSheet savedMusicSheet = new MusicSheet();
+        savedMusicSheet.setId(22L);
+        savedMusicSheet.setName(request.getName());
+        savedMusicSheet.setDescription(request.getDescription());
+        savedMusicSheet.setPrice(request.getPrice());
+        User ownerUser = new User("owner7", "owner7@a.com", "owner7");
+        ownerUser.setId(7L);
+        when(userRepository.findById(7L)).thenReturn(Optional.of(ownerUser));
+        savedMusicSheet.setOwner(ownerUser);
+        savedMusicSheet.setCategory(request.getCategory());
+        savedMusicSheet.setComposer(request.getComposer());
+
+        when(musicSheetRepository.save(any(MusicSheet.class))).thenReturn(savedMusicSheet);
+
+        MusicSheet result = productsService.registerMusicSheet(request);
+
+        assertNotNull(result);
+        assertEquals("Claire de Lune", result.getName());
+        assertEquals("Debussy piano piece", result.getDescription());
+        verify(musicSheetRepository, times(1)).save(any(MusicSheet.class));
+    }
+
+    @Test
+    void testRegisterMusicSheet_WithEmptyPhotoList_ShouldSaveMusicSheet() {
+        MusicSheetRegistrationRequest request = new MusicSheetRegistrationRequest();
+        request.setName("Autumn Leaves");
+        request.setDescription("Jazz standard");
+        request.setPrice(7.99);
+        request.setOwnerId(2L);
+        request.setCategory("JAZZ");
+        request.setComposer("Joseph Kosma");
+        request.setInstrumentation("Piano");
+        request.setPhotoPaths(Collections.emptyList());
+
+        MusicSheet savedMusicSheet = new MusicSheet();
+        savedMusicSheet.setId(23L);
+        savedMusicSheet.setName(request.getName());
+
+        User ownerUser = new User("owner2", "owner2@a.com", "owner2");
+        ownerUser.setId(2L);
+        when(userRepository.findById(2L)).thenReturn(Optional.of(ownerUser));
+
+        when(musicSheetRepository.save(any(MusicSheet.class))).thenReturn(savedMusicSheet);
+
+        MusicSheet result = productsService.registerMusicSheet(request);
+
+        assertNotNull(result);
+        assertEquals("Autumn Leaves", result.getName());
+        verify(musicSheetRepository, times(1)).save(any(MusicSheet.class));
+    }
+
+    @Test
+    void testRegisterMusicSheet_WithSinglePhoto_ShouldCreateOneFileReference() {
+        MusicSheetRegistrationRequest request = new MusicSheetRegistrationRequest();
+        request.setName("Canon in D");
+        request.setDescription("Pachelbel's Canon");
+        request.setPrice(6.99);
+        request.setOwnerId(4L);
+        request.setCategory("BAROQUE");
+        request.setComposer("Johann Pachelbel");
+        request.setInstrumentation("String Quartet");
+        request.setDuration(5.0f);
+        request.setPhotoPaths(Collections.singletonList("/photos/canon.jpg"));
+
+        User ownerUser = new User("owner4", "owner4@a.com", "owner4");
+        ownerUser.setId(4L);
+        when(userRepository.findById(4L)).thenReturn(Optional.of(ownerUser));
+
+        when(musicSheetRepository.save(any(MusicSheet.class))).thenAnswer(invocation -> {
+            MusicSheet arg = invocation.getArgument(0);
+            arg.setId(24L);
+            return arg;
+        });
+
+        MusicSheet result = productsService.registerMusicSheet(request);
+
+        assertNotNull(result);
+        assertNotNull(result.getFileReferences());
+        assertEquals(1, result.getFileReferences().size());
+        assertEquals("photo", result.getFileReferences().get(0).getType());
+        assertEquals("/photos/canon.jpg", result.getFileReferences().get(0).getPath());
+        verify(musicSheetRepository, times(1)).save(any(MusicSheet.class));
+    }
+
+    @Test
+    void testRegisterMusicSheet_WithNonExistentOwner_ShouldThrowException() {
+        MusicSheetRegistrationRequest request = new MusicSheetRegistrationRequest();
+        request.setName("Test Sheet");
+        request.setDescription("Test Description");
+        request.setPrice(5.99);
+        request.setOwnerId(999L);
+        request.setCategory("CLASSICAL");
+        request.setComposer("Test Composer");
+        request.setInstrumentation("Piano");
+
+        when(userRepository.findById(999L)).thenReturn(Optional.empty());
+
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> productsService.registerMusicSheet(request)
+        );
+
+        assertEquals("User not found with id: 999", exception.getMessage());
+        verify(musicSheetRepository, never()).save(any(MusicSheet.class));
     }
 }
