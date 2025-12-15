@@ -20,7 +20,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.context.annotation.Import;
 import org.testcontainers.containers.PostgreSQLContainer;
+import com.example.OLSHEETS.config.TestConfig;
+import com.example.OLSHEETS.config.TestSecurityConfig;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -33,6 +36,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
     "spring.main.lazy-initialization=true"
 })
 @ActiveProfiles("test")
+@Import({TestConfig.class, TestSecurityConfig.class})
 class AdminServiceIntegrationTest {
 
     static PostgreSQLContainer<?> myPostgreSQLContainer =
