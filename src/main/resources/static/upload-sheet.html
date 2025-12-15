@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Music Sheet - OLSHEETS</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="js/theme.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/nav.js"></script>
+    <style>
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-md);
+        }
+
+        @media (max-width: 600px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Nav injected by js/nav.js -->
+    <script>
+        requireAuth();
+    </script>
+
+    <div class="container" style="max-width: 800px;">
+        <div class="page-header">
+            <h1>Upload Music Sheet</h1>
+            <p style="color: var(--text-muted);">List your music sheet and start earning rental income</p>
+        </div>
+
+        <div class="card">
+            <h2 class="text-center" style="margin-bottom: var(--space-xl);">Register New Music Sheet</h2>
+
+            <div id="registration-message" class="hidden"
+                style="padding: var(--space-md); border-radius: var(--radius-md); margin-bottom: var(--space-lg); text-align: center;">
+            </div>
+
+            <form id="registration-form" onsubmit="registerMusicSheet(event)">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="sheet-name">Sheet Name *</label>
+                        <input type="text" class="form-control" id="sheet-name" required
+                            placeholder="e.g., Moonlight Sonata">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="sheet-price">Price (per rental) *</label>
+                        <input type="number" class="form-control" id="sheet-price" step="0.01" required
+                            placeholder="e.g., 9.99">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="sheet-category">Category *</label>
+                        <select class="form-control" id="sheet-category" required>
+                            <option value="">-- Select Category --</option>
+                            <option value="CLASSICAL">Classical</option>
+                            <option value="BAROQUE">Baroque</option>
+                            <option value="ROMANTIC">Romantic</option>
+                            <option value="IMPRESSIONIST">Impressionist</option>
+                            <option value="JAZZ">Jazz</option>
+                            <option value="BLUES">Blues</option>
+                            <option value="ROCK">Rock</option>
+                            <option value="POP">Pop</option>
+                            <option value="FOLK">Folk</option>
+                            <option value="CONTEMPORARY">Contemporary</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="sheet-composer">Composer *</label>
+                        <input type="text" class="form-control" id="sheet-composer" required
+                            placeholder="e.g., Ludwig van Beethoven">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="sheet-instrumentation">Instrumentation *</label>
+                        <input type="text" class="form-control" id="sheet-instrumentation" required
+                            placeholder="e.g., Piano, String Quartet">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="sheet-duration">Duration (minutes)</label>
+                        <input type="number" class="form-control" id="sheet-duration" step="0.1"
+                            placeholder="e.g., 5.5">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="sheet-description">Description *</label>
+                    <textarea class="form-control" id="sheet-description" required rows="4"
+                        placeholder="Describe your music sheet - difficulty level, style, any additional notes..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="sheet-photos">Photo Paths (comma-separated)</label>
+                    <input type="text" class="form-control" id="sheet-photos"
+                        placeholder="e.g., /photos/sheet1.jpg,/photos/sheet2.jpg">
+                    <small style="color: var(--text-muted);">Add paths to preview images of your music sheet</small>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%;" id="register-sheet-btn">Register
+                    Music Sheet</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        async function registerMusicSheet(event) {
+            event.preventDefault();
+
+            const messageDiv = document.getElementById('registration-message');
+            messageDiv.classList.add('hidden');
+            messageDiv.style.backgroundColor = 'transparent';
+
+            // Collect form data - ownerId will be extracted from JWT on backend
+            const data = {
+                name: document.getElementById('sheet-name').value,
+                price: parseFloat(document.getElementById('sheet-price').value),
+                category: document.getElementById('sheet-category').value,
+                composer: document.getElementById('sheet-composer').value,
+                instrumentation: document.getElementById('sheet-instrumentation').value,
+                description: document.getElementById('sheet-description').value
+            };
+
+            // Handle optional duration
+            const durationInput = document.getElementById('sheet-duration').value;
+            if (durationInput) {
+                data.duration = parseFloat(durationInput);
+            }
+
+            // Handle photos
+            const photosInput = document.getElementById('sheet-photos').value.trim();
+            if (photosInput) {
+                data.photoPaths = photosInput.split(',').map(p => p.trim());
+            }
+
+            const btn = document.getElementById('register-sheet-btn');
+            const originalText = btn.textContent;
+            btn.textContent = 'Registering...';
+            btn.disabled = true;
+
+            try {
+                // Use authenticated fetch - ownerId will be extracted from JWT on backend
+                const response = await authenticatedFetch('/api/sheets/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    messageDiv.innerHTML = `<strong>Success!</strong> Music sheet "${result.name}" registered with ID ${result.id}`;
+                    messageDiv.className = 'success';
+                    messageDiv.style.backgroundColor = 'rgba(16, 185, 129, 0.2)';
+                    messageDiv.style.color = '#34d399';
+                    messageDiv.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+                    messageDiv.classList.add('success');
+                    messageDiv.classList.remove('hidden', 'error');
+
+                    // Reset form
+                    document.getElementById('registration-form').reset();
+
+                } else {
+                    const error = await response.json();
+                    messageDiv.innerHTML = `<strong>Error:</strong> ${error.error || 'Registration failed'}`;
+                    messageDiv.style.backgroundColor = 'rgba(239, 68, 68, 0.2)';
+                    messageDiv.style.color = '#f87171';
+                    messageDiv.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+                    messageDiv.classList.add('error');
+                    messageDiv.classList.remove('hidden', 'success');
+                }
+            } catch (error) {
+                console.error('Error registering music sheet:', error);
+                messageDiv.innerHTML = `<strong>Error:</strong> ${error.message}`;
+                messageDiv.style.backgroundColor = 'rgba(239, 68, 68, 0.2)';
+                messageDiv.style.color = '#f87171';
+                messageDiv.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+                messageDiv.classList.add('error');
+                messageDiv.classList.remove('hidden', 'success');
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+                messageDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+    </script>
+</body>
+
+</html>
