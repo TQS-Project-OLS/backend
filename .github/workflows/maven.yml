@@ -41,18 +41,19 @@ jobs:
     - name: Push results to Xray on Jira Cloud
       if: always()
       env:
-        XRAYCLOUD_CLIENT_ID: ${{ secrets.XRAYCLOUD_CLIENT_ID }}
-        XRAYCLOUD_CLIENT_SECRET: ${{ secrets.XRAYCLOUD_CLIENT_SECRET }}
-        XRAYCLOUD_TEST_PLAN_KEY: ${{ vars.XRAYCLOUD_TEST_PLAN_KEY }}
+        XRAY_CLIENT_ID: ${{ secrets.XRAY_CLIENT_ID }}
+        XRAY_CLIENT_SECRET: ${{ secrets.XRAY_CLIENT_SECRET }}
+        XRAY_TEST_PLAN_KEY: ${{ vars.XRAY_TEST_PLAN_KEY }}
         TEST_ENVIRONMENT: java${{ matrix.java }}
-        REVISION: ${{ github.ref_name }}
       run: |
-        REVISION_SAFE=${REVISION//\//_}
-        mvn -Dxray.clientId=$XRAYCLOUD_CLIENT_ID \
-            -Dxray.clientSecret=$XRAYCLOUD_CLIENT_SECRET \
-            -Dxray.testEnvironment=$TEST_ENVIRONMENT \
-            -Dxray.testPlanKey=$XRAYCLOUD_TEST_PLAN_KEY \
-            -Dxray.revision=$REVISION_SAFE \
-            -Dxray.verbose=true \
-            xray:import-results
+        REVISION_CLEAN=$(echo "${{ github.ref_name }}" | tr '/' '_' | tr '-' '_' | sed 's/[^a-zA-Z0-9_.-]//g')
 
+        mvn -B verify
+
+        mvn xray:import-results \
+            -Dxray.clientId="$XRAY_CLIENT_ID" \
+            -Dxray.clientSecret="$XRAY_CLIENT_SECRET" \
+            -Dxray.testPlanKey="$XRAY_TEST_PLAN_KEY" \
+            -Dxray.testEnvironment="$TEST_ENVIRONMENT" \
+            -Dxray.revision="$REVISION_CLEAN" \
+            -Dxray.verbose=true
