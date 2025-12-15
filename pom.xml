@@ -266,15 +266,6 @@
                 <reportFormat>junit</reportFormat>
                 <reportFile>target/surefire-reports/TEST-*.xml</reportFile>
             </configuration>
-            <executions>
-                <execution>
-                <id>xray-import</id>
-                <phase>verify</phase>
-                <goals>
-                    <goal>import-results</goal>
-                </goals>
-                </execution>
-            </executions>
             </plugin>
 
 			<!-- Maven Surefire Plugin with parallel execution -->
