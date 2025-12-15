@@ -29,9 +29,13 @@ public class ProductsController {
     private UserRepository userRepository;
 
     @GetMapping("/{id}")
-    public ResponseEntity<Instrument> getInstrumentById(@PathVariable Long id) {
-        Instrument instrument = productsService.getInstrumentById(id);
-        return ResponseEntity.ok(instrument);
+    public ResponseEntity<?> getInstrumentById(@PathVariable Long id) {
+        try {
+            Instrument instrument = productsService.getInstrumentById(id);
+            return ResponseEntity.ok(instrument);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 
     @GetMapping("/search")
