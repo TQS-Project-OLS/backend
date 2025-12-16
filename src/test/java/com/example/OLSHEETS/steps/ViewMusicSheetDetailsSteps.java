@@ -1,7 +1,7 @@
 package com.example.OLSHEETS.steps;
 
 import com.example.OLSHEETS.data.*;
-import com.example.OLSHEETS.repository.InstrumentRepository;
+import com.example.OLSHEETS.repository.MusicSheetRepository;
 import com.example.OLSHEETS.repository.UserRepository;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.After;
@@ -12,7 +12,6 @@ import io.cucumber.java.en.When;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -27,13 +26,13 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ViewInstrumentDetailsSteps {
+public class ViewMusicSheetDetailsSteps {
 
     @LocalServerPort
     private int port;
 
     @Autowired
-    private InstrumentRepository instrumentRepository;
+    private MusicSheetRepository musicSheetRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -42,8 +41,8 @@ public class ViewInstrumentDetailsSteps {
     private WebDriverWait wait;
     private static final String BASE_URL = "http://localhost:8080";
 
-    private Instrument currentInstrument;
-    private String currentInstrumentName;
+    private MusicSheet currentMusicSheet;
+    private String currentMusicSheetName;
     private String errorMessage;
 
     @Before
@@ -62,47 +61,52 @@ public class ViewInstrumentDetailsSteps {
         }
     }
 
-    @Given("the following instrument exists in the catalog:")
-    public void theFollowingInstrumentExistsInTheCatalog(DataTable dataTable) {
+    @Given("the following music sheet exists in the catalog:")
+    public void theFollowingMusicSheetExistsInTheCatalog(DataTable dataTable) {
         // Clean database
-        instrumentRepository.deleteAll();
+        musicSheetRepository.deleteAll();
         userRepository.deleteAll();
 
         Map<String, String> data = dataTable.asMap(String.class, String.class);
-        createInstrumentFromData(data);
+        createMusicSheetFromData(data);
     }
 
-    @Given("the following instruments exist in the catalog:")
-    public void theFollowingInstrumentsExistInTheCatalog(DataTable dataTable) {
+    @Given("the following music sheets exist in the catalog:")
+    public void theFollowingMusicSheetsExistInTheCatalog(DataTable dataTable) {
         // Clean database
-        instrumentRepository.deleteAll();
+        musicSheetRepository.deleteAll();
         userRepository.deleteAll();
 
         List<Map<String, String>> rows = dataTable.asMaps(String.class, String.class);
         for (Map<String, String> row : rows) {
-            createInstrumentFromData(row);
+            createMusicSheetFromData(row);
         }
     }
 
-    @Given("no instruments exist in the catalog")
-    public void noInstrumentsExistInTheCatalog() {
-        instrumentRepository.deleteAll();
+    @Given("no music sheets exist in the catalog")
+    public void noMusicSheetsExistInTheCatalog() {
+        musicSheetRepository.deleteAll();
         userRepository.deleteAll();
     }
 
-    private void createInstrumentFromData(Map<String, String> data) {
-        Instrument instrument = new Instrument();
-        instrument.setName(data.get("name"));
-        instrument.setDescription(data.get("description"));
-        instrument.setPrice(Double.parseDouble(data.get("price")));
-        instrument.setAge(Integer.parseInt(data.get("age")));
-        instrument.setType(InstrumentType.valueOf(data.get("type")));
-        instrument.setFamily(InstrumentFamily.valueOf(data.get("family")));
+    private void createMusicSheetFromData(Map<String, String> data) {
+        MusicSheet musicSheet = new MusicSheet();
+        musicSheet.setName(data.get("name"));
+        musicSheet.setDescription(data.get("description"));
+        musicSheet.setPrice(Double.parseDouble(data.get("price")));
+        musicSheet.setCategory(data.get("category"));
+        musicSheet.setComposer(data.get("composer"));
+        musicSheet.setInstrumentation(data.get("instrumentation"));
+        
+        String durationStr = data.get("duration");
+        if (durationStr != null && !durationStr.isEmpty()) {
+            musicSheet.setDuration(Float.parseFloat(durationStr));
+        }
 
         // Create and save owner
         User owner = new User("testowner", "testowner@example.com", "password123");
         owner = userRepository.save(owner);
-        instrument.setOwner(owner);
+        musicSheet.setOwner(owner);
 
         // Add photos if present
         String photos = data.get("photos");
@@ -110,36 +114,36 @@ public class ViewInstrumentDetailsSteps {
             List<FileReference> fileReferences = new ArrayList<>();
             String[] photoPaths = photos.split(",");
             for (String photoPath : photoPaths) {
-                FileReference fileRef = new FileReference("photo", photoPath.trim(), instrument);
+                FileReference fileRef = new FileReference("photo", photoPath.trim(), musicSheet);
                 fileReferences.add(fileRef);
             }
-            instrument.setFileReferences(fileReferences);
+            musicSheet.setFileReferences(fileReferences);
         }
 
-        instrumentRepository.save(instrument);
+        musicSheetRepository.save(musicSheet);
     }
 
-    @When("I view the details of instrument {string}")
-    public void iViewTheDetailsOfInstrument(String instrumentName) {
-        currentInstrumentName = instrumentName;
+    @When("I view the details of music sheet {string}")
+    public void iViewTheDetailsOfMusicSheet(String sheetName) {
+        currentMusicSheetName = sheetName;
         
-        // Find the instrument by name
-        List<Instrument> instruments = instrumentRepository.findByNameContainingIgnoreCase(instrumentName);
-        assertFalse(instruments.isEmpty(), "Instrument not found: " + instrumentName);
-        currentInstrument = instruments.get(0);
+        // Find the music sheet by name
+        List<MusicSheet> sheets = musicSheetRepository.findByNameContainingIgnoreCase(sheetName);
+        assertFalse(sheets.isEmpty(), "Music sheet not found: " + sheetName);
+        currentMusicSheet = sheets.get(0);
 
-        // Navigate to booking page to see instrument details
-        driver.get(BASE_URL + "/booking.html?id=" + currentInstrument.getId());
+        // Navigate to booking page to see sheet details
+        driver.get(BASE_URL + "/sheet_booking.html?id=" + currentMusicSheet.getId());
 
         // Wait for page to load
         wait.until(ExpectedConditions.presenceOfElementLocated(By.tagName("body")));
     }
 
-    @When("I attempt to view the details of instrument with ID {int}")
-    public void iAttemptToViewTheDetailsOfInstrumentWithID(int id) {
+    @When("I attempt to view the details of music sheet with ID {int}")
+    public void iAttemptToViewTheDetailsOfMusicSheetWithID(int id) {
         try {
             // Navigate to booking page
-            driver.get(BASE_URL + "/booking.html?id=" + id);
+            driver.get(BASE_URL + "/sheet_booking.html?id=" + id);
             wait.until(ExpectedConditions.presenceOfElementLocated(By.tagName("body")));
             
             // Wait a bit for fetch to complete
@@ -148,77 +152,85 @@ public class ViewInstrumentDetailsSteps {
             // Check if there's an error message in the page
             String bodyText = driver.findElement(By.tagName("body")).getText();
             if (bodyText.contains("not found") || bodyText.contains("Error")) {
-                errorMessage = "Instrument not found";
+                errorMessage = "Music sheet not found";
             }
         } catch (Exception e) {
-            errorMessage = "Instrument not found";
+            errorMessage = "Music sheet not found";
         }
     }
 
-    @Then("I should see the instrument name {string}")
-    public void iShouldSeeTheInstrumentName(String expectedName) {
+    @Then("I should see the sheet name {string}")
+    public void iShouldSeeTheSheetName(String expectedName) {
         wait.until(driver -> driver.findElement(By.tagName("body")).getText().contains(expectedName));
         String bodyText = driver.findElement(By.tagName("body")).getText();
         assertTrue(bodyText.contains(expectedName), 
-            "Expected to see instrument name: " + expectedName);
+            "Expected to see music sheet name: " + expectedName);
     }
 
-    @Then("I should see the description {string}")
-    public void iShouldSeeTheDescription(String expectedDescription) {
+    @Then("I should see the sheet description {string}")
+    public void iShouldSeeTheSheetDescription(String expectedDescription) {
         wait.until(driver -> driver.findElement(By.tagName("body")).getText().contains(expectedDescription));
         String bodyText = driver.findElement(By.tagName("body")).getText();
         assertTrue(bodyText.contains(expectedDescription), 
             "Expected to see description: " + expectedDescription);
     }
 
-    @Then("I should see the description containing {string}")
-    public void iShouldSeeTheDescriptionContaining(String expectedSubstring) {
+    @Then("I should see the sheet description containing {string}")
+    public void iShouldSeeTheSheetDescriptionContaining(String expectedSubstring) {
         wait.until(driver -> driver.findElement(By.tagName("body")).getText().contains(expectedSubstring));
         String bodyText = driver.findElement(By.tagName("body")).getText();
         assertTrue(bodyText.contains(expectedSubstring), 
             "Expected description to contain: " + expectedSubstring);
     }
 
-    @Then("I should see the price {string}")
-    public void iShouldSeeThePrice(String expectedPrice) {
+    @Then("I should see the sheet price {string}")
+    public void iShouldSeeTheSheetPrice(String expectedPrice) {
         wait.until(driver -> driver.findElement(By.tagName("body")).getText().contains(expectedPrice));
         String bodyText = driver.findElement(By.tagName("body")).getText();
         assertTrue(bodyText.contains(expectedPrice), 
             "Expected to see price: " + expectedPrice);
     }
 
-    @Then("I should see the age {string}")
-    public void iShouldSeeTheAge(String expectedAge) {
-        wait.until(driver -> driver.findElement(By.tagName("body")).getText().contains(expectedAge));
+    @Then("I should see the category {string}")
+    public void iShouldSeeTheCategory(String expectedCategory) {
+        wait.until(driver -> driver.findElement(By.tagName("body")).getText().contains(expectedCategory));
         String bodyText = driver.findElement(By.tagName("body")).getText();
-        assertTrue(bodyText.contains(expectedAge), 
-            "Expected to see age: " + expectedAge);
+        assertTrue(bodyText.contains(expectedCategory), 
+            "Expected to see category: " + expectedCategory);
     }
 
-    @Then("I should see the type {string}")
-    public void iShouldSeeTheType(String expectedType) {
-        wait.until(driver -> driver.findElement(By.tagName("body")).getText().contains(expectedType));
+    @Then("I should see the composer {string}")
+    public void iShouldSeeTheComposer(String expectedComposer) {
+        wait.until(driver -> driver.findElement(By.tagName("body")).getText().contains(expectedComposer));
         String bodyText = driver.findElement(By.tagName("body")).getText();
-        assertTrue(bodyText.contains(expectedType), 
-            "Expected to see type: " + expectedType);
+        assertTrue(bodyText.contains(expectedComposer), 
+            "Expected to see composer: " + expectedComposer);
     }
 
-    @Then("I should see the family {string}")
-    public void iShouldSeeTheFamily(String expectedFamily) {
-        wait.until(driver -> driver.findElement(By.tagName("body")).getText().contains(expectedFamily));
+    @Then("I should see the instrumentation {string}")
+    public void iShouldSeeTheInstrumentation(String expectedInstrumentation) {
+        wait.until(driver -> driver.findElement(By.tagName("body")).getText().contains(expectedInstrumentation));
         String bodyText = driver.findElement(By.tagName("body")).getText();
-        assertTrue(bodyText.contains(expectedFamily), 
-            "Expected to see family: " + expectedFamily);
+        assertTrue(bodyText.contains(expectedInstrumentation), 
+            "Expected to see instrumentation: " + expectedInstrumentation);
     }
 
-    @Then("I should see {int} photo(s)")
-    public void iShouldSeePhotos(int expectedPhotoCount) {
-        // Verify the instrument has the expected number of photos
-        assertNotNull(currentInstrument, "Current instrument should not be null");
+    @Then("I should see the duration {string}")
+    public void iShouldSeeTheDuration(String expectedDuration) {
+        wait.until(driver -> driver.findElement(By.tagName("body")).getText().contains(expectedDuration));
+        String bodyText = driver.findElement(By.tagName("body")).getText();
+        assertTrue(bodyText.contains(expectedDuration), 
+            "Expected to see duration: " + expectedDuration);
+    }
+
+    @Then("I should see {int} sheet photo(s)")
+    public void iShouldSeeSheetPhotos(int expectedPhotoCount) {
+        // Verify the music sheet has the expected number of photos
+        assertNotNull(currentMusicSheet, "Current music sheet should not be null");
         
         // Reload from database to get file references
-        Instrument reloaded = instrumentRepository.findById(currentInstrument.getId()).orElse(null);
-        assertNotNull(reloaded, "Instrument should exist in database");
+        MusicSheet reloaded = musicSheetRepository.findById(currentMusicSheet.getId()).orElse(null);
+        assertNotNull(reloaded, "Music sheet should exist in database");
         
         List<FileReference> fileReferences = reloaded.getFileReferences();
         int actualPhotoCount = (fileReferences == null) ? 0 : fileReferences.size();
@@ -227,8 +239,8 @@ public class ViewInstrumentDetailsSteps {
             "Expected " + expectedPhotoCount + " photo(s) but found " + actualPhotoCount);
     }
 
-    @Then("I should receive an error message {string}")
-    public void iShouldReceiveAnErrorMessage(String expectedError) {
+    @Then("I should receive a sheet error message {string}")
+    public void iShouldReceiveASheetErrorMessage(String expectedError) {
         assertNotNull(errorMessage, "Expected an error message but none was received");
         assertTrue(errorMessage.contains(expectedError) || errorMessage.equals(expectedError), 
             "Expected error message: " + expectedError + " but got: " + errorMessage);
