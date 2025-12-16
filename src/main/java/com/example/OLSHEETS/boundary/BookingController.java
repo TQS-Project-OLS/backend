@@ -76,6 +76,27 @@ public class BookingController {
         }
     }
 
+    @GetMapping("/my-instrument-bookings")
+    public ResponseEntity<?> getMyInstrumentBookings() {
+        try {
+            // Extract username from JWT token
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String username = authentication.getName();
+
+            // Get user from database
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+            // Get all bookings for instruments owned by this user
+            List<Booking> bookings = bookingService.getBookingsByOwnerId(user.getId());
+            return ResponseEntity.ok(bookings);
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @PutMapping("/{bookingId}/approve")
     public ResponseEntity<?> approveBooking(@PathVariable Long bookingId) {
         try {

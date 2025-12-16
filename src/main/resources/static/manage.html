@@ -32,6 +32,18 @@
             </div>
         </div>
 
+        <!-- Incoming Booking Requests Section -->
+        <div class="card" style="margin-top: var(--space-xl);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-lg);">
+                <h2>Incoming Booking Requests</h2>
+                <button class="btn btn-secondary" onclick="loadIncomingBookings()">Refresh</button>
+            </div>
+
+            <div id="incoming-bookings-list">
+                <!-- Booking requests injected here -->
+            </div>
+        </div>
+
     </div>
 
     <!-- Management Modal -->
@@ -95,6 +107,7 @@
         // Load the current user's instruments on page load
         window.addEventListener('DOMContentLoaded', () => {
             loadOwnerInstruments();
+            loadIncomingBookings();
         });
 
         async function loadOwnerInstruments() {
@@ -250,6 +263,102 @@
                 }
             } catch (e) {
                 alert('Error');
+            }
+        }
+
+        async function loadIncomingBookings() {
+            const list = document.getElementById('incoming-bookings-list');
+            list.innerHTML = 'Loading...';
+
+            try {
+                // Fetch bookings for instruments owned by the authenticated user
+                const response = await authenticatedFetch('/api/bookings/my-instrument-bookings');
+                const bookings = await response.json();
+
+                displayIncomingBookings(bookings);
+
+            } catch (error) {
+                console.error(error);
+                list.innerHTML = '<p style="color: var(--error);">Error loading incoming bookings. Please try again.</p>';
+            }
+        }
+
+        function displayIncomingBookings(bookings) {
+            const list = document.getElementById('incoming-bookings-list');
+            
+            if (bookings.length === 0) {
+                list.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: var(--space-md);">No incoming booking requests yet.</p>';
+                return;
+            }
+
+            list.innerHTML = `
+                <table style="width: 100%; border-collapse: collapse; margin-top: var(--space-sm);">
+                    <thead>
+                        <tr style="background: var(--surface-hover); text-align: left;">
+                            <th style="padding: var(--space-sm);">Renter</th>
+                            <th style="padding: var(--space-sm);">Instrument</th>
+                            <th style="padding: var(--space-sm);">Dates</th>
+                            <th style="padding: var(--space-sm);">Status</th>
+                            <th style="padding: var(--space-sm);">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${bookings.map(booking => {
+                            const statusClass = booking.status === 'APPROVED' ? 'success' : 
+                                              booking.status === 'REJECTED' ? 'error' : 
+                                              booking.status === 'PAID' ? 'info' : 'warning';
+                            
+                            const isPending = booking.status === 'PENDING';
+                            
+                            return `
+                                <tr style="border-bottom: 1px solid var(--border-color);">
+                                    <td style="padding: var(--space-sm);">${booking.renter.name} (${booking.renter.username})</td>
+                                    <td style="padding: var(--space-sm);">${booking.item.name}</td>
+                                    <td style="padding: var(--space-sm);">${booking.startDate} to ${booking.endDate}</td>
+                                    <td style="padding: var(--space-sm);">
+                                        <span style="padding: 2px 8px; border-radius: var(--radius-sm); background: var(--${statusClass}); color: white; font-size: 0.85rem;">
+                                            ${booking.status}
+                                        </span>
+                                    </td>
+                                    <td style="padding: var(--space-sm);">
+                                        ${isPending ? `
+                                            <button class="btn btn-success" style="padding: 4px 12px; font-size: 0.85rem; margin-right: 4px;" 
+                                                onclick="processIncomingBooking(${booking.id}, 'approve')">
+                                                Approve
+                                            </button>
+                                            <button class="btn btn-danger" style="padding: 4px 12px; font-size: 0.85rem;" 
+                                                onclick="processIncomingBooking(${booking.id}, 'reject')">
+                                                Reject
+                                            </button>
+                                        ` : '-'}
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        async function processIncomingBooking(bookingId, action) {
+            const actionText = action === 'approve' ? 'approve' : 'reject';
+            if (!confirm(`Are you sure you want to ${actionText} this booking?`)) return;
+
+            try {
+                const response = await authenticatedFetch(`/api/bookings/${bookingId}/${action}`, {
+                    method: 'PUT'
+                });
+
+                if (response.ok) {
+                    alert(`Booking ${actionText}d successfully!`);
+                    loadIncomingBookings(); // Refresh the list
+                } else {
+                    const errorData = await response.json();
+                    alert(`Failed to ${actionText} booking: ${errorData.message || 'Unknown error'}`);
+                }
+            } catch (error) {
+                console.error(error);
+                alert(`Error ${actionText}ing booking. Please try again.`);
             }
         }
 

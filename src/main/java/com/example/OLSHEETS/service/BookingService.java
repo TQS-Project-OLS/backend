@@ -161,4 +161,11 @@ public class BookingService {
     public List<Booking> getBookingsByRenterId(Long renterId) {
         return bookingRepository.findByRenterId(renterId);
     }
+
+    public List<Booking> getBookingsByOwnerId(Long ownerId) {
+        // Get all items owned by the user
+        List<Item> ownerItems = itemRepository.findByOwnerId(ownerId);
+        // Get all bookings for those items
+        return bookingRepository.findByItemIn(ownerItems);
+    }
 }
