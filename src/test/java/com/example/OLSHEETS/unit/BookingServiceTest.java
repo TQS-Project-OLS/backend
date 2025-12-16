@@ -35,6 +35,9 @@ class BookingServiceTest {
     @Mock
     private com.example.OLSHEETS.repository.UserRepository userRepository;
 
+    @Mock
+    private com.example.OLSHEETS.repository.AvailabilityRepository availabilityRepository;
+
     @InjectMocks
     private BookingService bookingService;
 
@@ -163,6 +166,7 @@ class BookingServiceTest {
     @Test
     void whenCreateValidBooking_thenSuccess() {
         when(itemRepository.findById(1L)).thenReturn(Optional.of(item));
+        when(availabilityRepository.findOverlapping(anyLong(), any(), any())).thenReturn(List.of());
         when(bookingRepository.findOverlapping(anyLong(), any(), any())).thenReturn(List.of());
         when(bookingRepository.save(any(Booking.class))).thenReturn(booking);
 
@@ -242,6 +246,7 @@ class BookingServiceTest {
     void whenCreateBooking_WithValidDatesAndDifferentOwner_thenSuccess() {
         when(itemRepository.findById(1L)).thenReturn(Optional.of(item));
         when(userRepository.findById(100L)).thenReturn(Optional.of(testUser));
+        when(availabilityRepository.findOverlapping(anyLong(), any(), any())).thenReturn(List.of());
         when(bookingRepository.findOverlapping(anyLong(), any(), any())).thenReturn(List.of());
         when(bookingRepository.save(any(Booking.class))).thenReturn(booking);
 
@@ -251,6 +256,29 @@ class BookingServiceTest {
         verify(itemRepository, times(1)).findById(1L);
         verify(userRepository, times(1)).findById(100L);
         verify(bookingRepository, times(1)).save(any(Booking.class));
+    }
+
+    @Test
+    void whenCreateBooking_WithUnavailablePeriod_thenThrowException() {
+        // Create an availability period that blocks the requested dates
+        com.example.OLSHEETS.data.Availability unavailability = new com.example.OLSHEETS.data.Availability(
+            1L, 
+            LocalDate.now().plusDays(1), 
+            LocalDate.now().plusDays(5), 
+            com.example.OLSHEETS.data.AvailabilityReason.MAINTENANCE
+        );
+
+        when(itemRepository.findById(1L)).thenReturn(Optional.of(item));
+        when(userRepository.findById(100L)).thenReturn(Optional.of(testUser));
+        when(availabilityRepository.findOverlapping(anyLong(), any(), any()))
+            .thenReturn(List.of(unavailability));
+
+        assertThatThrownBy(() -> bookingService.createBooking(1L, 100L, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3)))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("Item is not available during the requested period");
+
+        verify(availabilityRepository, times(1)).findOverlapping(1L, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
+        verify(bookingRepository, never()).save(any(Booking.class));
     }
 
     @Test

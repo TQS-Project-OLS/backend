@@ -73,22 +73,50 @@
     </div>
 
     <script>
-        // Mock ID for demo purposes, in real app this comes from auth
-        // Use a default or prompt
-        const CURRENT_USER_ID = 1; // Assuming admin/owner view or specific user
+        // Store current user info
+        let currentUserId = null;
+
+        // Load current user and bookings on page load
+        window.addEventListener('DOMContentLoaded', async () => {
+            await loadCurrentUser();
+            loadBookings();
+            loadStatistics();
+        });
+
+        async function loadCurrentUser() {
+            try {
+                const response = await authenticatedFetch('/api/auth/me');
+                const userData = await response.json();
+                currentUserId = userData.id;
+            } catch (error) {
+                console.error('Error loading user info:', error);
+            }
+        }
 
         async function loadBookings() {
             const grid = document.getElementById('bookings-grid');
             grid.innerHTML = '<div class="text-center" style="padding: var(--space-xl); color: var(--text-muted);">Loading...</div>';
 
             try {
-                const response = await authenticatedFetch('/api/admin/bookings');
+                const response = await authenticatedFetch('/api/bookings/my-bookings');
                 const bookings = await response.json();
                 displayBookings(bookings);
+                calculateStatistics(bookings);
             } catch (error) {
                 console.error('Error loading bookings:', error);
                 grid.innerHTML = `<div class="text-center" style="padding: var(--space-xl); color: var(--error);">Error loading bookings: ${error.message}</div>`;
             }
+        }
+
+        function calculateStatistics(bookings) {
+            const stats = {
+                total: bookings.length,
+                pending: bookings.filter(b => b.status === 'PENDING').length,
+                approved: bookings.filter(b => b.status === 'APPROVED').length,
+                rejected: bookings.filter(b => b.status === 'REJECTED').length,
+                cancelled: bookings.filter(b => b.status === 'CANCELLED').length
+            };
+            displayStatistics(stats);
         }
 
         function displayBookings(bookings) {
@@ -122,13 +150,32 @@
                         booking.status === 'PENDING' ? 'badge-warning' :
                             booking.status === 'REJECTED' ? 'badge-error' : 'badge-secondary';
 
+                // Check if current user is the renter or the owner
+                const isRenter = booking.renter && booking.renter.id === currentUserId;
+                const isOwner = booking.item && booking.item.owner && booking.item.owner.id === currentUserId;
+
+                // Payment button: only show to renter when booking is approved
+                let paymentHtml = '-';
+                if (isRenter && booking.status === 'APPROVED') {
+                    paymentHtml = `<button class="btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" onclick="goToPayment(${booking.id})">Pay Now</button>`;
+                }
+
+                // Action buttons: only show to owner when booking is pending
+                let actionHtml = '-';
+                if (isOwner && booking.status === 'PENDING') {
+                    actionHtml = `
+                        <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; margin-right: 0.25rem;" onclick="processBooking(${booking.id}, 'approve')">Approve</button>
+                        <button class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" onclick="processBooking(${booking.id}, 'reject')">Reject</button>
+                    `;
+                }
+
                 html += `
                     <div class="booking-item" style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr; padding: var(--space-md); border-bottom: 1px solid var(--border-color); align-items: center; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='transparent'">
                         <div>
                             <div style="font-weight: 600; color: var(--text-main);">${booking.item ? booking.item.name : 'Unknown Item'}</div>
                             <div style="font-size: 0.85rem; color: var(--text-muted);">$${booking.item ? booking.item.price.toFixed(2) : '-'} / day</div>
                         </div>
-                        <div style="color: var(--text-muted);">#${booking.renterId}</div>
+                        <div style="color: var(--text-muted);">#${booking.renter ? booking.renter.id : '-'}</div>
                         <div style="font-size: 0.9rem;">
                             <div>${booking.startDate}</div>
                             <div style="color: var(--text-muted);">to ${booking.endDate}</div>
@@ -137,15 +184,10 @@
                             <span class="badge ${statusClass}">${booking.status}</span>
                         </div>
                         <div id="payment-status-${booking.id}">
-                            ${booking.status === 'APPROVED' ? `
-                                <button class="btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" onclick="goToPayment(${booking.id})">Pay Now</button>
-                            ` : '-'}
+                            ${paymentHtml}
                         </div>
                         <div>
-                             ${booking.status === 'PENDING' ? `
-                                <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" onclick="processBooking(${booking.id}, 'approve')">Approve</button>
-                                <button class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" onclick="processBooking(${booking.id}, 'reject')">Reject</button>
-                             ` : '-'}
+                            ${actionHtml}
                         </div>
                     </div>
                 `;
@@ -175,33 +217,20 @@
         async function processBooking(bookingId, action) {
             if (!confirm(`Are you sure you want to ${action} this booking?`)) return;
 
-            // Assuming ownerId is required, using generic '1' for now or prompting
-            const ownerId = 1;
-
             try {
-                const response = await authenticatedFetch(`/api/bookings/${bookingId}/${action}?ownerId=${ownerId}`, {
+                const response = await authenticatedFetch(`/api/bookings/${bookingId}/${action}`, {
                     method: 'PUT'
                 });
 
                 if (response.ok) {
                     loadBookings();
-                    loadStatistics();
+                    alert(`Booking ${action}d successfully!`);
                 } else {
                     const err = await response.json();
                     alert(`Error: ${err.error}`);
                 }
             } catch (error) {
                 alert(`Error: ${error.message}`);
-            }
-        }
-
-        async function loadStatistics() {
-            try {
-                const response = await authenticatedFetch('/api/admin/statistics/bookings');
-                const stats = await response.json();
-                displayStatistics(stats);
-            } catch (error) {
-                console.error('Error loading statistics:', error);
             }
         }
 
@@ -212,12 +241,6 @@
             document.getElementById('stat-rejected').textContent = stats.rejected || 0;
             document.getElementById('stat-cancelled').textContent = stats.cancelled || 0;
         }
-
-        // Load statistics on page load
-        window.addEventListener('load', () => {
-            loadStatistics();
-            loadBookings();
-        });
     </script>
 </body>
 

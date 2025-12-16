@@ -27,6 +27,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     
     Long countByItemIn(List<Item> items);
     
+    List<Booking> findByItemIn(List<Item> items);
+    
     List<Booking> findByItemInAndStatus(List<Item> items, BookingStatus status);
 
 }

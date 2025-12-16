@@ -6,6 +6,8 @@ import com.example.OLSHEETS.repository.BookingRepository;
 import com.example.OLSHEETS.data.BookingStatus;
 import com.example.OLSHEETS.data.Item;
 import com.example.OLSHEETS.repository.ItemRepository;
+import com.example.OLSHEETS.repository.AvailabilityRepository;
+import com.example.OLSHEETS.data.Availability;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Timer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +24,7 @@ public class BookingService {
     private final BookingRepository bookingRepository;
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
+    private final AvailabilityRepository availabilityRepository;
 
     @Autowired(required = false)
     private Counter bookingsCreatedCounter;
@@ -35,10 +38,11 @@ public class BookingService {
     @Autowired(required = false)
     private Timer bookingCreationTimer;
 
-    public BookingService(BookingRepository bookingRepository, ItemRepository itemRepository, UserRepository userRepository) {
+    public BookingService(BookingRepository bookingRepository, ItemRepository itemRepository, UserRepository userRepository, AvailabilityRepository availabilityRepository) {
         this.bookingRepository = bookingRepository;
         this.itemRepository = itemRepository;
         this.userRepository = userRepository;
+        this.availabilityRepository = availabilityRepository;
     }
 
     @Transactional
@@ -71,6 +75,12 @@ public class BookingService {
             // Validate renter is not the owner of the item
             if (item.getOwner().getId().equals(renterId)) {
                 throw new IllegalArgumentException("Cannot book your own items");
+            }
+
+            // Check if the item is unavailable during the requested period
+            List<Availability> unavailablePeriods = availabilityRepository.findOverlapping(itemId, startDate, endDate);
+            if (!unavailablePeriods.isEmpty()) {
+                throw new IllegalStateException("Item is not available during the requested period");
             }
 
             List<Booking> overlapping = bookingRepository.findOverlapping(itemId, startDate, endDate);
@@ -156,5 +166,16 @@ public class BookingService {
 
     public List<Booking> listBookings(){
         return bookingRepository.findAll();
+    }
+
+    public List<Booking> getBookingsByRenterId(Long renterId) {
+        return bookingRepository.findByRenterId(renterId);
+    }
+
+    public List<Booking> getBookingsByOwnerId(Long ownerId) {
+        // Get all items owned by the user
+        List<Item> ownerItems = itemRepository.findByOwnerId(ownerId);
+        // Get all bookings for those items
+        return bookingRepository.findByItemIn(ownerItems);
     }
 }

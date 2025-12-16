@@ -8,6 +8,8 @@ import com.example.OLSHEETS.dto.SignupRequest;
 import com.example.OLSHEETS.exception.UserAlreadyExistsException;
 import com.example.OLSHEETS.security.JwtUtil;
 import com.example.OLSHEETS.service.UserService;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Timer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +19,11 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -47,6 +50,15 @@ class AuthControllerTest {
 
     @MockBean
     private JwtUtil jwtUtil;
+
+    @MockBean(name = "loginSuccessCounter")
+    private Counter loginSuccessCounter;
+
+    @MockBean(name = "loginFailureCounter")
+    private Counter loginFailureCounter;
+
+    @MockBean(name = "authenticationTimer")
+    private Timer authenticationTimer;
 
     private User testUser;
     private String testToken;
@@ -103,6 +115,11 @@ class AuthControllerTest {
 
         when(userService.authenticateUser("testuser", "password")).thenReturn(Optional.of(testUser));
         when(jwtUtil.generateToken(anyString())).thenReturn(testToken);
+        // Mock timer to execute the supplier and return its result
+        when(authenticationTimer.record(any(Supplier.class))).thenAnswer(invocation -> {
+            Supplier<?> supplier = invocation.getArgument(0);
+            return supplier.get();
+        });
 
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -111,17 +128,28 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.token").exists())
                 .andExpect(jsonPath("$.username").value("testuser"))
                 .andExpect(jsonPath("$.name").value("Test User"));
+
+        verify(loginSuccessCounter, times(1)).increment();
+        verify(authenticationTimer, times(1)).record(any(Supplier.class));
     }
 
     @Test
     void testLogin_InvalidCredentials() throws Exception {
         when(userService.authenticateUser("testuser", "wrongpassword")).thenReturn(Optional.empty());
+        // Mock timer to execute the supplier and return its result
+        when(authenticationTimer.record(any(Supplier.class))).thenAnswer(invocation -> {
+            Supplier<?> supplier = invocation.getArgument(0);
+            return supplier.get();
+        });
 
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"username\":\"testuser\",\"password\":\"wrongpassword\"}"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.error").value("Invalid username or password"));
+
+        verify(loginFailureCounter, times(1)).increment();
+        verify(authenticationTimer, times(1)).record(any(Supplier.class));
     }
 
     @Test
@@ -176,6 +204,93 @@ class AuthControllerTest {
                         .header("Authorization", authHeader))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.error").value("Invalid token"));
+    }
+
+    @Test
+    void testGetCurrentUser_Success() throws Exception {
+        // Mock authentication
+        org.springframework.security.core.Authentication auth = org.mockito.Mockito.mock(org.springframework.security.core.Authentication.class);
+        when(auth.getName()).thenReturn("testuser");
+        org.springframework.security.core.context.SecurityContext securityContext = org.mockito.Mockito.mock(org.springframework.security.core.context.SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(auth);
+        org.springframework.security.core.context.SecurityContextHolder.setContext(securityContext);
+
+        when(userService.findByUsername("testuser")).thenReturn(Optional.of(testUser));
+
+        mockMvc.perform(get("/api/auth/me"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.username").value("testuser"))
+                .andExpect(jsonPath("$.name").value("Test User"))
+                .andExpect(jsonPath("$.email").value("test@test.com"));
+
+        org.springframework.security.core.context.SecurityContextHolder.clearContext();
+    }
+
+    @Test
+    void testGetCurrentUser_NotAuthenticated() throws Exception {
+        // Mock null authentication
+        org.springframework.security.core.context.SecurityContext securityContext = org.mockito.Mockito.mock(org.springframework.security.core.context.SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(null);
+        org.springframework.security.core.context.SecurityContextHolder.setContext(securityContext);
+
+        mockMvc.perform(get("/api/auth/me"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("Not authenticated"));
+
+        org.springframework.security.core.context.SecurityContextHolder.clearContext();
+    }
+
+    @Test
+    void testGetCurrentUser_UserNotFound() throws Exception {
+        // Mock authentication with existing auth but user not in DB
+        org.springframework.security.core.Authentication auth = org.mockito.Mockito.mock(org.springframework.security.core.Authentication.class);
+        when(auth.getName()).thenReturn("nonexistent");
+        org.springframework.security.core.context.SecurityContext securityContext = org.mockito.Mockito.mock(org.springframework.security.core.context.SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(auth);
+        org.springframework.security.core.context.SecurityContextHolder.setContext(securityContext);
+
+        when(userService.findByUsername("nonexistent")).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/api/auth/me"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("User not found"));
+
+        org.springframework.security.core.context.SecurityContextHolder.clearContext();
+    }
+
+    @Test
+    void testGetCurrentUser_Exception() throws Exception {
+        // Mock authentication that throws exception
+        org.springframework.security.core.Authentication auth = org.mockito.Mockito.mock(org.springframework.security.core.Authentication.class);
+        when(auth.getName()).thenReturn("testuser");
+        org.springframework.security.core.context.SecurityContext securityContext = org.mockito.Mockito.mock(org.springframework.security.core.context.SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(auth);
+        org.springframework.security.core.context.SecurityContextHolder.setContext(securityContext);
+
+        when(userService.findByUsername("testuser")).thenThrow(new RuntimeException("Database error"));
+
+        mockMvc.perform(get("/api/auth/me"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.error").value("Error retrieving user information"));
+
+        org.springframework.security.core.context.SecurityContextHolder.clearContext();
+    }
+
+    @Test
+    void testGetCurrentUser_NullAuthenticationName() throws Exception {
+        // Mock authentication with null name
+        org.springframework.security.core.Authentication auth = org.mockito.Mockito.mock(org.springframework.security.core.Authentication.class);
+        when(auth.getName()).thenReturn(null);
+        org.springframework.security.core.context.SecurityContext securityContext = org.mockito.Mockito.mock(org.springframework.security.core.context.SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(auth);
+        org.springframework.security.core.context.SecurityContextHolder.setContext(securityContext);
+
+        mockMvc.perform(get("/api/auth/me"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("Not authenticated"));
+
+        org.springframework.security.core.context.SecurityContextHolder.clearContext();
     }
 }
 

@@ -180,6 +180,36 @@ class ProductsServiceTest {
     }
 
     @Test
+    void testGetInstrumentsByOwnerId_WithMatchingResults_ShouldReturnInstruments() {
+        Long ownerId = 1L;
+        List<Instrument> instruments = Arrays.asList(instrument1, instrument2);
+
+        when(instrumentRepository.findByOwnerId(ownerId)).thenReturn(instruments);
+
+        List<Instrument> result = productsService.getInstrumentsByOwnerId(ownerId);
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals("Yamaha P-125", result.get(0).getName());
+        assertEquals("Yamaha YAS-280", result.get(1).getName());
+        verify(instrumentRepository, times(1)).findByOwnerId(ownerId);
+    }
+
+    @Test
+    void testGetInstrumentsByOwnerId_WithNoResults_ShouldReturnEmptyList() {
+        Long ownerId = 999L;
+        List<Instrument> emptyList = Collections.emptyList();
+
+        when(instrumentRepository.findByOwnerId(ownerId)).thenReturn(emptyList);
+
+        List<Instrument> result = productsService.getInstrumentsByOwnerId(ownerId);
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(instrumentRepository, times(1)).findByOwnerId(ownerId);
+    }
+
+    @Test
     void testFilterInstrumentsByFamily_WithMatchingResults_ShouldReturnInstruments() {
         InstrumentFamily family = InstrumentFamily.KEYBOARD;
         List<Instrument> instruments = Collections.singletonList(instrument1);

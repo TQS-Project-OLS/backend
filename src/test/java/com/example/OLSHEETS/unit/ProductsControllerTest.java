@@ -473,4 +473,139 @@ class ProductsControllerTest {
         
         SecurityContextHolder.clearContext();
     }
+
+    @Test
+    void testGetMyInstruments_WithValidUser_ShouldReturnInstruments() throws Exception {
+        // Mock authentication
+        Authentication auth = mock(Authentication.class);
+        when(auth.getName()).thenReturn("testuser");
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(securityContext);
+        
+        // Mock user
+        User user = new User();
+        user.setId(1L);
+        when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(user));
+        
+        List<Instrument> instruments = Arrays.asList(instrument1, instrument2);
+        when(productsService.getInstrumentsByOwnerId(1L)).thenReturn(instruments);
+
+        mockMvc.perform(get("/api/instruments/my-instruments"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].name", is("Yamaha P-125")))
+                .andExpect(jsonPath("$[1].name", is("Yamaha YAS-280")));
+
+        verify(userRepository, times(1)).findByUsername("testuser");
+        verify(productsService, times(1)).getInstrumentsByOwnerId(1L);
+        
+        SecurityContextHolder.clearContext();
+    }
+
+    @Test
+    void testGetMyInstruments_WithUserNotFound_ShouldReturnUnauthorized() throws Exception {
+        // Mock authentication with user not in DB
+        Authentication auth = mock(Authentication.class);
+        when(auth.getName()).thenReturn("nonexistent");
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(securityContext);
+        
+        when(userRepository.findByUsername("nonexistent")).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/api/instruments/my-instruments"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(jsonPath("$.error", is("User not found")));
+
+        verify(userRepository, times(1)).findByUsername("nonexistent");
+        verify(productsService, never()).getInstrumentsByOwnerId(any());
+        
+        SecurityContextHolder.clearContext();
+    }
+
+    @Test
+    void testGetMyInstruments_WithServiceException_ShouldReturnBadRequest() throws Exception {
+        // Mock authentication
+        Authentication auth = mock(Authentication.class);
+        when(auth.getName()).thenReturn("testuser");
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(securityContext);
+        
+        // Mock user
+        User user = new User();
+        user.setId(1L);
+        when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(user));
+        
+        when(productsService.getInstrumentsByOwnerId(1L)).thenThrow(new RuntimeException("Database error"));
+
+        mockMvc.perform(get("/api/instruments/my-instruments"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(jsonPath("$.error", is("Database error")));
+
+        SecurityContextHolder.clearContext();
+    }
+
+    @Test
+    void testGetInstrumentById_WithValidId_ShouldReturnInstrument() throws Exception {
+        when(productsService.getInstrumentById(1L)).thenReturn(instrument1);
+
+        mockMvc.perform(get("/api/instruments/1"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(jsonPath("$.id", is(1)))
+                .andExpect(jsonPath("$.name", is("Yamaha P-125")));
+
+        verify(productsService, times(1)).getInstrumentById(1L);
+    }
+
+    @Test
+    void testGetInstrumentById_WithInvalidId_ShouldReturnBadRequest() throws Exception {
+        when(productsService.getInstrumentById(999L))
+                .thenThrow(new IllegalArgumentException("Instrument not found with id: 999"));
+
+        mockMvc.perform(get("/api/instruments/999"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(jsonPath("$.error", is("Instrument not found with id: 999")));
+
+        verify(productsService, times(1)).getInstrumentById(999L);
+    }
+
+    @Test
+    void testRegisterInstrument_WithServiceException_ShouldReturnBadRequest() throws Exception {
+        // Mock authentication
+        Authentication auth = mock(Authentication.class);
+        when(auth.getName()).thenReturn("testuser");
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(securityContext);
+        
+        // Mock user
+        User user = new User();
+        user.setId(5L);
+        when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(user));
+
+        InstrumentRegistrationRequest request = new InstrumentRegistrationRequest();
+        request.setName("Test Instrument");
+        request.setDescription("Test Description");
+        request.setPrice(100.0);
+        request.setOwnerId(5L);
+
+        when(productsService.registerInstrument(any(InstrumentRegistrationRequest.class)))
+                .thenThrow(new RuntimeException("Registration failed"));
+
+        mockMvc.perform(post("/api/instruments/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(jsonPath("$.error", is("Registration failed")));
+
+        SecurityContextHolder.clearContext();
+    }
 }
