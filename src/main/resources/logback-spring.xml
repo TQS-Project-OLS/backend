@@ -35,6 +35,10 @@
                     <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n</pattern>
                 </message>
             </format>
+            <batch>
+                <batchSize>1000</batchSize>
+                <batchTimeout>5s</batchTimeout>
+            </batch>
         </appender>
         
         <root level="INFO">
@@ -49,11 +53,12 @@
     </root>
     
     <!-- Application-specific log levels -->
-    <logger name="com.example.OLSHEETS" level="DEBUG" additivity="false">
-        <appender-ref ref="CONSOLE" />
-    </logger>
+    <logger name="com.example.OLSHEETS" level="DEBUG" />
     
-    <logger name="org.springframework.security" level="DEBUG" additivity="false">
-        <appender-ref ref="CONSOLE" />
-    </logger>
+    <logger name="org.springframework.security" level="DEBUG" />
+    
+    <!-- Hibernate logging configuration -->
+    <logger name="org.hibernate.stat" level="WARN" />
+    <logger name="org.hibernate.SQL" level="DEBUG" />
+    <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="TRACE" />
 </configuration>
