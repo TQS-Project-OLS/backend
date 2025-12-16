@@ -159,6 +159,31 @@ class ProductsControllerIntegrationTest {
     }
 
     @Test
+    void testGetInstrumentById_WithExistingInstrument_ShouldReturnInstrument() throws Exception {
+        Instrument savedInstrument = instrumentRepository.findByNameContainingIgnoreCase("Yamaha P-125").get(0);
+        
+        mockMvc.perform(get("/api/instruments/" + savedInstrument.getId()))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(jsonPath("$.id", is(savedInstrument.getId().intValue())))
+                .andExpect(jsonPath("$.name", is("Yamaha P-125")))
+                .andExpect(jsonPath("$.description", is("Digital Piano")))
+                .andExpect(jsonPath("$.price", is(599.99)))
+                .andExpect(jsonPath("$.age", is(2)))
+                .andExpect(jsonPath("$.type", is("DIGITAL")))
+                .andExpect(jsonPath("$.family", is("KEYBOARD")))
+                .andExpect(jsonPath("$.owner.id", notNullValue()));
+    }
+
+    @Test
+    void testGetInstrumentById_WithNonExistentInstrument_ShouldReturnBadRequest() throws Exception {
+        Long nonExistentId = 99999L;
+        
+        mockMvc.perform(get("/api/instruments/" + nonExistentId))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void testSearchInstruments_WithExactMatch_ShouldReturnOneInstrument() throws Exception {
         mockMvc.perform(get("/api/instruments/search")
                         .param("name", "Yamaha P-125"))

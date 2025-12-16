@@ -48,6 +48,7 @@ scrape_configs:
           __path__: /app/logs/*.log
 
     pipeline_stages:
+      # Handle regular log format
       - regex:
           expression: '^(?P<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}) (?P<level>\w+) (?P<thread>\[.*\]) (?P<logger>.*?) - (?P<message>.*)$'
       - timestamp:
@@ -58,3 +59,7 @@ scrape_configs:
           logger:
       - output:
           source: message
+      # Handle multi-line log entries (like Hibernate statistics)
+      - multiline:
+          firstline: '^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}'
+          max_wait_time: 3s
