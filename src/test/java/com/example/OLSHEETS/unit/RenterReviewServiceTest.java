@@ -277,4 +277,80 @@ class RenterReviewServiceTest {
             renterReviewService.getRenterReviewByBookingId(1L)
         );
     }
+
+    @Test
+    void testCreateRenterReview_WithRejectedBooking_ShouldThrowException() {
+        Booking rejectedBooking = new Booking(instrument, renter, 
+            LocalDate.now().minusDays(10), LocalDate.now().minusDays(3));
+        rejectedBooking.setId(2L);
+        rejectedBooking.setStatus(BookingStatus.REJECTED);
+        
+        RenterReviewRequest request = new RenterReviewRequest(2L, 5, "Great!");
+        
+        when(bookingRepository.findById(2L)).thenReturn(Optional.of(rejectedBooking));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> 
+            renterReviewService.createRenterReview(request, 1L)
+        );
+
+        assertEquals("Can only review approved bookings", exception.getMessage());
+        verify(renterReviewRepository, never()).save(any(RenterReview.class));
+    }
+
+    @Test
+    void testCreateRenterReview_WithCancelledBooking_ShouldThrowException() {
+        Booking cancelledBooking = new Booking(instrument, renter, 
+            LocalDate.now().minusDays(10), LocalDate.now().minusDays(3));
+        cancelledBooking.setId(3L);
+        cancelledBooking.setStatus(BookingStatus.CANCELLED);
+        
+        RenterReviewRequest request = new RenterReviewRequest(3L, 5, "Great!");
+        
+        when(bookingRepository.findById(3L)).thenReturn(Optional.of(cancelledBooking));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> 
+            renterReviewService.createRenterReview(request, 1L)
+        );
+
+        assertEquals("Can only review approved bookings", exception.getMessage());
+        verify(renterReviewRepository, never()).save(any(RenterReview.class));
+    }
+
+    @Test
+    void testCreateRenterReview_WithPendingBooking_ShouldThrowException() {
+        Booking pendingBooking = new Booking(instrument, renter, 
+            LocalDate.now().minusDays(10), LocalDate.now().minusDays(3));
+        pendingBooking.setId(4L);
+        pendingBooking.setStatus(BookingStatus.PENDING);
+        
+        RenterReviewRequest request = new RenterReviewRequest(4L, 5, "Great!");
+        
+        when(bookingRepository.findById(4L)).thenReturn(Optional.of(pendingBooking));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> 
+            renterReviewService.createRenterReview(request, 1L)
+        );
+
+        assertEquals("Can only review approved bookings", exception.getMessage());
+        verify(renterReviewRepository, never()).save(any(RenterReview.class));
+    }
+
+    @Test
+    void testCreateRenterReview_WithApprovedBooking_ShouldSucceed() {
+        Booking approvedBooking = new Booking(instrument, renter, 
+            LocalDate.now().minusDays(10), LocalDate.now().minusDays(3));
+        approvedBooking.setId(5L);
+        approvedBooking.setStatus(BookingStatus.APPROVED);
+        
+        RenterReviewRequest request = new RenterReviewRequest(5L, 5, "Excellent!");
+        
+        when(bookingRepository.findById(5L)).thenReturn(Optional.of(approvedBooking));
+        when(renterReviewRepository.existsByBooking(approvedBooking)).thenReturn(false);
+        when(renterReviewRepository.save(any(RenterReview.class))).thenReturn(renterReview);
+
+        RenterReviewResponse response = renterReviewService.createRenterReview(request, 1L);
+
+        assertNotNull(response);
+        verify(renterReviewRepository, times(1)).save(any(RenterReview.class));
+    }
 }

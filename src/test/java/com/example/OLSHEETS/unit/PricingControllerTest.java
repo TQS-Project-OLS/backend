@@ -5,6 +5,8 @@ import com.example.OLSHEETS.data.Instrument;
 import com.example.OLSHEETS.data.InstrumentType;
 import com.example.OLSHEETS.data.InstrumentFamily;
 import com.example.OLSHEETS.data.MusicSheet;
+import com.example.OLSHEETS.data.User;
+import com.example.OLSHEETS.repository.UserRepository;
 import com.example.OLSHEETS.service.ProductsService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,9 +15,14 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import com.example.OLSHEETS.security.JwtUtil;
+
+import java.util.Optional;
 
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.*;
@@ -44,19 +51,33 @@ class PricingControllerTest {
     @MockitoBean
     private ProductsService productsService;
 
+    @MockitoBean
+    private UserRepository userRepository;
+
     private Instrument instrument;
     private MusicSheet musicSheet;
+    private User owner;
 
     @BeforeEach
     void setUp() {
+        // Setup mock authentication
+        Authentication authentication = mock(Authentication.class);
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(authentication.getName()).thenReturn("owner1");
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        // Setup owner user
+        owner = new User("owner1", "owner1@example.com", "Owner One", "password123");
+        owner.setId(1L);
+        when(userRepository.findByUsername("owner1")).thenReturn(Optional.of(owner));
+
         instrument = new Instrument();
         instrument.setId(1L);
         instrument.setName("Yamaha P-125");
         instrument.setDescription("Digital Piano");
         instrument.setPrice(599.99);
-        com.example.OLSHEETS.data.User owner1 = new com.example.OLSHEETS.data.User("owner1", "owner1@example.com", "owner1");
-        owner1.setId(1L);
-        instrument.setOwner(owner1);
+        instrument.setOwner(owner);
         instrument.setAge(2);
         instrument.setType(InstrumentType.DIGITAL);
         instrument.setFamily(InstrumentFamily.KEYBOARD);
@@ -68,9 +89,7 @@ class PricingControllerTest {
         musicSheet.setCategory("CLASSICAL");
         musicSheet.setDescription("Piano Sonata No. 14");
         musicSheet.setPrice(9.99);
-        com.example.OLSHEETS.data.User owner2 = new com.example.OLSHEETS.data.User("owner1", "owner1@example.com", "owner1");
-        owner2.setId(1L);
-        musicSheet.setOwner(owner2);
+        musicSheet.setOwner(owner);
     }
 
     @Test
@@ -79,7 +98,7 @@ class PricingControllerTest {
         Double newPrice = 699.99;
         instrument.setPrice(newPrice);
         
-        when(productsService.updateItemPrice(itemId, newPrice)).thenReturn(instrument);
+        when(productsService.updateItemPrice(eq(itemId), eq(newPrice), anyLong())).thenReturn(instrument);
 
         mockMvc.perform(put("/api/items/price/" + itemId)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -90,7 +109,7 @@ class PricingControllerTest {
                 .andExpect(jsonPath("$.itemName", is("Yamaha P-125")))
                 .andExpect(jsonPath("$.newPrice", is(699.99)));
 
-        verify(productsService, times(1)).updateItemPrice(itemId, newPrice);
+        verify(productsService, times(1)).updateItemPrice(eq(itemId), eq(newPrice), anyLong());
     }
 
     @Test
@@ -99,7 +118,7 @@ class PricingControllerTest {
         Double newPrice = 0.0;
         instrument.setPrice(newPrice);
         
-        when(productsService.updateItemPrice(itemId, newPrice)).thenReturn(instrument);
+        when(productsService.updateItemPrice(eq(itemId), eq(newPrice), anyLong())).thenReturn(instrument);
 
         mockMvc.perform(put("/api/items/price/" + itemId)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -107,7 +126,7 @@ class PricingControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.newPrice", is(0.0)));
 
-        verify(productsService, times(1)).updateItemPrice(itemId, newPrice);
+        verify(productsService, times(1)).updateItemPrice(eq(itemId), eq(newPrice), anyLong());
     }
 
     @Test
@@ -115,7 +134,7 @@ class PricingControllerTest {
         Long itemId = 1L;
         Double negativePrice = -10.0;
         
-        when(productsService.updateItemPrice(itemId, negativePrice))
+        when(productsService.updateItemPrice(eq(itemId), eq(negativePrice), anyLong()))
             .thenThrow(new IllegalArgumentException("Price must be a positive number"));
 
         mockMvc.perform(put("/api/items/price/" + itemId)
@@ -123,7 +142,7 @@ class PricingControllerTest {
                         .content("{\"newPrice\": -10.0}"))
                 .andExpect(status().isBadRequest());
 
-        verify(productsService, times(1)).updateItemPrice(itemId, negativePrice);
+        verify(productsService, times(1)).updateItemPrice(eq(itemId), eq(negativePrice), anyLong());
     }
 
     @Test
@@ -131,7 +150,7 @@ class PricingControllerTest {
         Long itemId = 999L;
         Double newPrice = 100.0;
         
-        when(productsService.updateItemPrice(itemId, newPrice))
+        when(productsService.updateItemPrice(eq(itemId), eq(newPrice), anyLong()))
             .thenThrow(new IllegalArgumentException("Item not found with id: " + itemId));
 
         mockMvc.perform(put("/api/items/price/" + itemId)
@@ -139,7 +158,7 @@ class PricingControllerTest {
                         .content("{\"newPrice\": 100.0}"))
                 .andExpect(status().isBadRequest());
 
-        verify(productsService, times(1)).updateItemPrice(itemId, newPrice);
+        verify(productsService, times(1)).updateItemPrice(eq(itemId), eq(newPrice), anyLong());
     }
 
     @Test
@@ -179,7 +198,7 @@ class PricingControllerTest {
         Double newPrice = 14.99;
         musicSheet.setPrice(newPrice);
         
-        when(productsService.updateItemPrice(itemId, newPrice)).thenReturn(musicSheet);
+        when(productsService.updateItemPrice(eq(itemId), eq(newPrice), anyLong())).thenReturn(musicSheet);
 
         mockMvc.perform(put("/api/items/price/" + itemId)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -190,7 +209,7 @@ class PricingControllerTest {
                 .andExpect(jsonPath("$.itemName", is("Moonlight Sonata")))
                 .andExpect(jsonPath("$.newPrice", is(14.99)));
 
-        verify(productsService, times(1)).updateItemPrice(itemId, newPrice);
+        verify(productsService, times(1)).updateItemPrice(eq(itemId), eq(newPrice), anyLong());
     }
 
     @Test
@@ -198,7 +217,7 @@ class PricingControllerTest {
         Long itemId = 2L;
         Double negativePrice = -5.0;
         
-        when(productsService.updateItemPrice(itemId, negativePrice))
+        when(productsService.updateItemPrice(eq(itemId), eq(negativePrice), anyLong()))
             .thenThrow(new IllegalArgumentException("Price must be a positive number"));
 
         mockMvc.perform(put("/api/items/price/" + itemId)
@@ -206,7 +225,7 @@ class PricingControllerTest {
                         .content("{\"newPrice\": -5.0}"))
                 .andExpect(status().isBadRequest());
 
-        verify(productsService, times(1)).updateItemPrice(itemId, negativePrice);
+        verify(productsService, times(1)).updateItemPrice(eq(itemId), eq(negativePrice), anyLong());
     }
 
     @Test

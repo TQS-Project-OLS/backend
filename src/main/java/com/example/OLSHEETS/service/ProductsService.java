@@ -68,13 +68,18 @@ public class ProductsService {
         return item;
     }
 
-    public Item updateItemPrice(Long itemId, Double newPrice) {
+    public Item updateItemPrice(Long itemId, Double newPrice, Long userId) {
         if (newPrice == null || newPrice < 0) {
             throw new IllegalArgumentException("Price must be a positive number");
         }
 
         Item item = findItemById(itemId)
             .orElseThrow(() -> new IllegalArgumentException("Item not found with id: " + itemId));
+
+        // Check if the user is the owner of the item
+        if (!item.getOwner().getId().equals(userId)) {
+            throw new IllegalArgumentException("You are not authorized to update the price of this item");
+        }
 
         item.setPrice(newPrice);
 

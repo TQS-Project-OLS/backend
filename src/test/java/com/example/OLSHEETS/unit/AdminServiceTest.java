@@ -123,7 +123,8 @@ class AdminServiceTest {
         when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking1));
         when(bookingRepository.save(any(Booking.class))).thenReturn(booking1);
 
-        Booking cancelled = adminService.cancelBooking(1L);
+        // Owner (10L) cancels the booking
+        Booking cancelled = adminService.cancelBooking(1L, 10L);
 
         assertThat(cancelled.getStatus()).isEqualTo(BookingStatus.CANCELLED);
         verify(bookingRepository, times(1)).findById(1L);
@@ -134,11 +135,50 @@ class AdminServiceTest {
     void whenCancelNonExistentBooking_thenThrowException() {
         when(bookingRepository.findById(999L)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> adminService.cancelBooking(999L))
+        assertThatThrownBy(() -> adminService.cancelBooking(999L, 10L))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("Booking not found");
 
         verify(bookingRepository, times(1)).findById(999L);
+        verify(bookingRepository, never()).save(any());
+    }
+
+    @Test
+    void whenCancelBooking_ByOwner_ShouldSucceed() {
+        when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking1));
+        when(bookingRepository.save(any(Booking.class))).thenReturn(booking1);
+
+        // Owner (10L) cancels the booking
+        Booking cancelled = adminService.cancelBooking(1L, 10L);
+
+        assertThat(cancelled.getStatus()).isEqualTo(BookingStatus.CANCELLED);
+        verify(bookingRepository, times(1)).findById(1L);
+        verify(bookingRepository, times(1)).save(booking1);
+    }
+
+    @Test
+    void whenCancelBooking_ByRenter_ShouldSucceed() {
+        when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking1));
+        when(bookingRepository.save(any(Booking.class))).thenReturn(booking1);
+
+        // Renter (100L) cancels the booking
+        Booking cancelled = adminService.cancelBooking(1L, 100L);
+
+        assertThat(cancelled.getStatus()).isEqualTo(BookingStatus.CANCELLED);
+        verify(bookingRepository, times(1)).findById(1L);
+        verify(bookingRepository, times(1)).save(booking1);
+    }
+
+    @Test
+    void whenCancelBooking_ByUnauthorizedUser_ShouldThrowException() {
+        when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking1));
+
+        // User 999L is neither owner nor renter
+        assertThatThrownBy(() -> adminService.cancelBooking(1L, 999L))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("not authorized");
+
+        verify(bookingRepository, times(1)).findById(1L);
         verify(bookingRepository, never()).save(any());
     }
 

@@ -60,6 +60,13 @@ class BookingControllerTest {
 
     @BeforeEach
     void setUp() {
+        // Mock authentication
+        org.springframework.security.core.Authentication auth = mock(org.springframework.security.core.Authentication.class);
+        org.springframework.security.core.context.SecurityContext securityContext = mock(org.springframework.security.core.context.SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(auth);
+        when(auth.getName()).thenReturn("owner");
+        org.springframework.security.core.context.SecurityContextHolder.setContext(securityContext);
+
         item = new Instrument();
         item.setId(1L);
         com.example.OLSHEETS.data.User owner = new com.example.OLSHEETS.data.User("owner", "owner@example.com", "OwnerTest");
@@ -67,6 +74,9 @@ class BookingControllerTest {
         item.setOwner(owner);
         item.setName("Test Guitar");
         item.setPrice(50.0);
+
+        // Mock userRepository to return the owner
+        when(userRepository.findByUsername("owner")).thenReturn(java.util.Optional.of(owner));
         
         User testUser = new User("test", "test@example.com", "Test User", "password123");
         testUser.setId(100L);
@@ -80,8 +90,7 @@ class BookingControllerTest {
         booking.setStatus(BookingStatus.APPROVED);
         when(bookingService.approveBooking(1L, 10)).thenReturn(booking);
 
-        mockMvc.perform(put("/api/bookings/1/approve")
-                        .param("ownerId", "10"))
+        mockMvc.perform(put("/api/bookings/1/approve"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.id", is(1)))
@@ -93,11 +102,21 @@ class BookingControllerTest {
 
     @Test
     void testApproveBooking_WithUnauthorizedOwner_ShouldReturnBadRequest() throws Exception {
+        // Mock authentication with a different user (not the owner)
+        com.example.OLSHEETS.data.User unauthorizedUser = new com.example.OLSHEETS.data.User("otheruser", "other@example.com", "OtherUser");
+        unauthorizedUser.setId(999L);
+        
+        org.springframework.security.core.Authentication auth = mock(org.springframework.security.core.Authentication.class);
+        org.springframework.security.core.context.SecurityContext securityContext = mock(org.springframework.security.core.context.SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(auth);
+        when(auth.getName()).thenReturn("otheruser");
+        org.springframework.security.core.context.SecurityContextHolder.setContext(securityContext);
+        when(userRepository.findByUsername("otheruser")).thenReturn(java.util.Optional.of(unauthorizedUser));
+        
         when(bookingService.approveBooking(1L, 999))
                 .thenThrow(new IllegalArgumentException("You are not authorized to approve this booking"));
 
-        mockMvc.perform(put("/api/bookings/1/approve")
-                        .param("ownerId", "999"))
+        mockMvc.perform(put("/api/bookings/1/approve"))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.error", is("You are not authorized to approve this booking")));
@@ -110,8 +129,7 @@ class BookingControllerTest {
         when(bookingService.approveBooking(1L, 10))
                 .thenThrow(new IllegalStateException("Booking has already been approved"));
 
-        mockMvc.perform(put("/api/bookings/1/approve")
-                        .param("ownerId", "10"))
+        mockMvc.perform(put("/api/bookings/1/approve"))
                 .andExpect(status().isConflict())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.error", is("Booking has already been approved")));
@@ -124,8 +142,7 @@ class BookingControllerTest {
         when(bookingService.approveBooking(999L, 10))
                 .thenThrow(new IllegalArgumentException("Booking not found with id: 999"));
 
-        mockMvc.perform(put("/api/bookings/999/approve")
-                        .param("ownerId", "10"))
+        mockMvc.perform(put("/api/bookings/999/approve"))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.error", is("Booking not found with id: 999")));
@@ -138,8 +155,7 @@ class BookingControllerTest {
         booking.setStatus(BookingStatus.REJECTED);
         when(bookingService.rejectBooking(1L, 10)).thenReturn(booking);
 
-        mockMvc.perform(put("/api/bookings/1/reject")
-                        .param("ownerId", "10"))
+        mockMvc.perform(put("/api/bookings/1/reject"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.id", is(1)))
@@ -151,11 +167,21 @@ class BookingControllerTest {
 
     @Test
     void testRejectBooking_WithUnauthorizedOwner_ShouldReturnBadRequest() throws Exception {
+        // Mock authentication with a different user (not the owner)
+        com.example.OLSHEETS.data.User unauthorizedUser = new com.example.OLSHEETS.data.User("otheruser", "other@example.com", "OtherUser");
+        unauthorizedUser.setId(999L);
+        
+        org.springframework.security.core.Authentication auth = mock(org.springframework.security.core.Authentication.class);
+        org.springframework.security.core.context.SecurityContext securityContext = mock(org.springframework.security.core.context.SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(auth);
+        when(auth.getName()).thenReturn("otheruser");
+        org.springframework.security.core.context.SecurityContextHolder.setContext(securityContext);
+        when(userRepository.findByUsername("otheruser")).thenReturn(java.util.Optional.of(unauthorizedUser));
+        
         when(bookingService.rejectBooking(1L, 999))
                 .thenThrow(new IllegalArgumentException("You are not authorized to reject this booking"));
 
-        mockMvc.perform(put("/api/bookings/1/reject")
-                        .param("ownerId", "999"))
+        mockMvc.perform(put("/api/bookings/1/reject"))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.error", is("You are not authorized to reject this booking")));
@@ -168,8 +194,7 @@ class BookingControllerTest {
         when(bookingService.rejectBooking(1L, 10))
                 .thenThrow(new IllegalStateException("Booking has already been rejected"));
 
-        mockMvc.perform(put("/api/bookings/1/reject")
-                        .param("ownerId", "10"))
+        mockMvc.perform(put("/api/bookings/1/reject"))
                 .andExpect(status().isConflict())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.error", is("Booking has already been rejected")));
@@ -182,8 +207,7 @@ class BookingControllerTest {
         when(bookingService.rejectBooking(999L, 10))
                 .thenThrow(new IllegalArgumentException("Booking not found with id: 999"));
 
-        mockMvc.perform(put("/api/bookings/999/reject")
-                        .param("ownerId", "10"))
+        mockMvc.perform(put("/api/bookings/999/reject"))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.error", is("Booking not found with id: 999")));

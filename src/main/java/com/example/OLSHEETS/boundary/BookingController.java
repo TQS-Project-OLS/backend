@@ -56,10 +56,17 @@ public class BookingController {
     }
 
     @PutMapping("/{bookingId}/approve")
-    public ResponseEntity<?> approveBooking(@PathVariable Long bookingId, @RequestParam int ownerId) {
+    public ResponseEntity<?> approveBooking(@PathVariable Long bookingId) {
         try {
-            Booking approved = bookingService.approveBooking(bookingId, ownerId);
+            // Extract authenticated user from JWT token
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            User user = userRepository.findByUsername(auth.getName())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+            
+            Booking approved = bookingService.approveBooking(bookingId, user.getId().intValue());
             return ResponseEntity.ok(approved);
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (IllegalStateException e) {
@@ -68,10 +75,17 @@ public class BookingController {
     }
 
     @PutMapping("/{bookingId}/reject")
-    public ResponseEntity<?> rejectBooking(@PathVariable Long bookingId, @RequestParam int ownerId) {
+    public ResponseEntity<?> rejectBooking(@PathVariable Long bookingId) {
         try {
-            Booking rejected = bookingService.rejectBooking(bookingId, ownerId);
+            // Extract authenticated user from JWT token
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            User user = userRepository.findByUsername(auth.getName())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+            
+            Booking rejected = bookingService.rejectBooking(bookingId, user.getId().intValue());
             return ResponseEntity.ok(rejected);
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (IllegalStateException e) {
