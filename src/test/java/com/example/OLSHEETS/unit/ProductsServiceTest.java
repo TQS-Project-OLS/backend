@@ -291,7 +291,7 @@ class ProductsServiceTest {
         when(instrumentRepository.findById(itemId)).thenReturn(Optional.of(instrument1));
         when(instrumentRepository.save(any(Instrument.class))).thenReturn(instrument1);
 
-        Item result = productsService.updateItemPrice(itemId, newPrice);
+        Item result = productsService.updateItemPrice(itemId, newPrice, 1L);
 
         assertNotNull(result);
         assertEquals(newPrice, result.getPrice());
@@ -310,7 +310,7 @@ class ProductsServiceTest {
         when(musicSheetRepository.findById(itemId)).thenReturn(Optional.of(sheet1));
         when(musicSheetRepository.save(any(MusicSheet.class))).thenReturn(sheet1);
 
-        Item result = productsService.updateItemPrice(itemId, newPrice);
+        Item result = productsService.updateItemPrice(itemId, newPrice, 1L);
 
         assertNotNull(result);
         assertEquals(newPrice, result.getPrice());
@@ -325,7 +325,7 @@ class ProductsServiceTest {
         
         IllegalArgumentException exception = assertThrows(
             IllegalArgumentException.class,
-            () -> productsService.updateItemPrice(itemId, null)
+            () -> productsService.updateItemPrice(itemId, null, 1L)
         );
 
         assertEquals("Price must be a positive number", exception.getMessage());
@@ -340,7 +340,7 @@ class ProductsServiceTest {
         
         IllegalArgumentException exception = assertThrows(
             IllegalArgumentException.class,
-            () -> productsService.updateItemPrice(itemId, negativePrice)
+            () -> productsService.updateItemPrice(itemId, negativePrice, 1L)
         );
 
         assertEquals("Price must be a positive number", exception.getMessage());
@@ -356,7 +356,7 @@ class ProductsServiceTest {
         when(instrumentRepository.findById(itemId)).thenReturn(Optional.of(instrument1));
         when(instrumentRepository.save(any(Instrument.class))).thenReturn(instrument1);
 
-        Item result = productsService.updateItemPrice(itemId, zeroPrice);
+        Item result = productsService.updateItemPrice(itemId, zeroPrice, 1L);
 
         assertNotNull(result);
         assertEquals(zeroPrice, result.getPrice());
@@ -373,13 +373,69 @@ class ProductsServiceTest {
 
         IllegalArgumentException exception = assertThrows(
             IllegalArgumentException.class,
-            () -> productsService.updateItemPrice(itemId, newPrice)
+            () -> productsService.updateItemPrice(itemId, newPrice, 1L)
         );
 
         assertEquals("Item not found with id: " + itemId, exception.getMessage());
         verify(instrumentRepository, times(1)).findById(itemId);
         verify(musicSheetRepository, times(1)).findById(itemId);
         verify(instrumentRepository, never()).save(any());
+        verify(musicSheetRepository, never()).save(any());
+    }
+
+    @Test
+    void testUpdateItemPrice_WithUnauthorizedUser_ShouldThrowException() {
+        Long itemId = 1L;
+        Double newPrice = 100.0;
+        Long unauthorizedUserId = 999L;
+        
+        when(instrumentRepository.findById(itemId)).thenReturn(Optional.of(instrument1));
+
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> productsService.updateItemPrice(itemId, newPrice, unauthorizedUserId)
+        );
+
+        assertEquals("You are not authorized to update the price of this item", exception.getMessage());
+        verify(instrumentRepository, times(1)).findById(itemId);
+        verify(instrumentRepository, never()).save(any());
+        verify(musicSheetRepository, never()).save(any());
+    }
+
+    @Test
+    void testUpdateItemPrice_WithCorrectOwner_ShouldSucceed() {
+        Long itemId = 1L;
+        Double newPrice = 999.99;
+        Long ownerId = 1L;
+        
+        when(instrumentRepository.findById(itemId)).thenReturn(Optional.of(instrument1));
+        when(instrumentRepository.save(any(Instrument.class))).thenReturn(instrument1);
+
+        Item result = productsService.updateItemPrice(itemId, newPrice, ownerId);
+
+        assertNotNull(result);
+        assertEquals(newPrice, result.getPrice());
+        verify(instrumentRepository, times(1)).findById(itemId);
+        verify(instrumentRepository, times(1)).save(instrument1);
+    }
+
+    @Test
+    void testUpdateItemPrice_ForMusicSheet_WithUnauthorizedUser_ShouldThrowException() {
+        Long itemId = 1L;
+        Double newPrice = 20.0;
+        Long unauthorizedUserId = 999L;
+        
+        when(instrumentRepository.findById(itemId)).thenReturn(Optional.empty());
+        when(musicSheetRepository.findById(itemId)).thenReturn(Optional.of(sheet1));
+
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> productsService.updateItemPrice(itemId, newPrice, unauthorizedUserId)
+        );
+
+        assertEquals("You are not authorized to update the price of this item", exception.getMessage());
+        verify(instrumentRepository, times(1)).findById(itemId);
+        verify(musicSheetRepository, times(1)).findById(itemId);
         verify(musicSheetRepository, never()).save(any());
     }
 

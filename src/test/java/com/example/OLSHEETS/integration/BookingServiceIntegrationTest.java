@@ -90,8 +90,8 @@ class BookingServiceIntegrationTest {
     void shouldCreateBookingWhenNoOverlap() {
         com.example.OLSHEETS.data.User u = userRepository.save(new com.example.OLSHEETS.data.User("u100", "u100@example.com", "u100", "123"));
 
-        Booking b = bookingService.createBooking(instrument1.getId(), u.getId(), LocalDate.of(2025, 12, 1),
-                LocalDate.of(2025, 12, 5));
+        Booking b = bookingService.createBooking(instrument1.getId(), u.getId(), LocalDate.now().plusDays(1),
+                LocalDate.now().plusDays(5));
         assertThat(b.getId()).isNotNull();
         assertThat(b.getItem().getId()).isEqualTo(instrument1.getId());
         assertThat(b.getItem().getOwner().getId()).isEqualTo(instrument1.getOwner().getId());
@@ -100,16 +100,16 @@ class BookingServiceIntegrationTest {
 
     @Test
     void shouldRejectOverlappingBooking() {
-        bookingService.createBooking(instrument2.getId(), renter100.getId(), LocalDate.of(2025, 12, 10), LocalDate.of(2025, 12, 15));
+        bookingService.createBooking(instrument2.getId(), renter100.getId(), LocalDate.now().plusDays(10), LocalDate.now().plusDays(15));
 
-        assertThatThrownBy(() -> bookingService.createBooking(instrument2.getId(), renter200.getId(), LocalDate.of(2025, 12, 14),
-            LocalDate.of(2025, 12, 20))).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> bookingService.createBooking(instrument2.getId(), renter200.getId(), LocalDate.now().plusDays(14),
+            LocalDate.now().plusDays(20))).isInstanceOf(IllegalStateException.class);
     }
 
     @Test
     void shouldApproveBookingWhenOwnerIsAuthorized() {
-        Booking booking = bookingService.createBooking(instrument1.getId(), renter100.getId(), LocalDate.of(2025, 12, 1),
-                LocalDate.of(2025, 12, 5));
+        Booking booking = bookingService.createBooking(instrument1.getId(), renter100.getId(), LocalDate.now().plusDays(1),
+                LocalDate.now().plusDays(5));
         assertThat(booking.getStatus()).isEqualTo(BookingStatus.PENDING);
 
         Booking approved = bookingService.approveBooking(booking.getId(), owner10.getId().intValue());
@@ -120,8 +120,8 @@ class BookingServiceIntegrationTest {
 
     @Test
     void shouldRejectBookingWhenOwnerIsAuthorized() {
-        Booking booking = bookingService.createBooking(instrument1.getId(), renter100.getId(), LocalDate.of(2025, 12, 1),
-                LocalDate.of(2025, 12, 5));
+        Booking booking = bookingService.createBooking(instrument1.getId(), renter100.getId(), LocalDate.now().plusDays(1),
+                LocalDate.now().plusDays(5));
         assertThat(booking.getStatus()).isEqualTo(BookingStatus.PENDING);
 
         Booking rejected = bookingService.rejectBooking(booking.getId(), owner10.getId().intValue());
@@ -132,8 +132,8 @@ class BookingServiceIntegrationTest {
 
     @Test
     void shouldThrowExceptionWhenNonOwnerTriesToApprove() {
-        Booking booking = bookingService.createBooking(instrument1.getId(), renter100.getId(), LocalDate.of(2025, 12, 1),
-                LocalDate.of(2025, 12, 5));
+        Booking booking = bookingService.createBooking(instrument1.getId(), renter100.getId(), LocalDate.now().plusDays(1),
+                LocalDate.now().plusDays(5));
 
         assertThatThrownBy(() -> bookingService.approveBooking(booking.getId(), 999))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -145,8 +145,8 @@ class BookingServiceIntegrationTest {
 
     @Test
     void shouldThrowExceptionWhenNonOwnerTriesToReject() {
-        Booking booking = bookingService.createBooking(instrument1.getId(), renter100.getId(), LocalDate.of(2025, 12, 1),
-                LocalDate.of(2025, 12, 5));
+        Booking booking = bookingService.createBooking(instrument1.getId(), renter100.getId(), LocalDate.now().plusDays(1),
+                LocalDate.now().plusDays(5));
 
         assertThatThrownBy(() -> bookingService.rejectBooking(booking.getId(), 999))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -172,8 +172,8 @@ class BookingServiceIntegrationTest {
 
     @Test
     void shouldThrowExceptionWhenApprovingAlreadyApprovedBooking() {
-        Booking booking = bookingService.createBooking(instrument1.getId(), renter100.getId(), LocalDate.of(2025, 12, 1),
-                LocalDate.of(2025, 12, 5));
+        Booking booking = bookingService.createBooking(instrument1.getId(), renter100.getId(), LocalDate.now().plusDays(1),
+                LocalDate.now().plusDays(5));
         bookingService.approveBooking(booking.getId(), owner10.getId().intValue());
 
         assertThatThrownBy(() -> bookingService.approveBooking(booking.getId(), owner10.getId().intValue()))
@@ -183,8 +183,8 @@ class BookingServiceIntegrationTest {
 
     @Test
     void shouldThrowExceptionWhenRejectingAlreadyRejectedBooking() {
-        Booking booking = bookingService.createBooking(instrument1.getId(), renter100.getId(), LocalDate.of(2025, 12, 1),
-                LocalDate.of(2025, 12, 5));
+        Booking booking = bookingService.createBooking(instrument1.getId(), renter100.getId(), LocalDate.now().plusDays(1),
+                LocalDate.now().plusDays(5));
         bookingService.rejectBooking(booking.getId(), owner10.getId().intValue());
 
         assertThatThrownBy(() -> bookingService.rejectBooking(booking.getId(), owner10.getId().intValue()))
