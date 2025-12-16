@@ -46,12 +46,21 @@ public class AdminService {
     }
 
     /**
-     * Cancel a booking as admin (override owner permissions)
+     * Cancel a booking
+     * Only the item owner or the renter can cancel their booking
      */
     @Transactional
-    public Booking cancelBooking(Long bookingId) {
+    public Booking cancelBooking(Long bookingId, Long userId) {
         Booking booking = bookingRepository.findById(bookingId)
             .orElseThrow(() -> new IllegalArgumentException("Booking not found with id: " + bookingId));
+
+        // Check if user is either the owner of the item or the renter
+        boolean isOwner = booking.getItem().getOwner().getId().equals(userId);
+        boolean isRenter = booking.getRenter().getId().equals(userId);
+
+        if (!isOwner && !isRenter) {
+            throw new IllegalArgumentException("You are not authorized to cancel this booking");
+        }
 
         booking.setStatus(BookingStatus.CANCELLED);
         return bookingRepository.save(booking);

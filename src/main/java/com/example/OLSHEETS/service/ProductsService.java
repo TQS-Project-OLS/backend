@@ -40,6 +40,11 @@ public class ProductsService {
             .orElseThrow(() -> new IllegalArgumentException("Instrument not found with id: " + id));
     }
 
+    public MusicSheet getMusicSheetById(Long id) {
+        return musicSheetRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Music sheet not found with id: " + id));
+    }
+
     public List<Instrument> searchInstrumentsByName(String name) {
         return instrumentRepository.findByNameContainingIgnoreCase(name);
     }
@@ -49,6 +54,10 @@ public class ProductsService {
     }
     public List<Instrument> filterInstrumentsByFamily(InstrumentFamily family) {
         return instrumentRepository.findByFamily(family);
+    }
+
+    public List<Instrument> getInstrumentsByOwnerId(Long ownerId) {
+        return instrumentRepository.findByOwnerId(ownerId);
     }
 
     public List<MusicSheet> searchMusicSheetsByName(String name) {
@@ -68,13 +77,18 @@ public class ProductsService {
         return item;
     }
 
-    public Item updateItemPrice(Long itemId, Double newPrice) {
+    public Item updateItemPrice(Long itemId, Double newPrice, Long userId) {
         if (newPrice == null || newPrice < 0) {
             throw new IllegalArgumentException("Price must be a positive number");
         }
 
         Item item = findItemById(itemId)
             .orElseThrow(() -> new IllegalArgumentException("Item not found with id: " + itemId));
+
+        // Check if the user is the owner of the item
+        if (!item.getOwner().getId().equals(userId)) {
+            throw new IllegalArgumentException("You are not authorized to update the price of this item");
+        }
 
         item.setPrice(newPrice);
 

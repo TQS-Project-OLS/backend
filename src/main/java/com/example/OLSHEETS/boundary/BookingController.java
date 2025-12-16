@@ -55,11 +55,60 @@ public class BookingController {
         return bookingService.listBookings();
     }
 
-    @PutMapping("/{bookingId}/approve")
-    public ResponseEntity<?> approveBooking(@PathVariable Long bookingId, @RequestParam int ownerId) {
+    @GetMapping("/my-bookings")
+    public ResponseEntity<?> getMyBookings() {
         try {
-            Booking approved = bookingService.approveBooking(bookingId, ownerId);
+            // Extract username from JWT token
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String username = authentication.getName();
+
+            // Get user from database
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+            // Get bookings where this user is the renter
+            List<Booking> bookings = bookingService.getBookingsByRenterId(user.getId());
+            return ResponseEntity.ok(bookings);
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/my-instrument-bookings")
+    public ResponseEntity<?> getMyInstrumentBookings() {
+        try {
+            // Extract username from JWT token
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String username = authentication.getName();
+
+            // Get user from database
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+            // Get all bookings for instruments owned by this user
+            List<Booking> bookings = bookingService.getBookingsByOwnerId(user.getId());
+            return ResponseEntity.ok(bookings);
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/{bookingId}/approve")
+    public ResponseEntity<?> approveBooking(@PathVariable Long bookingId) {
+        try {
+            // Extract authenticated user from JWT token
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            User user = userRepository.findByUsername(auth.getName())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+            
+            Booking approved = bookingService.approveBooking(bookingId, user.getId().intValue());
             return ResponseEntity.ok(approved);
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (IllegalStateException e) {
@@ -68,10 +117,17 @@ public class BookingController {
     }
 
     @PutMapping("/{bookingId}/reject")
-    public ResponseEntity<?> rejectBooking(@PathVariable Long bookingId, @RequestParam int ownerId) {
+    public ResponseEntity<?> rejectBooking(@PathVariable Long bookingId) {
         try {
-            Booking rejected = bookingService.rejectBooking(bookingId, ownerId);
+            // Extract authenticated user from JWT token
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            User user = userRepository.findByUsername(auth.getName())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+            
+            Booking rejected = bookingService.rejectBooking(bookingId, user.getId().intValue());
             return ResponseEntity.ok(rejected);
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (IllegalStateException e) {

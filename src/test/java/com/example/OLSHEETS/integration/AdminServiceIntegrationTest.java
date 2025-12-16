@@ -154,9 +154,10 @@ class AdminServiceIntegrationTest {
         com.example.OLSHEETS.data.User u100 = userRepository.save(new com.example.OLSHEETS.data.User("u100", "u100@example.com", "u100", "123"));
 
         booking1 = bookingRepository.save(new Booking(instrument1, u100, 
-            LocalDate.of(2025, 12, 1), LocalDate.of(2025, 12, 5)));
+            LocalDate.now().plusDays(1), LocalDate.now().plusDays(5)));
 
-        Booking cancelled = adminService.cancelBooking(booking1.getId());
+        // Owner (testOwner10) cancels the booking
+        Booking cancelled = adminService.cancelBooking(booking1.getId(), testOwner10.getId());
 
         assertThat(cancelled.getStatus()).isEqualTo(BookingStatus.CANCELLED);
         
@@ -166,7 +167,7 @@ class AdminServiceIntegrationTest {
 
     @Test
     void shouldThrowExceptionWhenCancellingNonExistentBooking() {
-        assertThatThrownBy(() -> adminService.cancelBooking(9999L))
+        assertThatThrownBy(() -> adminService.cancelBooking(9999L, 1L))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("Booking not found");
     }

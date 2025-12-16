@@ -54,6 +54,11 @@ public class ReviewService {
             throw new IllegalArgumentException("Cannot review a booking that hasn't ended yet");
         }
 
+        // Validate booking was approved (only approved bookings can be reviewed)
+        if (booking.getStatus() != com.example.OLSHEETS.data.BookingStatus.APPROVED) {
+            throw new IllegalArgumentException("Can only review approved bookings");
+        }
+
         // Check if review already exists
         if (reviewRepository.existsByBooking(booking)) {
             throw new IllegalArgumentException("A review already exists for this booking");

@@ -2,8 +2,14 @@ package com.example.OLSHEETS.boundary;
 
 import com.example.OLSHEETS.data.Booking;
 import com.example.OLSHEETS.data.BookingStatus;
+import com.example.OLSHEETS.data.User;
+import com.example.OLSHEETS.exception.UserNotFoundException;
+import com.example.OLSHEETS.repository.UserRepository;
 import com.example.OLSHEETS.service.AdminService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -15,6 +21,9 @@ import java.util.Map;
 public class AdminController {
 
     private final AdminService adminService;
+
+    @Autowired
+    private UserRepository userRepository;
 
     public AdminController(AdminService adminService) {
         this.adminService = adminService;
@@ -46,14 +55,25 @@ public class AdminController {
     }
 
     /**
-     * Cancel a booking (admin override)
+     * Cancel a booking
+     * Only the owner or renter can cancel
      */
     @PutMapping("/bookings/{bookingId}/cancel")
     public ResponseEntity<?> cancelBooking(@PathVariable Long bookingId) {
         try {
-            Booking cancelled = adminService.cancelBooking(bookingId);
+            // Extract username from JWT token
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String username = authentication.getName();
+
+            // Get user from database
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+            Booking cancelled = adminService.cancelBooking(bookingId, user.getId());
             return ResponseEntity.ok(cancelled);
         } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }

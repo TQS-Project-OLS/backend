@@ -48,12 +48,22 @@ class AdminControllerTest {
     @MockitoBean
     private AdminService adminService;
 
+    @MockitoBean
+    private com.example.OLSHEETS.repository.UserRepository userRepository;
+
     private Booking booking1;
     private Booking booking2;
     private Item item1;
 
     @BeforeEach
     void setUp() {
+        // Mock authentication
+        org.springframework.security.core.Authentication auth = mock(org.springframework.security.core.Authentication.class);
+        org.springframework.security.core.context.SecurityContext securityContext = mock(org.springframework.security.core.context.SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(auth);
+        when(auth.getName()).thenReturn("owner");
+        org.springframework.security.core.context.SecurityContextHolder.setContext(securityContext);
+
         item1 = new Instrument();
         item1.setId(1L);
         com.example.OLSHEETS.data.User owner = new com.example.OLSHEETS.data.User("owner", "owner@example.com", "owner");
@@ -61,6 +71,9 @@ class AdminControllerTest {
         item1.setOwner(owner);
         item1.setName("Test Guitar");
         item1.setPrice(50.0);
+
+        // Mock userRepository to return the owner
+        when(userRepository.findByUsername("owner")).thenReturn(java.util.Optional.of(owner));
 
         User user1 = new User("tester1", "tester1@example.com", "Test User One", "password123");
         user1.setId(100L);
@@ -119,7 +132,7 @@ class AdminControllerTest {
     @Test
     void testCancelBooking_ShouldReturnCancelledBooking() throws Exception {
         booking1.setStatus(BookingStatus.CANCELLED);
-        when(adminService.cancelBooking(1L)).thenReturn(booking1);
+        when(adminService.cancelBooking(eq(1L), anyLong())).thenReturn(booking1);
 
         mockMvc.perform(put("/api/admin/bookings/1/cancel"))
                 .andExpect(status().isOk())
@@ -127,12 +140,12 @@ class AdminControllerTest {
                 .andExpect(jsonPath("$.id", is(1)))
                 .andExpect(jsonPath("$.status", is("CANCELLED")));
 
-        verify(adminService, times(1)).cancelBooking(1L);
+        verify(adminService, times(1)).cancelBooking(eq(1L), anyLong());
     }
 
     @Test
     void testCancelBooking_WhenNotFound_ShouldReturnBadRequest() throws Exception {
-        when(adminService.cancelBooking(999L))
+        when(adminService.cancelBooking(eq(999L), anyLong()))
                 .thenThrow(new IllegalArgumentException("Booking not found with id: 999"));
 
         mockMvc.perform(put("/api/admin/bookings/999/cancel"))
@@ -140,7 +153,7 @@ class AdminControllerTest {
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.error", is("Booking not found with id: 999")));
 
-        verify(adminService, times(1)).cancelBooking(999L);
+        verify(adminService, times(1)).cancelBooking(eq(999L), anyLong());
     }
 
     @Test
