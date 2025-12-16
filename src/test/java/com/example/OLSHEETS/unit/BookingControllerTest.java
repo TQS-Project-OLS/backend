@@ -386,4 +386,192 @@ class BookingControllerTest {
 
         verify(bookingService, times(1)).listBookings();
     }
+
+    @Test
+    void testGetMyBookings_WithValidUser_ShouldReturnBookings() throws Exception {
+        // Setup authentication context
+        Authentication auth = mock(Authentication.class);
+        when(auth.getName()).thenReturn("testuser");
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(securityContext);
+
+        User testUser = new User("testuser", "testuser@example.com", "Test User", "password123");
+        testUser.setId(100L);
+        
+        when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(testUser));
+        
+        java.util.List<Booking> bookings = java.util.Arrays.asList(booking);
+        when(bookingService.getBookingsByRenterId(100L)).thenReturn(bookings);
+
+        mockMvc.perform(get("/api/bookings/my-bookings"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(jsonPath("$[0].id", is(1)));
+
+        verify(userRepository, times(1)).findByUsername("testuser");
+        verify(bookingService, times(1)).getBookingsByRenterId(100L);
+        
+        SecurityContextHolder.clearContext();
+    }
+
+    @Test
+    void testGetMyBookings_WithUserNotFound_ShouldReturnUnauthorized() throws Exception {
+        // Setup authentication context with user not in DB
+        Authentication auth = mock(Authentication.class);
+        when(auth.getName()).thenReturn("nonexistent");
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(securityContext);
+
+        when(userRepository.findByUsername("nonexistent")).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/api/bookings/my-bookings"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(jsonPath("$.error", is("User not found")));
+
+        verify(userRepository, times(1)).findByUsername("nonexistent");
+        verify(bookingService, never()).getBookingsByRenterId(anyLong());
+        
+        SecurityContextHolder.clearContext();
+    }
+
+    @Test
+    void testGetMyBookings_WithServiceException_ShouldReturnBadRequest() throws Exception {
+        // Setup authentication context
+        Authentication auth = mock(Authentication.class);
+        when(auth.getName()).thenReturn("testuser");
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(securityContext);
+
+        User testUser = new User("testuser", "testuser@example.com", "Test User", "password123");
+        testUser.setId(100L);
+        
+        when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(testUser));
+        when(bookingService.getBookingsByRenterId(100L)).thenThrow(new RuntimeException("Database error"));
+
+        mockMvc.perform(get("/api/bookings/my-bookings"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(jsonPath("$.error", is("Database error")));
+
+        SecurityContextHolder.clearContext();
+    }
+
+    @Test
+    void testGetMyInstrumentBookings_WithValidUser_ShouldReturnBookings() throws Exception {
+        // Setup authentication context
+        Authentication auth = mock(Authentication.class);
+        when(auth.getName()).thenReturn("owner");
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(securityContext);
+
+        User ownerUser = new User("owner", "owner@example.com", "OwnerTest");
+        ownerUser.setId(10L);
+        
+        when(userRepository.findByUsername("owner")).thenReturn(Optional.of(ownerUser));
+        
+        java.util.List<Booking> bookings = java.util.Arrays.asList(booking);
+        when(bookingService.getBookingsByOwnerId(10L)).thenReturn(bookings);
+
+        mockMvc.perform(get("/api/bookings/my-instrument-bookings"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(jsonPath("$[0].id", is(1)));
+
+        verify(userRepository, times(1)).findByUsername("owner");
+        verify(bookingService, times(1)).getBookingsByOwnerId(10L);
+        
+        SecurityContextHolder.clearContext();
+    }
+
+    @Test
+    void testGetMyInstrumentBookings_WithUserNotFound_ShouldReturnUnauthorized() throws Exception {
+        // Setup authentication context with user not in DB
+        Authentication auth = mock(Authentication.class);
+        when(auth.getName()).thenReturn("nonexistent");
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(securityContext);
+
+        when(userRepository.findByUsername("nonexistent")).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/api/bookings/my-instrument-bookings"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(jsonPath("$.error", is("User not found")));
+
+        verify(userRepository, times(1)).findByUsername("nonexistent");
+        verify(bookingService, never()).getBookingsByOwnerId(anyLong());
+        
+        SecurityContextHolder.clearContext();
+    }
+
+    @Test
+    void testGetMyInstrumentBookings_WithServiceException_ShouldReturnBadRequest() throws Exception {
+        // Setup authentication context
+        Authentication auth = mock(Authentication.class);
+        when(auth.getName()).thenReturn("owner");
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(securityContext);
+
+        User ownerUser = new User("owner", "owner@example.com", "OwnerTest");
+        ownerUser.setId(10L);
+        
+        when(userRepository.findByUsername("owner")).thenReturn(Optional.of(ownerUser));
+        when(bookingService.getBookingsByOwnerId(10L)).thenThrow(new RuntimeException("Database error"));
+
+        mockMvc.perform(get("/api/bookings/my-instrument-bookings"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(jsonPath("$.error", is("Database error")));
+
+        SecurityContextHolder.clearContext();
+    }
+
+    @Test
+    void testApproveBooking_WithUserNotFound_ShouldReturnUnauthorized() throws Exception {
+        // Setup authentication context with user not in DB
+        Authentication auth = mock(Authentication.class);
+        when(auth.getName()).thenReturn("nonexistent");
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(securityContext);
+
+        when(userRepository.findByUsername("nonexistent")).thenReturn(Optional.empty());
+
+        mockMvc.perform(put("/api/bookings/1/approve"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(jsonPath("$.error", is("User not found")));
+
+        verify(bookingService, never()).approveBooking(anyLong(), anyInt());
+        
+        SecurityContextHolder.clearContext();
+    }
+
+    @Test
+    void testRejectBooking_WithUserNotFound_ShouldReturnUnauthorized() throws Exception {
+        // Setup authentication context with user not in DB
+        Authentication auth = mock(Authentication.class);
+        when(auth.getName()).thenReturn("nonexistent");
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(securityContext);
+
+        when(userRepository.findByUsername("nonexistent")).thenReturn(Optional.empty());
+
+        mockMvc.perform(put("/api/bookings/1/reject"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(jsonPath("$.error", is("User not found")));
+
+        verify(bookingService, never()).rejectBooking(anyLong(), anyInt());
+        
+        SecurityContextHolder.clearContext();
+    }
 }
