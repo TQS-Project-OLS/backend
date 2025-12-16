@@ -66,6 +66,7 @@ services:
     volumes:
       - prometheus-data:/prometheus
       - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./observability/alert_rules.yml:/etc/prometheus/alert_rules.yml:ro
     ports:
       - "9090:9090"
     networks:
@@ -104,6 +105,30 @@ services:
       - loki
     restart: unless-stopped
 
+  # AlertManager for alert notifications
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: alertmanager
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./observability/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager-data:/alertmanager
+    environment:
+      - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}
+    networks:
+      - ols-network
+    restart: unless-stopped
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - |
+        sed "s|\$${SLACK_WEBHOOK_URL}|$$SLACK_WEBHOOK_URL|g" /etc/alertmanager/alertmanager.yml > /tmp/alertmanager.yml && \
+        /bin/alertmanager --config.file=/tmp/alertmanager.yml --storage.path=/alertmanager
+
+
+
+
 networks:
   ols-network:
     driver: bridge
@@ -113,3 +138,4 @@ volumes:
   grafana-storage:
   prometheus-data:
   loki-data:
+  alertmanager-data:

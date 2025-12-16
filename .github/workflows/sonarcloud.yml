@@ -58,7 +58,11 @@ jobs:
           fetch-depth: 0
 
       - name: Create/Update .env from .env.example
-        run: cp -f .env.example .env
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          cp -f .env.example .env
+          sed -i "s|SLACK_WEBHOOK_URL=.*|SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}|g" .env
 
       - name: Deploy containers
         run: |
