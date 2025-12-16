@@ -18,10 +18,58 @@
         requireAuth();
     </script>
 
-    <div class="container" style="max-width: 600px;">
+    <div class="container" style="max-width: 800px;">
         <div class="page-header" style="margin-bottom: var(--space-xl);">
             <h1>Finalize Booking</h1>
             <p style="color: var(--text-muted);">Secure your instrument for the desired dates</p>
+        </div>
+
+        <!-- Instrument Details Section -->
+        <div class="card" id="instrument-details" style="margin-bottom: var(--space-lg); display: none;">
+            <h2 style="margin-bottom: var(--space-md);">Instrument Details</h2>
+            <div style="display: grid; gap: var(--space-lg);">
+                <div>
+                    <h3 id="instrument-name" style="color: var(--primary-light); margin-bottom: var(--space-sm);"></h3>
+                    <p id="instrument-description" style="color: var(--text-muted);"></p>
+                </div>
+                
+                <div style="display: flex; gap: var(--space-md); flex-wrap: wrap;">
+                    <div>
+                        <strong style="color: var(--text-muted);">Type:</strong>
+                        <span id="instrument-type"></span>
+                    </div>
+                    <div>
+                        <strong style="color: var(--text-muted);">Family:</strong>
+                        <span id="instrument-family"></span>
+                    </div>
+                    <div>
+                        <strong style="color: var(--text-muted);">Brand:</strong>
+                        <span id="instrument-brand"></span>
+                    </div>
+                    <div>
+                        <strong style="color: var(--text-muted);">Model:</strong>
+                        <span id="instrument-model"></span>
+                    </div>
+                    <div>
+                        <strong style="color: var(--text-muted);">Age:</strong>
+                        <span id="instrument-age"></span>
+                    </div>
+                </div>
+
+                <div>
+                    <strong style="color: var(--text-muted);">Condition:</strong>
+                    <p id="instrument-condition"></p>
+                </div>
+
+                <div id="instrument-photos" style="display: none;">
+                    <strong style="color: var(--text-muted); display: block; margin-bottom: var(--space-sm);">Photos:</strong>
+                    <div id="photos-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--space-sm);"></div>
+                </div>
+
+                <div class="price" style="font-size: 2rem; color: var(--primary-light);">
+                    $<span id="instrument-price"></span><span style="font-size: 1rem; color: var(--text-muted); font-weight: normal;">/day</span>
+                </div>
+            </div>
         </div>
 
         <div class="card">
@@ -62,15 +110,60 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             // Parse URL params
             const urlParams = new URLSearchParams(window.location.search);
             const instrumentId = urlParams.get('id');
 
             if (instrumentId) {
                 document.getElementById('instrumentId').value = instrumentId;
-                // Optional: Fetch instrument details to show name
-                document.getElementById('instrument-title').textContent = `Book Instrument #${instrumentId}`;
+                
+                // Fetch and display instrument details
+                try {
+                    const response = await authenticatedFetch(`/api/instruments/${instrumentId}`);
+                    
+                    if (response.ok) {
+                        const instrument = await response.json();
+                        
+                        // Display instrument details
+                        document.getElementById('instrument-name').textContent = instrument.name;
+                        document.getElementById('instrument-description').textContent = instrument.description || 'No description available';
+                        document.getElementById('instrument-type').textContent = instrument.type;
+                        document.getElementById('instrument-family').textContent = instrument.family;
+                        document.getElementById('instrument-brand').textContent = instrument.brand || 'N/A';
+                        document.getElementById('instrument-model').textContent = instrument.model || 'N/A';
+                        document.getElementById('instrument-age').textContent = `${instrument.age} years`;
+                        document.getElementById('instrument-condition').textContent = instrument.instrumentCondition || 'Not specified';
+                        document.getElementById('instrument-price').textContent = instrument.price.toFixed(2);
+                        
+                        // Display photos if available
+                        if (instrument.fileReferences && instrument.fileReferences.length > 0) {
+                            const photosContainer = document.getElementById('photos-container');
+                            photosContainer.innerHTML = instrument.fileReferences.map(ref => 
+                                `<div style="background: var(--surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: var(--space-sm); text-align: center;">
+                                    <div style="font-size: 2rem; margin-bottom: var(--space-xs);">📸</div>
+                                    <div style="font-size: 0.8rem; color: var(--text-muted); word-break: break-all;">${ref.path.split('/').pop()}</div>
+                                </div>`
+                            ).join('');
+                            document.getElementById('instrument-photos').style.display = 'block';
+                        }
+                        
+                        document.getElementById('instrument-details').style.display = 'block';
+                        document.getElementById('instrument-title').textContent = `Book ${instrument.name}`;
+                    } else {
+                        const error = await response.json();
+                        document.getElementById('instrument-title').textContent = 'Instrument Not Found';
+                        const messageDiv = document.getElementById('booking-message');
+                        messageDiv.innerHTML = `<strong>Error:</strong> ${error.error || 'Instrument not found'}`;
+                        messageDiv.style.backgroundColor = 'rgba(239, 68, 68, 0.2)';
+                        messageDiv.style.color = '#f87171';
+                        messageDiv.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+                        messageDiv.classList.remove('hidden');
+                    }
+                } catch (error) {
+                    console.error('Error fetching instrument details:', error);
+                    document.getElementById('instrument-title').textContent = `Book Instrument #${instrumentId}`;
+                }
             }
 
             // Date validation helper

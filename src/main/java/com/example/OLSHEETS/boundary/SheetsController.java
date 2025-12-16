@@ -26,6 +26,16 @@ public class SheetsController {
     @Autowired
     private UserRepository userRepository;
 
+    @GetMapping("/{id}")
+    public ResponseEntity<Object> getMusicSheetById(@PathVariable Long id) {
+        try {
+            MusicSheet musicSheet = productsService.getMusicSheetById(id);
+            return ResponseEntity.ok(musicSheet);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+        }
+    }
+
     @GetMapping("/search")
     public ResponseEntity<List<MusicSheet>> searchSheets(@RequestParam String name) {
         List<MusicSheet> sheets = productsService.searchMusicSheetsByName(name);

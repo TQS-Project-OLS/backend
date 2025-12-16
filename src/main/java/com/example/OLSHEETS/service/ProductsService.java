@@ -40,6 +40,11 @@ public class ProductsService {
             .orElseThrow(() -> new IllegalArgumentException("Instrument not found with id: " + id));
     }
 
+    public MusicSheet getMusicSheetById(Long id) {
+        return musicSheetRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Music sheet not found with id: " + id));
+    }
+
     public List<Instrument> searchInstrumentsByName(String name) {
         return instrumentRepository.findByNameContainingIgnoreCase(name);
     }
