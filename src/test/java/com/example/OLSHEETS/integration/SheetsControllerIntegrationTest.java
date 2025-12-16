@@ -135,6 +135,30 @@ class SheetsControllerIntegrationTest {
     }
 
     @Test
+    void testGetMusicSheetById_WithExistingSheet_ShouldReturnSheet() throws Exception {
+        MusicSheet savedSheet = musicSheetRepository.findByNameContainingIgnoreCase("Moonlight Sonata").get(0);
+        
+        mockMvc.perform(get("/api/sheets/" + savedSheet.getId()))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(jsonPath("$.id", is(savedSheet.getId().intValue())))
+                .andExpect(jsonPath("$.name", is("Moonlight Sonata")))
+                .andExpect(jsonPath("$.composer", is("Beethoven")))
+                .andExpect(jsonPath("$.category", is("CLASSICAL")))
+                .andExpect(jsonPath("$.description", is("Piano Sonata No. 14")))
+                .andExpect(jsonPath("$.price", is(9.99)))
+                .andExpect(jsonPath("$.owner.id", notNullValue()));
+    }
+
+    @Test
+    void testGetMusicSheetById_WithNonExistentSheet_ShouldReturnBadRequest() throws Exception {
+        Long nonExistentId = 99999L;
+        
+        mockMvc.perform(get("/api/sheets/" + nonExistentId))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void testSearchSheets_WithExactMatch_ShouldReturnOneSheet() throws Exception {
         mockMvc.perform(get("/api/sheets/search")
                         .param("name", "Moonlight Sonata"))
