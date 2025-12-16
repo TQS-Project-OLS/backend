@@ -53,6 +53,10 @@ jobs:
         && needs.sonarcloud.result == 'success'
 
     steps:
+
+      - name: Fix log permissions
+        run: chmod -R u+w ./logs || true
+
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
