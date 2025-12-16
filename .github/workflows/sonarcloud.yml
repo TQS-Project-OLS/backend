@@ -54,8 +54,10 @@ jobs:
 
     steps:
 
-      - name: Fix log permissions
-        run: chmod -R u+w ./logs || true
+      - name: Clean up logs directory
+        run: |
+          sudo rm -rf ./logs || true
+          rm -rf ./logs || true
 
       - uses: actions/checkout@v4
         with:
