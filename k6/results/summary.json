@@ -1,0 +1,15 @@
+{
+  "testType": "spike",
+  "timestamp": "2025-12-16T10:35:22.884Z",
+  "metrics": {
+    "http_reqs": 9650,
+    "http_req_duration_avg": 16.3323620996892,
+    "http_req_duration_p95": 101.17221939999999,
+    "http_req_duration_p99": 0,
+    "http_req_failed": 0.2221761658031088,
+    "error_rate": 0,
+    "successful_requests": 9648,
+    "vus_max": 50
+  },
+  "thresholds": {}
+}
