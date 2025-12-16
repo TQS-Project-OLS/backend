@@ -57,6 +57,27 @@ public class ProductsController {
         return ResponseEntity.ok(instruments);
     }
 
+    @GetMapping("/my-instruments")
+    public ResponseEntity<Object> getMyInstruments() {
+        try {
+            // Extract username from JWT token
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String username = authentication.getName();
+
+            // Get user from database
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+            // Get instruments owned by this user
+            List<Instrument> instruments = productsService.getInstrumentsByOwnerId(user.getId());
+            return ResponseEntity.ok(instruments);
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+        }
+    }
+
     @PostMapping("/register")
     public ResponseEntity<Object> registerInstrument(@RequestBody InstrumentRegistrationRequest request) {
         try {

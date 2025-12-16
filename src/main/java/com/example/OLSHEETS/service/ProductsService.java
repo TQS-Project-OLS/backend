@@ -56,6 +56,10 @@ public class ProductsService {
         return instrumentRepository.findByFamily(family);
     }
 
+    public List<Instrument> getInstrumentsByOwnerId(Long ownerId) {
+        return instrumentRepository.findByOwnerId(ownerId);
+    }
+
     public List<MusicSheet> searchMusicSheetsByName(String name) {
         return musicSheetRepository.findByNameContainingIgnoreCase(name);
     }

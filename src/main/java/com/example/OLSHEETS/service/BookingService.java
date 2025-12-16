@@ -157,4 +157,8 @@ public class BookingService {
     public List<Booking> listBookings(){
         return bookingRepository.findAll();
     }
+
+    public List<Booking> getBookingsByRenterId(Long renterId) {
+        return bookingRepository.findByRenterId(renterId);
+    }
 }

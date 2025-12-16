@@ -14,5 +14,8 @@ public interface InstrumentRepository extends JpaRepository<Instrument, Long> {
     List<Instrument> findByNameContainingIgnoreCase(String name);
 
     List<Instrument> findByType(InstrumentType type);
+    
     List<Instrument> findByFamily(InstrumentFamily family);
+    
+    List<Instrument> findByOwnerId(Long ownerId);
 }

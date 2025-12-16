@@ -105,4 +105,35 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid token"));
         }
     }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser() {
+        try {
+            // Extract username from JWT token via SecurityContext
+            org.springframework.security.core.Authentication authentication = 
+                org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+            
+            if (authentication == null || authentication.getName() == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Not authenticated"));
+            }
+
+            String username = authentication.getName();
+            Optional<User> userOpt = userService.findByUsername(username);
+
+            if (userOpt.isPresent()) {
+                User user = userOpt.get();
+                Map<String, Object> response = new HashMap<>();
+                response.put("id", user.getId());
+                response.put("username", user.getUsername());
+                response.put("name", user.getName());
+                response.put("email", user.getEmail());
+                return ResponseEntity.ok(response);
+            }
+
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "User not found"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Error retrieving user information"));
+        }
+    }
 }
