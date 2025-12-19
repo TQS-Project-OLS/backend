@@ -35,7 +35,7 @@ services:
       - DB_POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - SPRING_PROFILES_ACTIVE=docker,postgres
     volumes:
-      - ./logs:/app/logs
+      - app-logs:/app/logs
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
       interval: 30s
@@ -97,7 +97,7 @@ services:
     volumes:
       - ./observability/promtail.yml:/etc/promtail/config.yml:ro
       - /var/log:/var/log:ro
-      - ./logs:/app/logs:ro
+      - app-logs:/app/logs:ro
     command: -config.file=/etc/promtail/config.yml
     networks:
       - ols-network
@@ -139,3 +139,4 @@ volumes:
   prometheus-data:
   loki-data:
   alertmanager-data:
+  app-logs:

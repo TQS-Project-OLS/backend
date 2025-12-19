@@ -53,6 +53,12 @@ jobs:
         && needs.sonarcloud.result == 'success'
 
     steps:
+
+      - name: Clean up logs directory
+        run: |
+          sudo rm -rf ./logs || true
+          rm -rf ./logs || true
+
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
